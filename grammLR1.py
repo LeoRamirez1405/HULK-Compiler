@@ -7,7 +7,6 @@ def gramm_Hulk_LR1():
     type_definition, attribute_definition, method_definition, inheritance, instance_creation, member_access, type_annotation = G.NonTerminals('type_definition attribute_definition method_definition inheritance instance_creation member_access type_annotation')
     print_statement, assignment, function_definition, control_structure, contElif, contElse = G.NonTerminals('print_statement assignment function_definition control_structure contElif contElse')
     if_structure, while_structure, for_structure, member = G.NonTerminals('if_structure while_structure for_structure member')
-    type_definition, attribute_definition, method_definition, inheritance, instance_creation, member_access = G.NonTerminals('type_definition attribute_definition method_definition inheritance instance_creation member_access')
     
     Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, = G.Terminals('print ( ) { } ; = + - * /')
     And, Or, Not, Less, Greater, Equal, LessEqual, GreaterEqual, NotEqual, Is, In, _True, _False = G.Terminals('and or not < > == >= <= != is in True False')
@@ -18,7 +17,7 @@ def gramm_Hulk_LR1():
 
     Program %= statement_list
     statement_list %= statement + statement_list | G.Epsilon
-    statement %= print_statement | function_definition | control_structure | assignment 
+    statement %= print_statement | function_definition | control_structure | assignment | type_definition
     print_statement %= Print + oPar + expression + cPar + Semi
     assignment %= Let + identifier + Equal + expression + Semi
     
