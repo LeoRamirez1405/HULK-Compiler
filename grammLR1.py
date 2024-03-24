@@ -6,13 +6,13 @@ def gramm_Hulk_LR1():
     statement_list, statement, condition, expression, term, factor, function_call, arguments, parameters = G.NonTerminals('statement_list statement condition expression term factor function_call arguments parameters')
     type_definition, attribute_definition, method_definition, inheritance, instance_creation, member_access, type_annotation = G.NonTerminals('type_definition attribute_definition method_definition inheritance instance_creation member_access type_annotation')
     print_statement, assignment, function_definition, control_structure, contElif, contElse = G.NonTerminals('print_statement assignment function_definition control_structure contElif contElse')
-    if_structure, while_structure, for_structure, member = G.NonTerminals('if_structure while_structure for_structure member')
+    if_structure, while_structure, for_structure, member,method_override = G.NonTerminals('if_structure while_structure for_structure member method_override')
     
     Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, = G.Terminals('print ( ) { } ; = + - * /')
     And, Or, Not, Less, Greater, Equal, LessEqual, GreaterEqual, NotEqual, Is, In, _True, _False = G.Terminals('and or not < > == >= <= != is in True False')
     Comma, Dot, If, Else, While, For, Let, Function, Colon = G.Terminals(', . if else while for let function :')
     sComil, dComill = G.Terminals('\' \"')
-    identifier, number, string, Elif, Type, Inherits, New, In, method_override = G.Terminals('identifier number string elif type inherits new in method_override') 
+    identifier, number, string, Elif, Type, Inherits, New, In = G.Terminals('identifier number string elif type inherits new in') 
     compAritCond, compBoolCond = G.NonTerminals('compAritCond compBoolCond')
 
     Program %= statement_list
@@ -32,7 +32,7 @@ def gramm_Hulk_LR1():
     while_structure %= While + oPar + condition + cPar + oBrace + statement_list + cBrace 
     for_structure %= For + oPar + assignment + Semi + condition + Semi + assignment + cPar + oBrace + statement_list + cBrace
     
-    condition %= expression + compAritCond + expression| Not + In + expression | expression + compBoolCond + expression | Not + expression | expression | _True | _True
+    condition %= expression + compAritCond + expression| Not + In + expression | expression + compBoolCond + expression | Not + expression | expression | _True | _False
     compAritCond %= Less | Greater | Equal | LessEqual | GreaterEqual | NotEqual | Is 
     compBoolCond %= And | Or 
     expression %= term + Plus + term | term + Minus + term | term 
