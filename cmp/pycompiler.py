@@ -20,7 +20,6 @@ class Symbol(object):
 
     def __or__(self, other):
 
-        print(other)
         if isinstance(other, (Sentence)):
             return SentenceList(Sentence(self), other)
         
