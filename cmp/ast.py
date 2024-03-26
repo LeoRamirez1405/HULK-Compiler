@@ -2,8 +2,7 @@ import cmp.visitor as visitor
 
 class Node:
     def evaluate(self, token):
-        # raise NotImplementedError()
-        self.token = token
+        raise NotImplementedError()
 
 class AtomicNode(Node):
     def __init__(self, lex):
