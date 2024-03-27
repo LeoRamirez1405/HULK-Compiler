@@ -1,4 +1,5 @@
 from cmp.pycompiler import Grammar
+from semantic_checking import AST
 
 def gramm_Hulk_LR1():
     G = Grammar()

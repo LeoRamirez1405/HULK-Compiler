@@ -115,7 +115,7 @@ class Scope:
 
     def define_variable(self, vname, vtype):
         info = VariableInfo(vname, vtype)
-        self.local_variables.append(info)
+        self.local_variables.add(info)
         return info
 
     def find_variable(self, vname, index=None):
