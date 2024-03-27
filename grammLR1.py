@@ -14,7 +14,9 @@ def gramm_Hulk_LR1():
     Comma, Dot, If, Else, While, For, Let, Function, Colon = G.Terminals(', . if else while for let function :')
     identifier, number, string, Elif, Type, Inherits, New, In, def_Type   = G.Terminals('identifier number string elif type inherits new in def_Type') 
     sComil, dComill = G.Terminals('\' \"')
-
+    sqrt, sin, cos, tan, exp, log, rand = G.Terminals('sqrt sin cos tan exp log rand')
+    math_op, math_call = G.NonTerminals('math_op math_call')
+    
     # Program %= expression
     Program %= statement_list
     statement_list %= statement + statement_list
@@ -103,11 +105,23 @@ def gramm_Hulk_LR1():
     factor %= oPar + expression + cPar 
     factor %= function_call  
     factor %= member_access 
+    factor %= math_call 
     factor %= identifier  
     factor %= _False 
     factor %= _True 
     
+
+    math_op %= sqrt  
+    math_op %= cos  
+    math_op %= sin  
+    math_op %= tan  
+    math_op %= exp 
+    math_op %= tan  
+    
     function_call %= identifier + oPar + arguments + cPar
+    math_call %= math_op + oPar + expression_4 + cPar
+    math_call %= log + oPar + expression_4 + Comma + expression_4 + cPar
+    math_call %= rand + oPar + cPar
     base_args %= expression 
     base_args %= G.Epsilon
     
