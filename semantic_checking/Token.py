@@ -8,6 +8,8 @@ class Token:
         Token's lexeme.
     token_type : Enum
         Token's type.
+    location : (int, int)
+        Token's location.
     """
 
     def __init__(self, lex, token_type, location):
