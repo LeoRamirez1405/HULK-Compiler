@@ -1,5 +1,6 @@
 from cmp.pycompiler import Grammar
 from semantic_checking.ast_nodes import *
+
 def gramm_Hulk_LR1():
     G = Grammar()
     Program = G.NonTerminal('Program', True)
