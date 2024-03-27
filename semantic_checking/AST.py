@@ -79,7 +79,7 @@ class ElifStructureNode(Node):
         self.condition = condition
         self.body = body
 
-class ElseNode(Node):
+class ElseStructureNode(Node):
     def __init__(self, body) -> None:
         super().__init__()
         self.body = body
@@ -108,14 +108,14 @@ class TypeDefinitionNode(Node):
         self.methods = methods
         
 #TODO Esto debe recibir un type annotation?
-class MethodsDefinitionNode(Node):
+class MethodDefinitionNode(Node):
     def __init__(self, id, parameters, body) -> None:
         super().__init__()
         self.id = id
         self.parameters = parameters
         self.body = body
         
-class Inheritance(Node):
+class InheritanceNode(Node):
     def __init__(self, type) -> None:
         super().__init__()
         self.type = type

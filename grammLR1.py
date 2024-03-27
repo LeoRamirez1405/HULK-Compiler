@@ -1,5 +1,7 @@
 from cmp.pycompiler import Grammar
-from semantic_checking.ast_nodes import *
+# from semantic_checking.ast_nodes import *
+from semantic_checking.AST import *
+
 def gramm_Hulk_LR1():
     G = Grammar()
     Program = G.NonTerminal('Program', True)
@@ -31,7 +33,7 @@ def gramm_Hulk_LR1():
     create_statement %= function_definition, lambda h, s: s[1]
     create_statement %= assignment, lambda h, s: s[1]
     
-    print_statement %= Print + oPar + non_create_statement + cPar + Semi, lambda h, s: PrintStatementNode(s[3])
+    print_statement %= Print + oPar + non_create_statement + cPar + Semi, lambda h, s: PrintStatmentNode(s[3])
     kern_assignment %= identifier + Equal + expression, lambda h, s: KernAssigmentNode(s[1],s[3])
     
     multi_assignment %= kern_assignment + Comma + multi_assignment, lambda h, s: [s[1]] + s[3]
@@ -117,9 +119,9 @@ def gramm_Hulk_LR1():
     math_op %= tan  
     
     function_call %= identifier + oPar + arguments + cPar, lambda h, s:  s[1]
-    math_call %= math_op + oPar + expression_4 + cPar, lambda h, s:  MathOpertionCallNode(s[1],s[3])
+    math_call %= math_op + oPar + expression_4 + cPar, lambda h, s: MathOperationCallNode(s[1],s[3])
     math_call %= log + oPar + expression_4 + Comma + expression_4 + cPar, lambda h, s:  LogCallNode(s[3],s[5]) 
-    math_call %= rand + oPar + cPar,  lambda h, s: RandomNode()
+    math_call %= rand + oPar + cPar,  lambda h, s: RandomCallNode()
     base_args %= expression 
     base_args %= G.Epsilon
     
@@ -139,10 +141,10 @@ def gramm_Hulk_LR1():
     method_definition %= identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace + method_definition, lambda h, s: [MethodDefinitionNode(s[1], s[3], s[6])] + s[8]
     method_definition %= G.Epsilon , lambda h, s: []
     
-    inheritance %= Inherits + def_Type, lambda h, s: InheritsNode(s[2])
-    inheritance %= G.Epsilon, lambda h, s: InheritsNode("object")
+    inheritance %= Inherits + def_Type, lambda h, s: InheritanceNode(s[2])
+    inheritance %= G.Epsilon, lambda h, s: InheritanceNode("object")
     # Instanciación de tipos
-    instance_creation %= Let + identifier + Equal + New + def_Type + oPar + arguments + cPar + Semi, lambda h, s: InstantCreationNode(s[2], s[7])
+    instance_creation %= Let + identifier + Equal + New + def_Type + oPar + arguments + cPar + Semi, lambda h, s: InstanceCreationNode(s[2], s[7])
     ###kern_instance_creation %= New + def_Type + oPar + arguments + cPar #todo## Verificar la correctitud de  esto
     #method_override %= identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace | G.Epsilon
     cont_member %= oPar + arguments + cPar, lambda h, s: s[2]
