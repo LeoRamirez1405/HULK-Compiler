@@ -15,105 +15,101 @@ def gramm_Hulk_LR1():
     identifier, number, string, Elif, Type, Inherits, New, In, def_Type   = G.Terminals('identifier number string elif type inherits new in def_Type') 
     sComil, dComill = G.Terminals('\' \"')
 
-    Program %= statement_list
-    statement_list %= statement + statement_list
+    OrCondition, AndCondition, NotCondition = G.NonTerminals('OrCondition AndCondition NotCondition')
+
+    # Program %= statement_list
+    Program %= OrCondition #Testing
+
+    # statement_list %= statement + statement_list
     statement_list %= statement
-    statement_list %= G.Epsilon
+    # statement_list %= G.Epsilon
     
     statement %= non_create_statement  
-    statement %= create_statement 
+    # statement %= create_statement 
     
-    non_create_statement %= print_statement 
-    non_create_statement %= control_structure 
+    # non_create_statement %= print_statement 
+    # non_create_statement %= control_structure 
     non_create_statement %= exp_or_cond
     
-    create_statement %= type_definition
-    create_statement %= function_definition 
-    create_statement %= assignment
+    # create_statement %= type_definition
+    # create_statement %= function_definition 
+    # create_statement %= assignment
     
-    print_statement %= Print + oPar + non_create_statement + cPar + Semi
-    kern_assignment %= identifier + Equal + exp_or_cond 
+    # print_statement %= Print + oPar + non_create_statement + cPar + Semi
+    # kern_assignment %= identifier + Equal + exp_or_cond 
     
-    multi_assignment %= kern_assignment + Comma + multi_assignment 
-    multi_assignment %= kern_assignment + Semi
+    # multi_assignment %= kern_assignment + Comma + multi_assignment 
+    # multi_assignment %= kern_assignment + Semi
     
-    assignment %= Let + multi_assignment
-    assignment %= instance_creation
+    # assignment %= Let + multi_assignment
+    # assignment %= instance_creation
     
-    type_annotation %= Colon + def_Type 
-    type_annotation %= G.Epsilon
+    # type_annotation %= Colon + def_Type 
+    # type_annotation %= G.Epsilon
     
-    function_definition %= Function + identifier + type_annotation + oPar + parameters + cPar + oBrace + statement_list + cBrace 
-    function_definition %= Function + identifier + type_annotation + oPar + parameters + cPar + Arrow + non_create_statement  + Semi
+    # function_definition %= Function + identifier + type_annotation + oPar + parameters + cPar + oBrace + statement_list + cBrace 
+    # function_definition %= Function + identifier + type_annotation + oPar + parameters + cPar + Arrow + non_create_statement  + Semi
     
-    parameters %= expression + type_annotation + Comma + parameters 
-    parameters %= expression + type_annotation
-    parameters %= G.Epsilon
+    # parameters %= expression + type_annotation + Comma + parameters 
+    # parameters %= expression + type_annotation
+    # parameters %= G.Epsilon
     
-    control_structure %= if_structure
-    control_structure %= while_structure
-    control_structure %= for_structure
+    # control_structure %= if_structure
+    # control_structure %= while_structure
+    # control_structure %= for_structure
     
-    if_structure %= If + oPar + condition + cPar + oBrace + statement_list + cBrace + contElif + contElse
+    # if_structure %= If + oPar + condition + cPar + oBrace + statement_list + cBrace + contElif + contElse
     
-    contElif %= Elif + oPar + condition + cPar + oBrace + statement_list + cBrace + contElif 
-    contElif %= G.Epsilon
+    # contElif %= Elif + oPar + condition + cPar + oBrace + statement_list + cBrace + contElif 
+    # contElif %= G.Epsilon
     
-    contElse %= Else + oBrace + statement_list + cBrace
-    contElse %= G.Epsilon
+    # contElse %= Else + oBrace + statement_list + cBrace
+    # contElse %= G.Epsilon
     
-    while_structure %= While + oPar + condition + cPar + oBrace + statement_list + cBrace 
-    for_structure %= For + oPar + assignment + Semi + condition + Semi + assignment + cPar + oBrace + statement_list + cBrace
+    # while_structure %= While + oPar + condition + cPar + oBrace + statement_list + cBrace 
+    # for_structure %= For + oPar + assignment + Semi + condition + Semi + assignment + cPar + oBrace + statement_list + cBrace
+    
+    # exp_or_cond %= expression
+    exp_or_cond %= condition
     
     compBoolCond %= And 
     compBoolCond %= Or 
     
-    compAritCond %= Less
-    compAritCond %= Greater 
-    compAritCond %= Equal 
-    compAritCond %= LessEqual  
-    compAritCond %= GreaterEqual 
-    compAritCond %= NotEqual 
+    # compAritCond %= Less
+    # compAritCond %=  Greater 
+    # compAritCond %= Equal 
+    # compAritCond %= LessEqual  
+    # compAritCond %= GreaterEqual 
+    # compAritCond %= NotEqual 
     
-    expression_1, expression_2, expression_3, expression_4, expression_5 = G.NonTerminals('expression_1 expression_2 expression_3 expression_4 expression_5')
-    #expression %= Not + expression_1 
-    #expression %= expression_1 
-    #expression_1 %= expression_2 + Is + def_Type 
-    #expression_1 %= expression_2 
-    #expression_2 %= expression_3 + compBoolCond + expression_3
-    #expression_2 %= expression_3
-    #expression_3 %= expression_4 + compAritCond + expression_4 
-    #expression_3 %= _False 
-    #expression_3 %= _True 
-    #expression_3 %= expression_4  
-#
-    #expression_4 %= term + op_term + term 
-    #expression_4 %= term
-    # 
-    
-    #expression %= Not + expression_1
-    #expression_1 %= expression_2 + Is + def_Type 
-    #expression_2 %= expression_3 + compBoolCond + expression_3
-    #expression_4 %= expression_5 + compAritCond + expression_5 
-    #expression_5 %= _False 
-    #expression_5 %= _True 
-#
-    #expression_5 %= term + op_term + term 
-    #expression_5 %= term
-    
-    
-    expression %= expression_1 + Is + def_Type 
-    expression %= expression_1 
-    expression_1 %= expression_2 + compBoolCond + expression_2
-    expression_1 %= expression_2
-    expression_2 %= expression_3 + compAritCond + expression_3
-    expression_2 %= expression_3
-    expression_3 %= Not + expression_4
-    expression_3 %= expression_4
-    
-    expression_4 %= term + op_term + term 
-    expression_4 %= term
+    # condition %= Not + condition 
+    # condition %= _True 
+    # condition %= _False 
+    # # condition %= identifier + Is + expression
+    # condition %= oPar + condition + cPar 
+    # # condition %= expression + compAritCond + expression 
+    # condition %= condition + compBoolCond + condition
+    # # condition %= expression
+    # # condition %= function_call 
 
+
+    OrCondition %= OrCondition + Or + AndCondition
+    OrCondition %= AndCondition 
+    AndCondition %= AndCondition + And + NotCondition
+    AndCondition %= NotCondition
+    NotCondition %= Not + condition
+    NotCondition %= oPar + OrCondition + cPar
+    NotCondition %= _True
+    NotCondition %= _False
+    NotCondition %= expression
+    NotCondition %= function_call
+    NotCondition %= identifier + Is + expression
+    condition %= expression + compAritCond + expression 
+    
+    
+    expression %= term + op_term + term 
+    expression %= term
+     
     op_term %= Plus 
     op_term %= Minus
     
@@ -129,11 +125,10 @@ def gramm_Hulk_LR1():
     factor %= function_call  
     factor %= member_access 
     factor %= identifier  
-    factor %= _False 
-    factor %= _True 
     
     function_call %= identifier + oPar + arguments + cPar
     base_args %= expression 
+    base_args %= condition
     base_args %= G.Epsilon
     
     arguments %= base_args + Comma + arguments
@@ -163,5 +158,6 @@ def gramm_Hulk_LR1():
     cont_member %= G.Epsilon   
     
     member %= identifier + cont_member
-    member_access %= expression + Dot + member
+    member_access %= identifier + Dot + member
     return G
+        
