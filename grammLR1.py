@@ -15,10 +15,11 @@ def gramm_Hulk_LR1():
     identifier, number, string, Elif, Type, Inherits, New, In, def_Type   = G.Terminals('identifier number string elif type inherits new in def_Type') 
     sComil, dComill = G.Terminals('\' \"')
 
+    # Program %= expression
     Program %= statement_list
     statement_list %= statement + statement_list
-    statement_list %= statement
     statement_list %= G.Epsilon
+    # statement_list %= statement
     
     statement %= non_create_statement  
     statement %= create_statement 
@@ -111,23 +112,32 @@ def gramm_Hulk_LR1():
     expression_3 %= Not + expression_4
     expression_3 %= expression_4
     
-    expression_4 %= term + op_term + term 
-    expression_4 %= term
+    # expression_4 %= term + op_term + term 
+    expression_4 %= term + op_term
+    # expression_4 %= term
 
-    op_term %= Plus 
-    op_term %= Minus
+    # op_term %= Plus 
+    # op_term %= Minus
+    op_term %= Plus + term + op_term
+    op_term %= Minus + term + op_term
+    op_term %= G.Epsilon
     
-    term %= factor + op_factor + factor 
-    term %= factor
+    # term %= factor + op_factor + factor 
+    # term %= factor
+    term %= factor + op_factor
     
-    op_factor %= Mult 
-    op_factor %= Div 
-    op_factor %= Mod
-    
+    # op_factor %= Mult 
+    # op_factor %= Div 
+    # op_factor %= Mod
+    op_factor %= Mult + factor + op_factor
+    op_factor %= Div + factor + op_factor
+    op_factor %= Mod + factor + op_factor
+    op_factor %= G.Epsilon
+
     factor %= number
     factor %= oPar + expression + cPar 
     factor %= function_call  
-    factor %= member_access 
+    # factor %= member_access 
     factor %= identifier  
     factor %= _False 
     factor %= _True 
@@ -146,7 +156,7 @@ def gramm_Hulk_LR1():
     # Estructuras adicionales para tipos
     type_definition %= Type + identifier + inheritance + oBrace + attribute_definition + method_definition + cBrace 
     
-    attribute_definition %= kern_assignment + Semi + attribute_definition 
+    attribute_definition %= attribute_definition + kern_assignment + Semi 
     attribute_definition %= G.Epsilon
     
     method_definition %= identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace + method_definition 
