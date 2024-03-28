@@ -105,9 +105,10 @@ class ForStructureNode(Node):
         
 #-----------------------------------Class----------------------------------------------------------------------------------------------#
 class TypeDefinitionNode(Node):
-    def __init__(self, id, inheritance, attributes, methods) -> None:
+    def __init__(self, id, parameters:list[dict],inheritance, attributes, methods) -> None:
         super().__init__()
         self.id = id
+        self.parameters = parameters
         self.inheritance = inheritance
         self.attribute = attributes
         self.methods = methods

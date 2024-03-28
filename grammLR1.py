@@ -5,7 +5,7 @@ from semantic_checking.AST import *
 def gramm_Hulk_LR1():
     G = Grammar()
     Program = G.NonTerminal('Program', True)
-    statement_list, statement, condition, expression, term, factor, function_call, arguments, parameters = G.NonTerminals('statement_list statement condition expression term factor function_call arguments parameters')
+    statement_list, statement, expression, term, factor, function_call, arguments, parameters = G.NonTerminals('statement_list statement expression term factor function_call arguments parameters')
     type_definition, attribute_definition, method_definition, inheritance, instance_creation, member_access, type_annotation = G.NonTerminals('type_definition attribute_definition method_definition inheritance instance_creation member_access type_annotation')
     print_statement, assignment, function_definition, control_structure, contElif, contElse= G.NonTerminals('print_statement assignment function_definition control_structure contElif contElse')
     if_structure, while_structure, for_structure, create_statement, non_create_statement = G.NonTerminals('if_structure while_structure for_structure create_statement non_create_statement')
@@ -48,31 +48,28 @@ def gramm_Hulk_LR1():
     function_definition %= Function + identifier + oPar + parameters + cPar + Arrow + type_annotation + non_create_statement + Semi,lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8])
     
     ##--------------------------Redefinir luego-----------------------------------------------
-    parameters %= expression + type_annotation + Comma + parameters, lambda h, s: [s[1]] + s[4]
-    parameters %= expression + type_annotation, lambda h, s: [s[1]]
+    parameters %= expression + type_annotation + Comma + parameters, lambda h, s: [{s[1]:s[2]}] + s[4]
+    parameters %= expression + type_annotation, lambda h, s: {s[1]:s[2]}
     parameters %= G.Epsilon, lambda h, s:[]
     
     control_structure %= if_structure , lambda h, s: s[1]
     control_structure %= while_structure , lambda h, s: s[1]
     control_structure %= for_structure , lambda h, s: s[1]
     
-    if_structure %= If + oPar + condition + cPar + oBrace + statement_list + cBrace + contElif + contElse , lambda h, s: IfStructureNode(s[3], s[6], s[8], s[9])
+    if_structure %= If + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif + contElse , lambda h, s: IfStructureNode(s[3], s[6], s[8], s[9])
     
-    contElif %= Elif + oPar + condition + cPar + oBrace + statement_list + cBrace + contElif , lambda h, s: [ElifStructureNode(s[3],s[6])] + s[8]
+    contElif %= Elif + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif , lambda h, s: [ElifStructureNode(s[3],s[6])] + s[8]
     contElif %= G.Epsilon , lambda h, s: []
     
     contElse %= Else + oBrace + statement_list + cBrace , lambda h, s: ElseStructureNode(s[3])
     contElse %= G.Epsilon , lambda h, s:  ElseStructureNode([])
     
-    while_structure %= While + oPar + condition + cPar + oBrace + statement_list + cBrace , lambda h, s:  WhileStructureNode(s[3], s[6])
-    for_structure %= For + oPar + assignment + Semi + condition + Semi + assignment + cPar + oBrace + statement_list + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10])
+    while_structure %= While + oPar + expression + cPar + oBrace + statement_list + cBrace , lambda h, s:  WhileStructureNode(s[3], s[6])
+    for_structure %= For + oPar + assignment + Semi + expression + Semi + assignment + cPar + oBrace + statement_list + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10])
     
     expression_0, expression_1, expression_2, expression_3, expression_4 = G.NonTerminals('expression_0 expression_1 expression_2 expression_3 expression_4')
     
-    concatStrings %= expression + arroba + expression, lambda h, s:  StringConcatNode(s[1],s[4])
-    concatStringsWithSpace %= expression + arroba + arroba + expression, lambda h, s:  StringConcatWithSpaceNode(s[1],s[4])
-    
-    expression %= expression_0 + arroba + expression_0, lambda h, s:  StringConcatNode(s[1],s[4])
+    expression %= expression_0 + arroba + expression_0, lambda h, s:  StringConcatNode(s[1],s[3])
     expression %= expression_0 + arroba + arroba + expression_0, lambda h, s:  StringConcatWithSpaceNode(s[1],s[4])
     expression_0 %= expression_1 + Is + def_Type, lambda h, s:  BoolIsTypeNode(s[1],s[3])
     expression_0 %= expression_1, lambda h, s:  s[1]
@@ -129,9 +126,9 @@ def gramm_Hulk_LR1():
     let_in %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])
     
     # Estructuras adicionales para tipos
-    type_definition %= Type + identifier + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(s[2],s[3], s[5], s[6])
+    type_definition %= Type + identifier + oPar + parameters + cPar + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(s[2],s[4], s[6], s[7], s[8])
     
-    attribute_definition %= attribute_definition + kern_assignment + Semi, lambda h, s: s[1] + [s[2]]
+    attribute_definition %= kern_assignment + Semi + attribute_definition, lambda h, s: [s[1]] + s[3]
     attribute_definition %= G.Epsilon, lambda h, s: []
     
     method_definition %= identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(s[1], TypeNode('object'), s[3], s[6])] + s[8]
