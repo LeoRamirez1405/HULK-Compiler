@@ -74,9 +74,9 @@ def gramm_Hulk_LR1():
     compAritCond %= Less , lambda h, s:  s[1]
     compAritCond %= Greater , lambda h, s:  s[1]
     compAritCond %= Equal , lambda h, s:  s[1]
-    compAritCond %= LessEqual  
-    compAritCond %= GreaterEqual 
-    compAritCond %= NotEqual 
+    compAritCond %= LessEqual  , lambda h, s : s[1]
+    compAritCond %= GreaterEqual , lambda h, s : s[1]
+    compAritCond %= NotEqual , lambda h, s : s[1]
     
     expression_1, expression_2, expression_3, expression_4, expression_5 = G.NonTerminals('expression_1 expression_2 expression_3 expression_4 expression_5')
     
@@ -111,14 +111,14 @@ def gramm_Hulk_LR1():
     factor %= _True, lambda h, s:  BooleanNode(s[1])
     
 
-    math_op %= sqrt  
-    math_op %= cos  
-    math_op %= sin  
-    math_op %= tan  
-    math_op %= exp 
+    math_op %= sqrt , lambda h, s:  s[1]
+    math_op %= cos  , lambda h, s:  s[1]
+    math_op %= sin  , lambda h, s:  s[1]
+    math_op %= tan  , lambda h, s:  s[1]
+    math_op %= exp , lambda h, s:  s[1]
     math_op %= tan  
     
-    function_call %= identifier + oPar + arguments + cPar, lambda h, s:  s[1]
+    function_call %= identifier + oPar + arguments + cPar, lambda h, s:  FunctionCallNode(s[1])
     math_call %= math_op + oPar + expression_4 + cPar, lambda h, s: MathOperationCallNode(s[1],s[3])
     math_call %= log + oPar + expression_4 + Comma + expression_4 + cPar, lambda h, s:  LogCallNode(s[3],s[5]) 
     math_call %= rand + oPar + cPar,  lambda h, s: RandomCallNode()
@@ -144,7 +144,7 @@ def gramm_Hulk_LR1():
     inheritance %= Inherits + def_Type, lambda h, s: InheritanceNode(s[2])
     inheritance %= G.Epsilon, lambda h, s: InheritanceNode("object")
     # Instanciación de tipos
-    instance_creation %= Let + identifier + Equal + New + def_Type + oPar + arguments + cPar + Semi, lambda h, s: InstanceCreationNode(s[2], s[7])
+    instance_creation %= Let + identifier + Equal + New + def_Type + oPar + arguments + cPar + Semi, lambda h, s: InstanceCreationNode(s[2], s[5], s[7])
     ###kern_instance_creation %= New + def_Type + oPar + arguments + cPar #todo## Verificar la correctitud de  esto
     #method_override %= identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace | G.Epsilon
     cont_member %= oPar + arguments + cPar, lambda h, s: s[2]
