@@ -13,14 +13,15 @@ def gramm_Hulk_LR1():
     cont_member, kern_instance_creation, concatStrings, concatStringsWithSpace, math_call = G.NonTerminals('cont_member kern_instance_creation concatStrings concatStringsWithSpace math_call')
     
     Comma, Dot, If, Else, While, For, Let, Function, Colon = G.Terminals(', . if else while for let function :')
-    Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, Arrow, Mod = G.Terminals('print ( ) { } ; = + - * / => %')
+    Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, Arrow, Mod, Pow  = G.Terminals('print ( ) { } ; = + - * / => % ^')
     And, Or, Not, Less, Greater, CompEqual, LessEqual, GreaterEqual, NotEqual, Is, In, _True, _False = G.Terminals('and or not < > == <= >= != is in True False')
     identifier, number, string, Elif, Type, Inherits, New, In, def_Type, arroba   = G.Terminals('identifier number string elif type inherits new in def_Type @') 
     sComil, dComill, = G.Terminals('\' \"')
-    sqrt, sin, cos, tan, exp, log, rand = G.Terminals('sqrt sin cos tan exp log rand')
+    sqrt, sin, cos, tan, exp, log, rand, PI = G.Terminals('sqrt sin cos tan exp log rand PI')
     
     Program %= statement_list, lambda h, s: ProgramNode(s[1])
     statement_list %= statement + statement_list, lambda h, s: [s[1]] + s[2] 
+    statement_list %= oBrace + statement + statement_list + cBrace, lambda h, s: [s[1]] + s[2] 
     statement_list %= G.Epsilon, lambda h, s: []
     statement_list %= oBrace + statement_list + cBrace , lambda h, s: s[2]
     statement %= non_create_statement + Semi, lambda h, s: s[1] 
@@ -110,15 +111,16 @@ def gramm_Hulk_LR1():
     
     term %= factor + Mult + term , lambda h, s:  MultExpressionNode(s[1],s[3])
     term %= factor + Div + term , lambda h, s:  DivExpressionNode(s[1],s[3])
+    term %= factor + Pow + term
     term %= factor + Mod + term , lambda h, s:  ModExpressionNode(s[1],s[3])
     term %= factor , lambda h, s: s[1]
     
     factor %= number, lambda h, s:  NumberNode(s[1])
     factor %= string, lambda h, s:  StringNode(s[1])
-    factor %= oPar + expression + cPar , lambda h, s:  s[2]
+    factor %= oPar + statement_list + cPar , lambda h, s:  s[2]
     #Afactor %= function_call, lambda h, s:  s[1]
     #Afactor %= member_access, lambda h, s:  s[1]
-    #Afactor %= math_call, lambda h, s:  s[1]
+    factor %= math_call, lambda h, s:  s[1]
     factor %= identifier, lambda h, s:  IdentifierNode(s[1])
     #Afactor %= _False, lambda h, s:  BooleanNode(s[1])
     #Afactor %= _True, lambda h, s:  BooleanNode(s[1])
@@ -127,13 +129,14 @@ def gramm_Hulk_LR1():
     #Akern_instance_creation %= New + def_Type + oPar + arguments + cPar, lambda h, s: KernInstanceCreationNode(s[2],s[4])
     #A
     #Afunction_call %= identifier + oPar + arguments + cPar, lambda h, s:  s[1]
-    #Amath_call %= sqrt + oPar + expression_4 + cPar, lambda h, s: SqrtMathNode(s[3])
-    #Amath_call %= cos + oPar + expression_4 + cPar, lambda h, s: CosMathNode(s[3])
-    #Amath_call %= sin + oPar + expression_4 + cPar, lambda h, s: SinMathNode(s[3])
-    #Amath_call %= tan + oPar + expression_4 + cPar, lambda h, s: TanMathNode(s[3])
-    #Amath_call %= exp + oPar + expression_4 + cPar, lambda h, s: ExpMathNode(s[3])
-    #Amath_call %= log + oPar + expression_4 + Comma + expression_4 + cPar, lambda h, s:  LogCallNode(s[3],s[5]) 
-    #Amath_call %= rand + oPar + cPar,  lambda h, s: RandomCallNode()
+    math_call %= sqrt + oPar + expression_4 + cPar, lambda h, s: SqrtMathNode(s[3])
+    math_call %= cos + oPar + expression_4 + cPar, lambda h, s: CosMathNode(s[3])
+    math_call %= sin + oPar + expression_4 + cPar, lambda h, s: SinMathNode(s[3])
+    math_call %= tan + oPar + expression_4 + cPar, lambda h, s: TanMathNode(s[3])
+    math_call %= exp + oPar + expression_4 + cPar, lambda h, s: ExpMathNode(s[3])
+    math_call %= log + oPar + expression_4 + Comma + expression_4 + cPar, lambda h, s:  LogCallNode(s[3],s[5]) 
+    math_call %= rand + oPar + cPar,  lambda h, s: RandomCallNode()
+    math_call %= PI
     #A
     #Aarguments %= expression + Comma + arguments, lambda h, s: [s[1]]+s[2]
     #Aarguments %= expression , lambda h, s: s[1]
@@ -181,6 +184,7 @@ def gramm_Hulk_LR1():
     (Equal, '='),
     (Plus, '+'),
     (Minus, '-'),
+    (Pow, '^'),
     (Mult, "\*"),
     (Div, '/'),
     (Arrow, '=>'),
@@ -224,6 +228,7 @@ def gramm_Hulk_LR1():
     (exp, 'exp'),
     (log, 'log'),
     (rand, 'rand'),
+    (PI, 'PI'),
     (identifier, f'({minletters})({minletters}|{zero_digits})*')
 ], G.EOF)
     
