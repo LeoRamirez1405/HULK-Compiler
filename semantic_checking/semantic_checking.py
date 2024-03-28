@@ -1,4 +1,4 @@
-from ast_nodes import *
+from AST import *
 import visitor
 from type_collector import *
 from semantic import Scope, Context, SemanticError
@@ -12,7 +12,7 @@ class SemanticCheckingVisitor:
         for type in default_types:
             self.context.create_type(type)
         self.errors = []
-        print('inicializando checker visitor') #* ✔
+        print('inicializando checker visitor') #* ✔ 
         
     @visitor.on('node')
     def visit(self, node, scope):
