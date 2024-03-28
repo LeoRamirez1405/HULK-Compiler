@@ -1,7 +1,8 @@
 from AST import *
 import visitor
-from semantic import Context, Scope, SemanticError, Method
+from semantic import Context, Scope, SemanticError, Method, Type
 from type_collector import TypeCollectorVisitor
+
 
 class SemanticCheckingVisitor:
     def __init__(self) -> None:
@@ -53,14 +54,115 @@ class SemanticCheckingVisitor:
     @visitor.when(FunctionDefinitionNode)
     def visit(self, node: FunctionCallNode, scope: Scope):
         try:
-            args_len = scope.functions[id]
-            if args_len == len(node.args):
-                self.errors.append(SemanticError(f'La funcion {node.id} ya esta definida'))
-                #!aki poner una lista de parametros a las funciones ver en definicion de Scope
+            args_len_list = scope.functions[id]
+            if  len(node.args) in args_len_list:
+                self.errors.append(SemanticError(f'La funcion {node.id} ya esta definida con {len(node.args)} cantidad de parametros.'))
         except:
             #TODO Se puede instanciar la clase Method de semantic~seria algo similar a scope.functions[node.id] = nodmethod(node. ...)
             #* Por el momento en el diccionario tengo el id de la funcion con su cantidad de parametros
-            scope.functions[node.id] = len(node.args)
+            scope.functions[node.id].append(len(node.args))
+            
+    @visitor.when(IfStructureNode)
+    def visit(self, node: IfStructureNode, scope: Scope):
+        self.visit(node.condition)
+        inner_scope = scope.create_child(scope)
+        for statment in node.body:
+            self.visit(statment, inner_scope)
+        
+        for _elif in node._elif:        
+            self.visit(_elif, scope)
+        
+        self.visit(node._else, scope)
+        
+    @visitor.when(ElifStructureNode)
+    def visit(self, node: ElifStructureNode, scope: Scope):
+        self.visit(node.condition)
+        inner_scope = scope.create_child(scope)
+        for statment in node.body:
+            self.visit(statment, inner_scope)
+        
+    @visitor.when(ElseStructureNode)
+    def visit(self, node: ElseStructureNode, scope: Scope):
+        inner_scope = scope.create_child(scope)
+        for statment in node.body:
+            self.visit(statment, inner_scope)
+        
+    @visitor.visit(WhileStructureNode)
+    def visit(self, node: WhileStructureNode, scope: Scope):
+        self.visit(node.condition, scope)
+        inner_scope = scope.create_child(scope)
+        for statment in node.body:
+            self.visit(statment, inner_scope)
+            
+    @visitor.when(ForStructureNode)
+    def visit(self, node: ForStructureNode, scope: Scope):
+        inners_scope: Scope = scope.create_child(scope)
+        for id, expr in node.init_assigments:
+            inners_scope.define_variable(id, Type('object'))
+            
+        self.visit(node.body, inners_scope)
+        
+        for increment_assigment in node.increment_condition:
+            self.visit(increment_assigment, inners_scope)
+            
+    @visitor.when(TypeDefinitionNode)
+    def visit(self, node: TypeDefinitionNode, scope: Scope):
+        inner_scope: Scope = scope.create_child(scope)
+        for arg, type_att in node.parameters:
+            inner_scope.define_variable(arg, type_att)
+            
+        for att in node.attribute:
+            inner_scope.define_variable(att, Type('object'))
+            
+        for method in node.methods:
+            self.visit(method, inner_scope)
+            
+    @visitor.when(InstanceCreationNode)
+    def visit(self, node: InstanceCreationNode, scope: Scope):
+        if scope.is_local(id):
+            self.errors.append(SemanticError(f'El nombre de varible {node.id} ya ha sido tomado.'))
+        
+        #TODO Verificar la correctitud 
+        for arg in node.arguments:
+            self.visit(arg, scope)
+            
+    @visitor.when(KernInstanceCreationNode)
+    def visit(self, node: KernInstanceCreationNode, scope: Scope):
+        for arg in node.args:
+            self.visit(arg, scope)
+            
+    @visitor.when(MemberAccesNode)
+    def visit(self, node: MemberAccesNode, scope: Scope):
+        self.visit(node.base_object)
+        for args in node.args:
+            self.visit(args)
+            
+    @visitor.when(BooleanExpression)
+    def visit(self, node: BooleanExpression, scope: Scope):
+        self.visit(node.expression_1)
+        self.visit(node.expressiin_2)
+        
+    @visitor.when(AritmeticExpression)
+    def visit(self, node: AritmeticExpression, scope: Scope):
+        self.visit(node.expression_1)
+        self.visit(node.expression_2)
+        
+    @visitor.when(MathOperationNode)
+    def visit(self, node: SqrtMathNode, scope: Scope):
+        self.visit(node.expression)
+        
+    @visitor.when(LogCallNode)
+    def visit(self, node: LogCallNode, scope: Scope):
+        self.visit(node.base, scope)
+        self.visit(node.expression, scope)
+        
+    @visitor.when(LetInNode)
+    def visit(self, node: LetInNode, scope: Scope):
+        inner_scope = scope.create_child(scope)
+        for assign in node.assigments:
+            self.visit(assign, inner_scope)
+            
+        self.visit(node.body, inner_scope)
             
     @visitor.when(FunctionCallNode)
     def visit(self, node: FunctionCallNode, scope: Scope):
@@ -71,11 +173,20 @@ class SemanticCheckingVisitor:
         except:
             self.errors.append(f'La funcion {node.id} no esta definida.')
             
-
-            
+    @visitor.when(StringConcatWithSpaceNode)
+    def visit(self, node: StringConcatWithSpaceNode, scope: Scope):
+        self.visit(node.left, scope)
+        self.visit(node.right, scope)
+        
+    @visitor.when(BoolCompAritNode)
+    def visit(self, node: BoolCompAritNode, scope: Scope):
+        self.visit(node.left, scope)
+        self.visit(node.right, scope)
+        
+    @visitor.when(BoolNotNode)
+    def visit(self, node: BoolNotNode, scope: Scope):
+        self.visit(node.node)
     
-        
-        
     
             
     

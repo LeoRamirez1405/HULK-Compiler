@@ -44,7 +44,7 @@ def gramm_Hulk_LR1():
     type_annotation %= Colon + def_Type, lambda h, s: TypeNode(s[2]) 
     type_annotation %= G.Epsilon, lambda h, s: TypeNode('object')
     
-    function_definition %= Function + identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(s[2],TypeNode('object'),s[5],s[8]) 
+    function_definition %= Function + identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(s[2],TypeNode('object'),s[4],s[7]) 
     function_definition %= Function + identifier + oPar + parameters + cPar + Arrow + type_annotation + non_create_statement + Semi,lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8])
     
     ##--------------------------Redefinir luego-----------------------------------------------
