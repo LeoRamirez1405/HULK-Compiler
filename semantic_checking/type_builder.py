@@ -1,6 +1,6 @@
 import visitor
 from AST import *
-from cmp.semantic import *
+from semantic import *
 class TypeBuilderVisitor():
     def __init__(self,context:Context) -> None:
         self.context = context
@@ -36,15 +36,18 @@ class TypeBuilderVisitor():
     
     @visitor.when(KernAssigmentNode)
     def visit(self, node: KernAssigmentNode):
-        attr_type = self.context.get_type(node.id)
-        if self.currentType.get_attribute(node.id,attr_type) is not None: 
-            if self.args
-            self.currentType.define_attribute(node.id,attr_type)
-            
+        if node.id in self.args:    
+            self.currentType.define_attribute(node.id,self.args[node.id])
+        else:
+            attr_type = self.context.get_type(node.id)
+            if self.currentType.get_attribute(node.id,attr_type) is not None: 
+                self.currentType.define_attribute(node.id,attr_type)
+            else:
+                self.currentType.define_attribute(node.id,Type('object'))    
+        
     @visitor.when(FunctionDefinitionNode)
     def visit(self, node: FunctionDefinitionNode):
         return_type = self.context.get_type(node.type_annotation)
-        arg_types = [self.context.get_type(t[0].value) for t in node.parameters]
-        arg_names = [t[0].key for t in node.parameters]
+        arg_types = [self.context.get_type(t[0].value)  if t[0].value in self.context else Type('object') for t in node.parameters]
+        arg_names = [t[0].key for t in node.parameters if t[0].key in self.context]
         self.currentType.define_method(node.id, arg_names, arg_types, return_type)
-        
