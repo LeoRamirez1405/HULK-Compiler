@@ -4,8 +4,6 @@ from lexer import Lexer
 
 
 gramatica, lexer = gramm_Hulk_LR1()
-gramatica, lexer = gramm_Hulk_LR1()
-
 
 
 # print(gramatica.Terminals)
@@ -157,7 +155,11 @@ gramatica, lexer = gramm_Hulk_LR1()
 # text = 'print(\"Hello World\");'
 # text = 'print(\"The meaning of life is \" @ 42);'
 # text = 'print(sin(2 * PI) ^ 2 + cos(3 * PI / log(4, 64)));'
-text = '{print(42);print(sin(PI/2));print("Hello World");}'
+# text = '{print(42);print(sin(PI/2));print("Hello World");}'
+
+# text = 'function tan(x) => sin(x) / cos(x);'
+text = 'print(((1 + 2) ^ 3) * 4);'
+
 tokens = lexer(text)
 print(tokens)
 
@@ -165,7 +167,7 @@ print(tokens)
 tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
 
 print(tokentypes)
-parser = LR1Parser(gramatica,False)
+parser = LR1Parser(gramatica,True)
 
 derivation = parser(tokentypes)
 print(derivation)

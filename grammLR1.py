@@ -37,7 +37,7 @@ def gramm_Hulk_LR1():
     non_create_statement %= let_in, lambda h, s: s[1] #PARCHE
 
     #Acreate_statement %= type_definition, lambda h, s: s[1]
-    #Acreate_statement %= function_definition, lambda h, s: s[1]
+    create_statement %= function_definition, lambda h, s: s[1]
     #Acreate_statement %= assignment, lambda h, s: s[1]
     
     print_statement %= Print + oPar + non_create_statement + cPar, lambda h, s: PrintStatmentNode(s[3]) #QUITE SEMI
@@ -53,11 +53,11 @@ def gramm_Hulk_LR1():
     assignment %= Let + multi_assignment, lambda h, s: s[2]
     assignment %= instance_creation, lambda h, s: s[1]
     
-    #Atype_annotation %= Colon + def_Type, lambda h, s: TypeNode(s[2]) 
-    #Atype_annotation %= G.Epsilon, lambda h, s: TypeNode('object')
+    type_annotation %= Colon + def_Type, lambda h, s: TypeNode(s[2]) 
+    type_annotation %= G.Epsilon, lambda h, s: TypeNode('object')
     
-    #Afunction_definition %= Function + identifier + type_annotation + oPar + parameters + cPar + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8]) 
-    #Afunction_definition %= Function + identifier + type_annotation + oPar + parameters + cPar + Arrow + non_create_statement + Semi,lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8])
+    function_definition %= Function + identifier + type_annotation + oPar + parameters + cPar + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8]) 
+    function_definition %= Function + identifier + type_annotation + oPar + parameters + cPar + Arrow + non_create_statement + Semi,lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8])
     
     ##--------------------------Redefinir luego-----------------------------------------------
     #Aparameters %= expression + type_annotation + Comma + parameters, lambda h, s: [s[1]] + s[4]
@@ -109,6 +109,7 @@ def gramm_Hulk_LR1():
     expression_4 %= term + Plus + expression_4 , lambda h, s:  PlusExpressionNode(s[2],s[1],s[3])
     expression_4 %= term + Minus + expression_4 , lambda h, s:  SubsExpressionNode(s[2],s[1],s[3])
     expression_4 %= term , lambda h, s: s[1]
+    expression_4 %= function_call
     
     term %= factor + Mult + term , lambda h, s:  MultExpressionNode(s[1],s[3])
     term %= factor + Div + term , lambda h, s:  DivExpressionNode(s[1],s[3])
@@ -119,7 +120,7 @@ def gramm_Hulk_LR1():
     factor %= number, lambda h, s:  NumberNode(s[1])
     factor %= string, lambda h, s:  StringNode(s[1])
     factor %= oPar + statement_list + cPar , lambda h, s:  s[2]
-    #Afactor %= function_call, lambda h, s:  s[1]
+    factor %= function_call, lambda h, s:  s[1]
     #Afactor %= member_access, lambda h, s:  s[1]
     factor %= math_call, lambda h, s:  s[1]
     factor %= identifier, lambda h, s:  IdentifierNode(s[1])
@@ -129,7 +130,7 @@ def gramm_Hulk_LR1():
     #A
     #Akern_instance_creation %= New + def_Type + oPar + arguments + cPar, lambda h, s: KernInstanceCreationNode(s[2],s[4])
     #A
-    #Afunction_call %= identifier + oPar + arguments + cPar, lambda h, s:  s[1]
+    function_call %= identifier + oPar + arguments + cPar, lambda h, s:  s[1]
     math_call %= sqrt + oPar + expression_4 + cPar, lambda h, s: SqrtMathNode(s[3])
     math_call %= cos + oPar + expression_4 + cPar, lambda h, s: CosMathNode(s[3])
     math_call %= sin + oPar + expression_4 + cPar, lambda h, s: SinMathNode(s[3])
@@ -148,7 +149,7 @@ def gramm_Hulk_LR1():
     let_in %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3]) #NO TENGO CLARO CUANDO SE USA () Y CUANDO {}
     
     # Estructuras adicionales para tipos
-    #Atype_definition %= Type + identifier + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(s[2],s[3], s[5], s[6])
+    type_definition %= Type + identifier + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(s[2],s[3], s[5], s[6])
     #A
     #Aattribute_definition %= attribute_definition + kern_assignment + Semi, lambda h, s: s[1] + [s[2]]
     #Aattribute_definition %= G.Epsilon, lambda h, s: []
@@ -156,8 +157,8 @@ def gramm_Hulk_LR1():
     #Amethod_definition %= identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace + method_definition, lambda h, s: [MethodDefinitionNode(s[1], s[3], s[6])] + s[8]
     #Amethod_definition %= G.Epsilon , lambda h, s: []
     #A
-    #Ainheritance %= Inherits + def_Type, lambda h, s: InheritanceNode(s[2])
-    #Ainheritance %= G.Epsilon, lambda h, s: InheritanceNode("object")
+    inheritance %= Inherits + def_Type, lambda h, s: InheritanceNode(s[2])
+    inheritance %= G.Epsilon, lambda h, s: InheritanceNode("object")
     #A# Instanciación de tipos
     #Ainstance_creation %= Let + identifier + Equal + New + def_Type + oPar + arguments + cPar + Semi, lambda h, s: InstanceCreationNode(s[2],s[5], s[7])
     #A#method_override %= identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace | G.Epsilon
