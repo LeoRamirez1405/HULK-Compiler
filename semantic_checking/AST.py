@@ -48,6 +48,12 @@ class KernAssigmentNode(Node):
         self.id = id
         self.expression = expression
         
+class LetNode(KernAssigmentNode):
+    def __init__(self, id, expression) -> None:
+        super().__init__(id, expression)
+        self.id = id
+        self.expression = expression
+        
 # TODO Podriamos instanciar la clase Type
 class TypeNode(Node):
     def __init__(self, type) -> None:

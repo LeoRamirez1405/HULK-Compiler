@@ -13,10 +13,9 @@ class SemanticCheckingVisitor:
         pass
     
     @visitor.when(ProgramNode)
-    def visit(self, node: ProgramNode, scope):
-        print('ProgramNode')
+    def visit(self, node: ProgramNode, scope=None):
         for statment in node.statments:
-            self.visit(statment, scope)  
+            self.visit(statment, self.scope)  
                       
     @visitor.when(PrintStatmentNode)
     def visit(self, node: PrintStatmentNode, scope):
@@ -28,6 +27,10 @@ class SemanticCheckingVisitor:
             self.errors.append(SemanticError('Asignacion de valor a una variable no definida'))
             
         self.visit(node.expression, scope)
+        
+    @visitor.when(LetNode)
+    def visit(self, node: LetNode, scope: Scope):
+        
         
     @visitor.when(TypeNode)
     def visit(self, node: TypeNode, scope):

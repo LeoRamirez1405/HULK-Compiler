@@ -166,9 +166,7 @@ class Context:
             self.types[type]
             return True
         except:
-            if self.parent:
-                return self.parent.is_definedd(type)
-        return False
+            return False
 
     def get_type(self, name:str):
         try:

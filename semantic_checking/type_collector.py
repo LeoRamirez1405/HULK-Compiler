@@ -13,6 +13,7 @@ class TypeCollectorVisitor:
 
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode, context: Context):
+        
         for statment in node.statments:
             self.visit(statment, context)
             
