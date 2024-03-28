@@ -80,10 +80,17 @@ gramatica, lexer = gramm_Hulk_LR1()
 #     ('identifier', f'({minletters})({minletters}|{zero_digits})*')
 # ], 'eof')
 
-text = 'let number = 42 in let text = \"The meaning of life is\" in print(text @ number);'
+text = 'let msg = \"Hello World\" in print(msg);'
 tokens = lexer(text)
 print(tokens)
-#parser = LR1Parser(gramatica,True)
-#print(parser)
+
+# Extraer las propiedades "tokentype" de cada token
+tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
+
+print(tokentypes)
+parser = LR1Parser(gramatica,True)
+
+derivation = parser(tokentypes)
+print(derivation)
 
 
