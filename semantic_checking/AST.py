@@ -42,7 +42,6 @@ class PrintStatmentNode(Node):
         super().__init__()
         self.expression = expression
         
-#TODO Se debe poner el type definition en el asigment qu ecreo que en la gramatica no esta hecho y luego ponerlo aqui tambien
 class KernAssigmentNode(Node):
     def __init__(self, id, expression) -> None:
         super().__init__()
@@ -245,9 +244,11 @@ class LetInNode(Node):
         self.body = body
 
 #----------------------------------Factor-Nodes----------------------------------------------------------------------------------------------------------------#
-class FunctioncallNode(Node):
-    def __init__(self) -> None:
+class FunctionCallNode(Node):
+    def __init__(self, id, args) -> None:
         super().__init__()
+        self.id = id
+        self.args = args
 
 class BooleanNode(Node):
     def __init__(self, value) -> None:
