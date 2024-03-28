@@ -1,5 +1,4 @@
 from cmp.pycompiler import Grammar
-# from semantic_checking.ast_nodes import *
 from semantic_checking.AST import *
 from lexer import Lexer
 
