@@ -48,9 +48,8 @@ class KernAssigmentNode(Node):
         self.id = id
         self.expression = expression
         
-class LetNode(KernAssigmentNode):
+class LetNode(Node):
     def __init__(self, id, expression) -> None:
-        super().__init__(id, expression)
         self.id = id
         self.expression = expression
         

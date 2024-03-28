@@ -1,9 +1,21 @@
-# from cmp.semantic import *
+import itertools as itt
+from collections import OrderedDict
 
 class SemanticError(Exception):
     @property
     def text(self):
         return self.args[0]
+    
+class Attribute:
+    def __init__(self, name, typex):
+        self.name = name
+        self.type = typex
+
+    def __str__(self):
+        return f'[attrib] {self.name} : {self.type.name};'
+
+    def __repr__(self):
+        return str(self)
 
 class VariableInfo:
     def __init__(self, name, vtype):
@@ -161,7 +173,7 @@ class Context:
         typex = self.types[name] = Type(name)
         return typex
     
-    def is_definedd(self, type: str):
+    def is_defined(self, type: str):
         try:
             self.types[type]
             return True
