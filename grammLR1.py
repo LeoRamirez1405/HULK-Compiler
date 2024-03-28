@@ -23,8 +23,8 @@ def gramm_Hulk_LR1():
     statement_list %= statement + statement_list, lambda h, s: [s[1]] + s[2] 
     statement_list %= G.Epsilon, lambda h, s: []
     
-    statement %= non_create_statement + Semi, lambda h, s: s[1] #AÑADI SEMI
-    statement %= create_statement + Semi, lambda h, s: s[1] #AÑADI SEMI
+    statement %= non_create_statement + Semi, lambda h, s: s[1] 
+    statement %= create_statement + Semi, lambda h, s: s[1] 
     
     statement %= non_create_statement, lambda h, s: s[1]
     statement %= create_statement, lambda h, s: s[1] 
@@ -32,17 +32,16 @@ def gramm_Hulk_LR1():
     non_create_statement %= print_statement, lambda h, s: s[1] 
     non_create_statement %= control_structure, lambda h, s: s[1]
     
-    non_create_statement %= expression #AÑADI ESTO PARA QUE RECONOZCA id @ id
-    non_create_statement %= let_in, lambda h, s: s[1] #PARCHE
-
-    #Acreate_statement %= type_definition, lambda h, s: s[1]
-    #Acreate_statement %= function_definition, lambda h, s: s[1]
-    #Acreate_statement %= assignment, lambda h, s: s[1]
+    non_create_statement %= expression, lambda h, s: s[1]
+    non_create_statement %= let_in, lambda h, s: s[1] 
     
-    print_statement %= Print + oPar + non_create_statement + cPar, lambda h, s: PrintStatmentNode(s[3]) #QUITE SEMI
+    create_statement %= type_definition, lambda h, s: s[1]
+    create_statement %= function_definition, lambda h, s: s[1]
+    create_statement %= assignment, lambda h, s: s[1]
+    
+    print_statement %= Print + oPar + non_create_statement + cPar, lambda h, s: PrintStatmentNode(s[3]) 
     
     kern_assignment %= identifier + Equal + expression, lambda h, s: KernAssigmentNode(s[1],s[3])
-    # kern_assignment %= identifier + Equal + string, lambda h, s: KernAssigmentNode(s[1],s[3]) #PARCHE
 
     
     multi_assignment %= kern_assignment + Comma + multi_assignment, lambda h, s: [s[1]] + s[3]
