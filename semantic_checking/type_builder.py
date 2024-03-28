@@ -5,6 +5,7 @@ class TypeBuilderVisitor():
     def __init__(self,context:Context) -> None:
         self.context = context
         self.currentType: Type
+        self.args = dict
         
     @visitor.on('node')
     def visit(self, node, tabs):
@@ -24,6 +25,7 @@ class TypeBuilderVisitor():
         
         for i in range(arg_names):
             self.currentType.define_attribute(arg_names[i],arg_types[i])        
+            self.args.update(self.currentType.name, self.currentType)       
             
         
        # self.currentType.attributes(arg_types)
@@ -36,6 +38,7 @@ class TypeBuilderVisitor():
     def visit(self, node: KernAssigmentNode):
         attr_type = self.context.get_type(node.id)
         if self.currentType.get_attribute(node.id,attr_type) is not None: 
+            if self.args
             self.currentType.define_attribute(node.id,attr_type)
             
     @visitor.when(FunctionDefinitionNode)
