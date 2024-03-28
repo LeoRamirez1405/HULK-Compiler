@@ -3,7 +3,7 @@ from LR1 import LR1Parser
 from lexer import Lexer
 
 
-# gramatica = gramm_Hulk_LR1()
+gramatica, lexer = gramm_Hulk_LR1()
 
 
 
@@ -16,70 +16,69 @@ from lexer import Lexer
 # sComil, dComill = G.Terminals('\' \"')
 # sqrt, sin, cos, tan, exp, log, rand = G.Terminals('sqrt sin cos tan exp log rand')
 
-nonzero_digits = '|'.join(str(n) for n in range(1,10))
-zero_digits = '|'.join(str(n) for n in range(0,10))
-minletters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1)) 
-capletters = '|'.join(chr(n) for n in range(ord('A'),ord('Z')+1)) 
-all_characters = f"{minletters}| |{capletters}"
-print(all_characters)
+# nonzero_digits = '|'.join(str(n) for n in range(1,10))
+# zero_digits = '|'.join(str(n) for n in range(0,10))
+# minletters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1)) 
+# capletters = '|'.join(chr(n) for n in range(ord('A'),ord('Z')+1)) 
+# all_characters = f"{minletters}| |{capletters}"
 
 
-lexer = Lexer([
-    ('number', f'({nonzero_digits})({zero_digits})*'),
-    ('string', f'\'({all_characters}|{zero_digits})*\'|\"({all_characters}|{zero_digits})*\"'),
-    ('Print', 'print'),
-    ('oPar', "\("),
-    ('cPar', "\)"),
-    ('oBrace', '{'),
-    ('cBrace', '}'),
-    ('Semi', ';'),
-    ('Equal', '='),
-    ('Plus', '+'),
-    ('Minus', '-'),
-    ('Mult', "\*"),
-    ('Div', '/'),
-    ('Arrow', '=>'),
-    ('Mod', '%'),
-    ('And', 'and'),
-    ('Or', 'or'),
-    ('Not', 'not'),
-    ('Less', '<'),
-    ('Greater', '>'),
-    ('CompEqual', '=='),
-    ('LessEqual', '<='),
-    ('GreaterEqual', '>='),
-    ('NotEqual', '!='),
-    ('Is', 'is'),
-    ('In', 'in'),
-    ('_True', 'True'),
-    ('_False', 'False'),
-    ('Comma', ','),
-    ('Dot', '.'),
-    ('If', 'if'),
-    ('Else', 'else'),
-    ('While', 'while'),
-    ('For', 'for'),
-    ('Let', 'let'),
-    ('space', '  *'),
-    ('Function', 'function'),
-    ('Colon', ':'),
-    ('Elif', 'elif'),
-    ('Type', 'type'),
-    ('Inherits', 'inherits'),
-    ('New', 'new'),
-    ('In', 'in'),
-    ('def_Type', 'def_Type'),
-    ('sComil', '\''),
-    ('dComill', '\"'),
-    ('sqrt', 'sqrt'),
-    ('sin', 'sin'),
-    ('cos', 'cos'),
-    ('tan', 'tan'),
-    ('exp', 'exp'),
-    ('log', 'log'),
-    ('rand', 'rand'),
-    ('identifier', f'({minletters})({minletters}|{zero_digits})*')
-], 'eof')
+# lexer = Lexer([
+#     ('number', f'({nonzero_digits})({zero_digits})*'),
+#     ('string', f'\'({all_characters}|{zero_digits})*\'|\"({all_characters}|{zero_digits})*\"'),
+#     ('Print', 'print'),
+#     ('oPar', "\("),
+#     ('cPar', "\)"),
+#     ('oBrace', '{'),
+#     ('cBrace', '}'),
+#     ('Semi', ';'),
+#     ('Equal', '='),
+#     ('Plus', '+'),
+#     ('Minus', '-'),
+#     ('Mult', "\*"),
+#     ('Div', '/'),
+#     ('Arrow', '=>'),
+#     ('Mod', '%'),
+#     ('And', 'and'),
+#     ('Or', 'or'),
+#     ('Not', 'not'),
+#     ('Less', '<'),
+#     ('Greater', '>'),
+#     ('CompEqual', '=='),
+#     ('LessEqual', '<='),
+#     ('GreaterEqual', '>='),
+#     ('NotEqual', '!='),
+#     ('Is', 'is'),
+#     ('In', 'in'),
+#     ('_True', 'True'),
+#     ('_False', 'False'),
+#     ('Comma', ','),
+#     ('Dot', '.'),
+#     ('If', 'if'),
+#     ('Else', 'else'),
+#     ('While', 'while'),
+#     ('For', 'for'),
+#     ('Let', 'let'),
+#     ('space', '  *'),
+#     ('Function', 'function'),
+#     ('Colon', ':'),
+#     ('Elif', 'elif'),
+#     ('Type', 'type'),
+#     ('Inherits', 'inherits'),
+#     ('New', 'new'),
+#     ('In', 'in'),
+#     ('def_Type', 'def_Type'),
+#     ('sComil', '\''),
+#     ('dComill', '\"'),
+#     ('sqrt', 'sqrt'),
+#     ('sin', 'sin'),
+#     ('cos', 'cos'),
+#     ('tan', 'tan'),
+#     ('exp', 'exp'),
+#     ('log', 'log'),
+#     ('rand', 'rand'),
+#     ('identifier', f'({minletters})({minletters}|{zero_digits})*')
+# ], 'eof')
 
 text = 'let number = 42 in let text = \"The meaning of life is\" in print(text @ number);'
 tokens = lexer(text)

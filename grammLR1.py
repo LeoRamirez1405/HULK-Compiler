@@ -1,6 +1,7 @@
 from cmp.pycompiler import Grammar
 # from semantic_checking.ast_nodes import *
 from semantic_checking.AST import *
+from lexer import Lexer
 
 def gramm_Hulk_LR1():
     G = Grammar()
@@ -12,7 +13,7 @@ def gramm_Hulk_LR1():
     let_in, multi_assignment, kern_assignment = G.NonTerminals('let_in multi_assignment kern_assignment')
     cont_member, kern_instance_creation, concatStrings, concatStringsWithSpace, math_call = G.NonTerminals('cont_member kern_instance_creation concatStrings concatStringsWithSpace math_call')
     Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, Arrow, Mod = G.Terminals('print ( ) { } ; = + - * / => %')
-    And, Or, Not, Less, Greater, Equal, LessEqual, GreaterEqual, NotEqual, Is, In, _True, _False = G.Terminals('and or not < > == <= >= != is in True False')
+    And, Or, Not, Less, Greater, CompEqual, LessEqual, GreaterEqual, NotEqual, Is, In, _True, _False = G.Terminals('and or not < > == <= >= != is in True False')
     Comma, Dot, If, Else, While, For, Let, Function, Colon = G.Terminals(', . if else while for let function :')
     identifier, number, string, Elif, Type, Inherits, New, In, def_Type, arroba   = G.Terminals('identifier number string elif type inherits new in def_Type @') 
     sComil, dComill, = G.Terminals('\' \"')
@@ -81,7 +82,7 @@ def gramm_Hulk_LR1():
     expression_1 %= expression_2, lambda h, s: s[1]
     expression_2 %= expression_3 + Less + expression_3, lambda h, s:  BoolCompLessNode(s[1],s[3])
     expression_2 %= expression_3 + Greater + expression_3, lambda h, s:  BoolCompGreaterNode(s[1],s[3])
-    expression_2 %= expression_3 + Equal + expression_3, lambda h, s:  BoolCompEqualNode(s[1],s[3])
+    expression_2 %= expression_3 + CompEqual + expression_3, lambda h, s:  BoolCompEqualNode(s[1],s[3])
     expression_2 %= expression_3 + LessEqual + expression_3, lambda h, s:  BoolCompLessIqualNode(s[1],s[3])
     expression_2 %= expression_3 + GreaterEqual + expression_3, lambda h, s:  BoolCompGreaterIqualNode(s[1],s[3])
     expression_2 %= expression_3 + NotEqual + expression_3, lambda h, s:  BoolCompNotEqualNode(s[1],s[3])
@@ -146,4 +147,69 @@ def gramm_Hulk_LR1():
     cont_member %= oPar + arguments + cPar, lambda h, s: s[2]
     cont_member %= G.Epsilon, lambda h, s: []
     member_access %= factor + Dot + identifier + cont_member , lambda h, s: MemberAccesNode(s[1], s[3], s[4]) 
-    return G
+    
+    nonzero_digits = '|'.join(str(n) for n in range(1,10))
+    zero_digits = '|'.join(str(n) for n in range(0,10))
+    minletters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1)) 
+    capletters = '|'.join(chr(n) for n in range(ord('A'),ord('Z')+1)) 
+    all_characters = f"{minletters}| |{capletters}"
+
+
+    lexer = Lexer([
+    (number, f'({nonzero_digits})({zero_digits})*'),
+    (string, f'\'({all_characters}|{zero_digits})*\'|\"({all_characters}|{zero_digits})*\"'),
+    (Print, 'print'),
+    (oPar, "\("),
+    (cPar, "\)"),
+    (oBrace, '{'),
+    (cBrace, '}'),
+    (Semi, ';'),
+    (Equal, '='),
+    (Plus, '+'),
+    (Minus, '-'),
+    (Mult, "\*"),
+    (Div, '/'),
+    (Arrow, '=>'),
+    (Mod, '%'),
+    (And, 'and'),
+    (Or, 'or'),
+    (Not, 'not'),
+    (Less, '<'),
+    (Greater, '>'),
+    (CompEqual, '=='),
+    (LessEqual, '<='),
+    (GreaterEqual, '>='),
+    (NotEqual, '!='),
+    (Is, 'is'),
+    (In, 'in'),
+    (_True, 'True'),
+    (_False, 'False'),
+    (Comma, ','),
+    (Dot, '.'),
+    (If, 'if'),
+    (Else, 'else'),
+    (While, 'while'),
+    (For, 'for'),
+    (Let, 'let'),
+    ('space', '  *'),
+    (Function, 'function'),
+    (Colon, ':'),
+    (Elif, 'elif'),
+    (Type, 'type'),
+    (Inherits, 'inherits'),
+    (New, 'new'),
+    (In, 'in'),
+    (def_Type, 'def_Type'),
+    (sComil, '\''),
+    (dComill, '\"'),
+    (sqrt, 'sqrt'),
+    (sin, 'sin'),
+    (cos, 'cos'),
+    (tan, 'tan'),
+    (exp, 'exp'),
+    (log, 'log'),
+    (rand, 'rand'),
+    (identifier, f'({minletters})({minletters}|{zero_digits})*')
+], 'eof')
+    
+    return G, lexer
