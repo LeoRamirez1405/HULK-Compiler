@@ -71,7 +71,7 @@ class SemanticCheckingVisitor:
         except:
             self.errors.append(f'La funcion {node.id} no esta definida.')
             
-    @visitor.when()
+
             
     
         
