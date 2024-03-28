@@ -14,7 +14,7 @@ def gramm_Hulk_LR1():
     cont_member, kern_instance_creation, concatStrings, concatStringsWithSpace, math_call = G.NonTerminals('cont_member kern_instance_creation concatStrings concatStringsWithSpace math_call')
     
     Comma, Dot, If, Else, While, For, Let, Function, Colon = G.Terminals(', . if else while for let function :')
-    Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, Arrow, Mod = G.Terminals('print ( ) { } ; = + - * / => %')
+    Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, Arrow, Mod, Pow  = G.Terminals('print ( ) { } ; = + - * / => % ^')
     And, Or, Not, Less, Greater, CompEqual, LessEqual, GreaterEqual, NotEqual, Is, In, _True, _False = G.Terminals('and or not < > == <= >= != is in True False')
     identifier, number, string, Elif, Type, Inherits, New, In, def_Type, arroba   = G.Terminals('identifier number string elif type inherits new in def_Type @') 
     sComil, dComill, = G.Terminals('\' \"')
@@ -112,12 +112,13 @@ def gramm_Hulk_LR1():
     
     term %= factor + Mult + term , lambda h, s:  MultExpressionNode(s[1],s[3])
     term %= factor + Div + term , lambda h, s:  DivExpressionNode(s[1],s[3])
+    term %= factor + Pow + term
     term %= factor + Mod + term , lambda h, s:  ModExpressionNode(s[1],s[3])
     term %= factor , lambda h, s: s[1]
     
     factor %= number, lambda h, s:  NumberNode(s[1])
     factor %= string, lambda h, s:  StringNode(s[1])
-    factor %= oPar + expression + cPar , lambda h, s:  s[2]
+    factor %= oPar + statement_list + cPar , lambda h, s:  s[2]
     #Afactor %= function_call, lambda h, s:  s[1]
     #Afactor %= member_access, lambda h, s:  s[1]
     #Afactor %= math_call, lambda h, s:  s[1]
@@ -183,6 +184,7 @@ def gramm_Hulk_LR1():
     (Equal, '='),
     (Plus, '+'),
     (Minus, '-'),
+    (Pow, '^'),
     (Mult, "\*"),
     (Div, '/'),
     (Arrow, '=>'),
