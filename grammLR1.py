@@ -12,9 +12,10 @@ def gramm_Hulk_LR1():
     if_structure, while_structure, for_structure, create_statement, non_create_statement = G.NonTerminals('if_structure while_structure for_structure create_statement non_create_statement')
     let_in, multi_assignment, kern_assignment = G.NonTerminals('let_in multi_assignment kern_assignment')
     cont_member, kern_instance_creation, concatStrings, concatStringsWithSpace, math_call = G.NonTerminals('cont_member kern_instance_creation concatStrings concatStringsWithSpace math_call')
+    
+    Comma, Dot, If, Else, While, For, Let, Function, Colon = G.Terminals(', . if else while for let function :')
     Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, Arrow, Mod = G.Terminals('print ( ) { } ; = + - * / => %')
     And, Or, Not, Less, Greater, CompEqual, LessEqual, GreaterEqual, NotEqual, Is, In, _True, _False = G.Terminals('and or not < > == <= >= != is in True False')
-    Comma, Dot, If, Else, While, For, Let, Function, Colon = G.Terminals(', . if else while for let function :')
     identifier, number, string, Elif, Type, Inherits, New, In, def_Type, arroba   = G.Terminals('identifier number string elif type inherits new in def_Type @') 
     sComil, dComill, = G.Terminals('\' \"')
     sqrt, sin, cos, tan, exp, log, rand = G.Terminals('sqrt sin cos tan exp log rand')
@@ -23,22 +24,26 @@ def gramm_Hulk_LR1():
     statement_list %= statement + statement_list, lambda h, s: [s[1]] + s[2] 
     statement_list %= G.Epsilon, lambda h, s: []
     
-    statement %= non_create_statement, lambda h, s: s[1] 
-    statement %= create_statement, lambda h, s: s[1]
+    statement %= non_create_statement + Semi, lambda h, s: s[1] #AÑADI SEMI
+    statement %= create_statement + Semi, lambda h, s: s[1] #AÑADI SEMI
+    statement %= non_create_statement, lambda h, s: s[1]
+    statement %= create_statement, lambda h, s: s[1] 
+
     
     non_create_statement %= print_statement, lambda h, s: s[1] 
     non_create_statement %= control_structure, lambda h, s: s[1]
     
+    non_create_statement %= expression #AÑADI ESTO PARA QUE RECONOZCA id @ id
+    non_create_statement %= let_in, lambda h, s: s[1] #PARCHE
+
     #Acreate_statement %= type_definition, lambda h, s: s[1]
     #Acreate_statement %= function_definition, lambda h, s: s[1]
     #Acreate_statement %= assignment, lambda h, s: s[1]
-    create_statement %= let_in, lambda h, s: s[1] #PARCHE
     
-    print_statement %= Print + oPar + non_create_statement + cPar + Semi, lambda h, s: PrintStatmentNode(s[3])
-    print_statement %= Print + oPar + identifier + cPar + Semi, lambda h, s: PrintStatmentNode(s[3]) #PARCHE
+    print_statement %= Print + oPar + non_create_statement + cPar, lambda h, s: PrintStatmentNode(s[3]) #QUITE SEMI
     
-    # kern_assignment %= identifier + Equal + expression, lambda h, s: KernAssigmentNode(s[1],s[3])
-    kern_assignment %= identifier + Equal + string, lambda h, s: KernAssigmentNode(s[1],s[3])
+    kern_assignment %= identifier + Equal + expression, lambda h, s: KernAssigmentNode(s[1],s[3])
+    # kern_assignment %= identifier + Equal + string, lambda h, s: KernAssigmentNode(s[1],s[3]) #PARCHE
 
     
     multi_assignment %= kern_assignment + Comma + multi_assignment, lambda h, s: [s[1]] + s[3]
@@ -74,44 +79,49 @@ def gramm_Hulk_LR1():
     #Awhile_structure %= While + oPar + condition + cPar + oBrace + statement_list + cBrace , lambda h, s:  WhileStructureNode(s[3], s[6])
     #Afor_structure %= For + oPar + assignment + Semi + condition + Semi + assignment + cPar + oBrace + statement_list + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10])
     #A
-    #Aexpression_0, expression_1, expression_2, expression_3, expression_4 = G.NonTerminals('expression_0 expression_1 expression_2 expression_3 expression_4')
-    #A
+    expression_0, expression_1, expression_2, expression_3, expression_4 = G.NonTerminals('expression_0 expression_1 expression_2 expression_3 expression_4')
+    
     #AconcatStrings %= expression + arroba + expression, lambda h, s:  StringConcatNode(s[1],s[4])
     #AconcatStringsWithSpace %= expression + arroba + arroba + expression, lambda h, s:  StringConcatWithSpaceNode(s[1],s[4])
     #A
-    #Aexpression %= expression_0 + arroba + expression_0, lambda h, s:  StringConcatNode(s[1],s[4])
-    #Aexpression %= expression_0 + arroba + arroba + expression_0, lambda h, s:  StringConcatWithSpaceNode(s[1],s[4])
-    #Aexpression_0 %= expression_1 + Is + def_Type, lambda h, s:  BoolIsTypeNode(s[1],s[3])
-    #Aexpression_0 %= expression_1, lambda h, s:  s[1]
-    #Aexpression_1 %= expression_2 + And + expression_2, lambda h, s:  BoolAndNode(s[1],s[3])
-    #Aexpression_1 %= expression_2 + Or + expression_2, lambda h, s:  BoolOrNode(s[1],s[3])
-    #Aexpression_1 %= expression_2, lambda h, s: s[1]
-    #Aexpression_2 %= expression_3 + Less + expression_3, lambda h, s:  BoolCompLessNode(s[1],s[3])
-    #Aexpression_2 %= expression_3 + Greater + expression_3, lambda h, s:  BoolCompGreaterNode(s[1],s[3])
-    #Aexpression_2 %= expression_3 + CompEqual + expression_3, lambda h, s:  BoolCompEqualNode(s[1],s[3])
-    #Aexpression_2 %= expression_3 + LessEqual + expression_3, lambda h, s:  BoolCompLessIqualNode(s[1],s[3])
-    #Aexpression_2 %= expression_3 + GreaterEqual + expression_3, lambda h, s:  BoolCompGreaterIqualNode(s[1],s[3])
-    #Aexpression_2 %= expression_3 + NotEqual + expression_3, lambda h, s:  BoolCompNotEqualNode(s[1],s[3])
-    #Aexpression_2 %= expression_3, lambda h, s: s[1]
-    #Aexpression_3 %= Not + expression_4, lambda h, s:  BoolNotNode(s[2])
-    #Aexpression_3 %= expression_4, lambda h, s: s[1]
-    #A
-    #Aexpression_4 %= term + Plus + expression_4 , lambda h, s:  PlusExpressionNode(s[2],s[1],s[3])
-    #Aexpression_4 %= term + Minus + expression_4 , lambda h, s:  SubsExpressionNode(s[2],s[1],s[3])
-    #Aexpression_4 %= term , lambda h, s: s[1]
-    #A
-    #Aterm %= factor + Mult + term , lambda h, s:  MultExpressionNode(s[1],s[3])
-    #Aterm %= factor + Div + term , lambda h, s:  DivExpressionNode(s[1],s[3])
-    #Aterm %= factor + Mod + term , lambda h, s:  ModExpressionNode(s[1],s[3])
-    #Aterm %= factor , lambda h, s: s[1]
-    #A
-    #Afactor %= number, lambda h, s:  NumberNode(s[1])
-    #Afactor %= string, lambda h, s:  StringNode(s[1])
-    #Afactor %= oPar + expression + cPar , lambda h, s:  s[2]
+    expression %= expression_0 + arroba + expression_0, lambda h, s:  StringConcatNode(s[1],s[4])
+    expression %= expression_0 + arroba + arroba + expression_0, lambda h, s:  StringConcatWithSpaceNode(s[1],s[4])
+    expression %= expression_0 #AÑADI
+
+    expression_0 %= expression_1 + Is + def_Type, lambda h, s:  BoolIsTypeNode(s[1],s[3])
+    expression_0 %= expression_1, lambda h, s:  s[1]
+
+    expression_1 %= expression_2 + And + expression_2, lambda h, s:  BoolAndNode(s[1],s[3])
+    expression_1 %= expression_2 + Or + expression_2, lambda h, s:  BoolOrNode(s[1],s[3])
+    expression_1 %= expression_2, lambda h, s: s[1]
+
+    expression_2 %= expression_3 + Less + expression_3, lambda h, s:  BoolCompLessNode(s[1],s[3])
+    expression_2 %= expression_3 + Greater + expression_3, lambda h, s:  BoolCompGreaterNode(s[1],s[3])
+    expression_2 %= expression_3 + CompEqual + expression_3, lambda h, s:  BoolCompEqualNode(s[1],s[3])
+    expression_2 %= expression_3 + LessEqual + expression_3, lambda h, s:  BoolCompLessIqualNode(s[1],s[3])
+    expression_2 %= expression_3 + GreaterEqual + expression_3, lambda h, s:  BoolCompGreaterIqualNode(s[1],s[3])
+    expression_2 %= expression_3 + NotEqual + expression_3, lambda h, s:  BoolCompNotEqualNode(s[1],s[3])
+    expression_2 %= expression_3, lambda h, s: s[1]
+
+    expression_3 %= Not + expression_4, lambda h, s:  BoolNotNode(s[2])
+    expression_3 %= expression_4, lambda h, s: s[1]
+    
+    expression_4 %= term + Plus + expression_4 , lambda h, s:  PlusExpressionNode(s[2],s[1],s[3])
+    expression_4 %= term + Minus + expression_4 , lambda h, s:  SubsExpressionNode(s[2],s[1],s[3])
+    expression_4 %= term , lambda h, s: s[1]
+    
+    term %= factor + Mult + term , lambda h, s:  MultExpressionNode(s[1],s[3])
+    term %= factor + Div + term , lambda h, s:  DivExpressionNode(s[1],s[3])
+    term %= factor + Mod + term , lambda h, s:  ModExpressionNode(s[1],s[3])
+    term %= factor , lambda h, s: s[1]
+    
+    factor %= number, lambda h, s:  NumberNode(s[1])
+    factor %= string, lambda h, s:  StringNode(s[1])
+    factor %= oPar + expression + cPar , lambda h, s:  s[2]
     #Afactor %= function_call, lambda h, s:  s[1]
     #Afactor %= member_access, lambda h, s:  s[1]
     #Afactor %= math_call, lambda h, s:  s[1]
-    #Afactor %= identifier, lambda h, s:  IdentifierNode(s[1])
+    factor %= identifier, lambda h, s:  IdentifierNode(s[1])
     #Afactor %= _False, lambda h, s:  BooleanNode(s[1])
     #Afactor %= _True, lambda h, s:  BooleanNode(s[1])
     #Afactor %= kern_instance_creation, lambda h, s: s[1]
@@ -133,7 +143,7 @@ def gramm_Hulk_LR1():
     #A
     #let in
     let_in %= assignment + In + non_create_statement, lambda h, s: LetInNode(s[1], s[3])
-    let_in %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])
+    let_in %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3]) #NO TENGO CLARO CUANDO SE USA () Y CUANDO {}
     
     # Estructuras adicionales para tipos
     #Atype_definition %= Type + identifier + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(s[2],s[3], s[5], s[6])
@@ -201,6 +211,7 @@ def gramm_Hulk_LR1():
     (Function, 'function'),
     (Colon, ':'),
     (Elif, 'elif'),
+    (arroba, '@'),
     (Type, 'type'),
     (Inherits, 'inherits'),
     (New, 'new'),

@@ -80,7 +80,12 @@ gramatica, lexer = gramm_Hulk_LR1()
 #     ('identifier', f'({minletters})({minletters}|{zero_digits})*')
 # ], 'eof')
 
-text = 'let msg = \"Hello World\" in print(msg);'
+# text = 'let msg = \"Hello World\" in print(msg);'
+# text = 'let number = 42, text = \"The meaning of life is\" in print(text @ number);'
+# text = 'let number = 42 in let text = \"The meaning of life is\" in print(text @ number);'
+# text = 'let number = 42 in {let text = \"The meaning of life is\" in {print(text @ number)}};
+# text = 'let a = 5, b = 10, c = 20 in {print(a+b);print(b*c);print(c/a);}'
+text = 'let a = (let b = 6 in b * 7) in print(a);'
 tokens = lexer(text)
 print(tokens)
 
@@ -88,7 +93,7 @@ print(tokens)
 tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
 
 print(tokentypes)
-parser = LR1Parser(gramatica,True)
+parser = LR1Parser(gramatica,False)
 
 derivation = parser(tokentypes)
 print(derivation)
