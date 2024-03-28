@@ -1,6 +1,7 @@
 import visitor
 from AST import *
-from cmp.semantic import *
+from semantic import *
+
 class TypeBuilderVisitor():
     def __init__(self,context:Context) -> None:
         self.context = context
