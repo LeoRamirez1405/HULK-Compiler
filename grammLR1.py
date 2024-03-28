@@ -1,5 +1,4 @@
 from cmp.pycompiler import Grammar
-# from semantic_checking.ast_nodes import *
 from semantic_checking.AST import *
 
 def gramm_Hulk_LR1():
@@ -44,8 +43,8 @@ def gramm_Hulk_LR1():
     type_annotation %= Colon + def_Type, lambda h, s: TypeNode(s[2]) 
     type_annotation %= G.Epsilon, lambda h, s: TypeNode('object')
     
-    function_definition %= Function + identifier + type_annotation + oPar + parameters + cPar + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8]) 
-    function_definition %= Function + identifier + type_annotation + oPar + parameters + cPar + Arrow + non_create_statement + Semi,lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8])
+    function_definition %= Function + identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(s[2],TypeNode('object'),s[4],s[7]) 
+    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + Arrow + non_create_statement + Semi,lambda h, s: FunctionDefinitionNode(s[2],s[6],s[4],s[8])
     
     ##--------------------------Redefinir luego-----------------------------------------------
     parameters %= expression + type_annotation + Comma + parameters, lambda h, s: [s[1]] + s[4]
@@ -134,7 +133,7 @@ def gramm_Hulk_LR1():
     attribute_definition %= attribute_definition + kern_assignment + Semi, lambda h, s: s[1] + [s[2]]
     attribute_definition %= G.Epsilon, lambda h, s: []
     
-    method_definition %= identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace + method_definition, lambda h, s: [MethodDefinitionNode(s[1], s[3], s[6])] + s[8]
+    method_definition %= identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace + method_definition, lambda h, s: [MethodDefinitionNode(s[1], TypeNode('object'), s[6])] + s[8]
     method_definition %= G.Epsilon , lambda h, s: []
     
     inheritance %= Inherits + def_Type, lambda h, s: InheritanceNode(s[2])

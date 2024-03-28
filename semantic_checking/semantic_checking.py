@@ -1,4 +1,4 @@
-from ast_nodes import *
+from AST import *
 import visitor
 from type_collector import *
 from semantic import Scope, Context, SemanticError

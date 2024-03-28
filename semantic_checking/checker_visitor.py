@@ -13,10 +13,10 @@ class SemanticCheckingVisitor:
         pass
     
     @visitor.when(ProgramNode)
-    def visit(self, node: ProgramNode, scope):
+    def visit(self, node: ProgramNode, scope=None):
         print('ProgramNode')
         for statment in node.statments:
-            self.visit(statment, scope)  
+            self.visit(statment, self.scope)  
                       
     @visitor.when(PrintStatmentNode)
     def visit(self, node: PrintStatmentNode, scope):
