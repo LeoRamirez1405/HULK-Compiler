@@ -33,7 +33,7 @@ def gramm_Hulk_LR1():
     create_statement %= assignment, lambda h, s: s[1]
     
     print_statement %= Print + oPar + non_create_statement + cPar + Semi, lambda h, s: PrintStatmentNode(s[3])
-    kern_assignment %= identifier + Equal + expression, lambda h, s: KernAssigmentNode(s[1],s[3])
+    kern_assignment %= identifier + Equal + expression, lambda h, s: LetNode(s[1],s[3])
     
     multi_assignment %= kern_assignment + Comma + multi_assignment, lambda h, s: [s[1]] + s[3]
     multi_assignment %= kern_assignment + Semi, lambda h, s: [s[1]]
