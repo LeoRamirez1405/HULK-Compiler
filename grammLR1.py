@@ -26,10 +26,10 @@ def gramm_Hulk_LR1():
     
     statement %= non_create_statement + Semi, lambda h, s: s[1] #AÑADI SEMI
     statement %= create_statement + Semi, lambda h, s: s[1] #AÑADI SEMI
+    
     statement %= non_create_statement, lambda h, s: s[1]
     statement %= create_statement, lambda h, s: s[1] 
 
-    
     non_create_statement %= print_statement, lambda h, s: s[1] 
     non_create_statement %= control_structure, lambda h, s: s[1]
     
