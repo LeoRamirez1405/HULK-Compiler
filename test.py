@@ -153,11 +153,11 @@ gramatica, lexer = gramm_Hulk_LR1()
 
 # text = '42;'
 # text = 'print(42);'
-text = 'print((((1 + 2) ^ 3) * 4) / 5);'
+# text = 'print((((1 + 2) ^ 3) * 4) / 5);'
 # text = 'print(\"Hello World\");'
 # text = 'print(\"The meaning of life is \" @ 42);'
 # text = 'print(sin(2 * PI) ^ 2 + cos(3 * PI / log(4, 64)));'
-# text = '{print(42);print(sin(PI/2));print("Hello World");}'
+text = '{print(42);print(sin(PI/2));print("Hello World");}'
 tokens = lexer(text)
 print(tokens)
 
