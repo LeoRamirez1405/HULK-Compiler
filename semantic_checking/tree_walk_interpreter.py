@@ -198,16 +198,6 @@ class TreeWalkInterpreter():
         right_value = self.visit(node.right)
         return str(left_value) + " " + str(right_value)
 
-
-    @visitor.when(LetInExpressionNode)
-    def visit(self, node: LetInExpressionNode):
-        self.context.push_scope()
-        for assignment in node.assignments:
-            self.visit(assignment)
-        result = self.visit(node.expression)
-        self.context.pop_scope()
-        return result
-
 # from typing import List
 
 # class Node():
