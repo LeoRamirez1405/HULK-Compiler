@@ -50,6 +50,10 @@ class KernAssigmentNode(Node):
         self.id = id
         self.expression = expression
         
+class DestroyNode(KernAssigmentNode):
+    def __init__(self, id, expression) -> None:
+        super().__init__(id, expression)
+        
 class LetNode(Node):
     def __init__(self, id, expression) -> None:
         self.id = id

@@ -47,27 +47,37 @@ class SemanticCheckingVisitor:
     def visit(self, node: PrintStatmentNode, scope):
         self.visit(node.expression, scope)
         
-    @visitor.when(KernAssigmentNode)
+    #Se usa solo para crear atributos de una clase
+    @visitor.when(TypeAttributeNode)
     def visit(self, node: KernAssigmentNode, scope: Scope):
+        if scope.is_local(node.id):
+            self.errors.append(SemanticError(f'La variable {node.id} ya esta definida.'))
+        else:
+            scope.define_variable(node.id, self.context.get_type('object'))
+            self.visit(node.expression, scope)
+        
+    @visitor.when(DestroyNode)
+    def visit(self, node: DestroyNode, scope: Scope):
         if not scope.is_defined(node.id):
-            self.errors.append(SemanticError('Asignacion de valor a una variable no definida'))
+            self.errors.append(SemanticError(f'La variable {node.id} no esta definida en este scope'))
             
         self.visit(node.expression, scope)
         
     @visitor.when(LetNode)
     def visit(self, node: LetNode, scope: Scope):
-        if scope.is_local(node.id):
+        if scope.is_local(node.id) or scope.is_defined(node.id):
             self.errors.append(SemanticError(f'La variable {node.id} ya esta definida.'))
         else:
             scope.define_variable(node.id, self.context.get_type('object'))
-            self.visit(node.expression)
+            self.visit(node.expression, scope)
         
-    @visitor.when(TypeNode)
-    def visit(self, node: TypeNode, scope):
-        try:
-            self.context.types[node.type]
-        except:
-            self.errors.append(SemanticError(f'Tipo no definido'))
+    # #TODO Revisar esto y ver si se modifica la gramatica y donde quiera que se cree un TypeNode podemos crear un Type(type_anotation)
+    # @visitor.when(TypeNode)
+    # def visit(self, node: TypeNode, scope):
+    #     try:
+    #         self.context.types[node.type]
+    #     except:
+    #         self.errors.append(SemanticError(f'Tipo no definido'))
             
     @visitor.when(FunctionDefinitionNode)
     def visit(self, node: FunctionCallNode, scope: Scope):
@@ -119,6 +129,8 @@ class SemanticCheckingVisitor:
     def visit(self, node: ForStructureNode, scope: Scope):
         inners_scope: Scope = scope.create_child(scope)
         for id, expr in node.init_assigments:
+            if scope.is_defined(node.id):
+                self.errors.append(SemanticError(f'La variable {id} ya esta definida en este scope.'))
             inners_scope.define_variable(id, Type('object'))
             
         self.visit(node.body, inners_scope)
@@ -140,7 +152,7 @@ class SemanticCheckingVisitor:
             
     @visitor.when(InstanceCreationNode)
     def visit(self, node: InstanceCreationNode, scope: Scope):
-        if scope.is_local(id):
+        if scope.is_local(node.id) or scope.is_defined(node.id):
             self.errors.append(SemanticError(f'El nombre de varible {node.id} ya ha sido tomado.'))
         
         #TODO Verificar la correctitud 
