@@ -225,7 +225,24 @@ class LetInExpressionNode(Node):
     def init(self, assigments, body) -> None:
         super().init()
         self.assigments = assigments
-        self.body = body        
+        self.body = body    
+
+class LetInExpressionNode(Node):
+    def init(self, assigments, body) -> None:
+        super().init()
+        self.assigments = assigments
+        self.body = body
+    
+class NumberNode(Node):
+    def __init__(self, value) -> None:
+        super().__init__()
+        self.value = value
+
+class PINode(NumberNode):
+    def __init__(self, value) -> None:
+        super().__init__()
+        self.value = value
+    
 #------------------------------------------------------------Math-Operations-----------------------------------------------------------------------------------#
 class MathOperationNode(UnaryNode):
     def __init__(self, expression) -> None:
