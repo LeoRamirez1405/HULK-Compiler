@@ -109,12 +109,12 @@ class ForStructureNode(Node):
         
 #-----------------------------------Class----------------------------------------------------------------------------------------------#
 class TypeDefinitionNode(Node):
-    def __init__(self, id, parameters:list[dict],inheritance, attributes, methods) -> None:
+    def __init__(self, id, parameters:list[dict],inheritance, attributes: List[LetNode], methods) -> None:
         super().__init__()
         self.id = id
         self.parameters = parameters
         self.inheritance = inheritance
-        self.attribute = attributes
+        self.attribute: List[LetNode] = attributes
         self.methods = methods
         
 # Esto debe recibir un type annotation?
@@ -152,7 +152,7 @@ class MemberAccesNode(Node):
     def __init__(self, base_object, object_property_to_acces, args) -> None:
         super().__init__()
         self.base_object = base_object
-        self.object_property_ti_acces = object_property_to_acces
+        self.object_property_to_acces = object_property_to_acces
         self.args = args
         
 #! No son necesarios los operadores
