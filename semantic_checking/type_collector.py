@@ -4,33 +4,32 @@ from AST import *
 
 class TypeCollectorVisitor:
     def __init__(self, context, errors) -> None:
-        self.context = context
-        self.errors = errors
+        self.context: Context = context
+        self.errors: List[str] = errors
         
     @visitor.on('node')
-    def visit(self, node, context):
+    def visit(self, node):
         pass
 
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
-        
         for statment in node.statments:
-            self.visit(statment, self.context)
+            self.visit(statment)
             
     @visitor.when(TypeDefinitionNode)
-    def visit(self, node: TypeDefinitionNode, context: Context):
-        if context.is_defined(node.id):
+    def visit(self, node: TypeDefinitionNode):
+        try:
+            self.context[node.id]
             self.errors.append(SemanticError(f'El nombre de tipo {node.id} ya ha sido tomado'))
-        else:
-            context.create_type(node.id)
+        except:
+            self.context.create_type(node.id)
             
         for method in node.methods:
-            inner_context = context.create_child(context)
-            self.visit(method, inner_context)
+            self.visit(method)
             
-    @visitor.when(FunctionDefinitionNode)
-    def visit(self, node: FunctionDefinitionNode, context: Context):
-        for statment in node.body:
-            self.visit(statment, context)
+    # @visitor.when(FunctionDefinitionNode)
+    # def visit(self, node: FunctionDefinitionNode):
+    #     for statment in node.body:
+    #         self.visit(statment)
             
     

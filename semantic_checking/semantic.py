@@ -160,26 +160,14 @@ class Scope:
         return any(True for x in self.local_variables if x.name == vname)
     
 class Context:
-    def __init__(self, parent):
+    def __init__(self):
         self.types = {}
-        self.parent: Context = parent
-        
-    def create_child(self):
-        child = Context(self)
-        return child
 
     def create_type(self, name:str):
         if name in self.types:
             raise SemanticError(f'Type with the same name ({name}) already in context.')
         typex = self.types[name] = Type(name)
         return typex
-    
-    def is_defined(self, type: str):
-        try:
-            self.types[type]
-            return True
-        except:
-            return False
 
     def get_type(self, name:str):
         try:
