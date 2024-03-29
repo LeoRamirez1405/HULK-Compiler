@@ -22,7 +22,6 @@ def gramm_Hulk_LR1():
     
     Program %= statement_list, lambda h, s: ProgramNode(s[1])
     statement_list %= statement + statement_list, lambda h, s: [s[1]] + s[2] 
-    statement_list %= oBrace + statement + statement_list + cBrace, lambda h, s: [s[1]] + s[2] 
     statement_list %= G.Epsilon, lambda h, s: []
     statement_list %= oBrace + statement_list + cBrace , lambda h, s: s[2]
     statement %= non_create_statement + Semi, lambda h, s: s[1] 
@@ -46,8 +45,7 @@ def gramm_Hulk_LR1():
     kern_assignment %= identifier + Equal + expression, lambda h, s: LetNode(s[1],s[3])
     
     multi_assignment %= kern_assignment + Comma + multi_assignment, lambda h, s: [s[1]] + s[3]
-    #multi_assignment %= kern_assignment + Semi, lambda h, s: [s[1]]
-    multi_assignment %= kern_assignment, lambda h, s: [s[1]] #PARCHE
+    multi_assignment %= kern_assignment, lambda h, s: [s[1]]
     
     assignment %= Let + multi_assignment, lambda h, s: s[2]
     assignment %= instance_creation, lambda h, s: s[1]
@@ -80,9 +78,9 @@ def gramm_Hulk_LR1():
     
     expression_0, expression_1, expression_2, expression_3, expression_4 = G.NonTerminals('expression_0 expression_1 expression_2 expression_3 expression_4')
     
-    expression %= expression_0 + arroba + expression_0, lambda h, s:  StringConcatNode(s[1],s[3])
+    expression %= expression_0 + arroba + expression_0, lambda h, s:  StringConcatNode(s[1],s[4])
     expression %= expression_0 + arroba + arroba + expression_0, lambda h, s:  StringConcatWithSpaceNode(s[1],s[4])
-    expression %= expression_0 #AÑADI
+    expression %= expression_0 
 
     expression_0 %= expression_1 + Is + def_Type, lambda h, s:  BoolIsTypeNode(s[1],s[3])
     expression_0 %= expression_1, lambda h, s:  s[1]
@@ -112,12 +110,29 @@ def gramm_Hulk_LR1():
     term %= factor + Mod + term , lambda h, s:  ModExpressionNode(s[1],s[3])
     term %= factor , lambda h, s: s[1]
     
-    factor %= number, lambda h, s:  NumberNode(s[1])
-    factor %= string, lambda h, s:  StringNode(s[1])
-    factor %= oPar + statement_list + cPar , lambda h, s:  s[2]
-    factor %= math_call, lambda h, s:  s[1]
-    factor %= identifier, lambda h, s:  IdentifierNode(s[1])
- 
+    factor0, factor_0, factor_1 = G.NonTerminals('factor0 factor_0 factor_1')
+    #function_call %= factor0 + oPar + arguments + cPar, lambda h, s:  FunctionCallNode(s[1],s[3]) #Todo function call
+    #member_access %= factor0 + Dot + function_call , lambda h, s: MemberAccesNode(s[1], s[3], s[4])  #Todo member access
+    #member_access %= factor0 + Dot + factor0 , lambda h, s: MemberAccesNode(s[1], s[3], s[4])  #Todo member access
+    factor %= factor_0 + oPar + arguments + cPar, lambda h, s:  FunctionCallNode(s[1],s[3]) #Todo function call
+    factor_0 %= factor_1 + Dot + function_call , lambda h, s: MemberAccesNode(s[1], s[3], s[4])  #Todo member access
+    factor_0 %= factor0 + Dot + factor0 , lambda h, s: MemberAccesNode(s[1], s[3], s[4])  #Todo member access
+    
+    #factor %= member_access, lambda h, s:s[1]
+    #factor %= function_call, lambda h, s:s[1]
+    factor %= factor0, lambda h, s:  s[1]
+    factor0 %= oPar + statement + cPar , lambda h, s:  s[2]
+    factor0 %= math_call, lambda h, s:  s[1]
+    factor0 %= kern_instance_creation, lambda h, s: s[1]
+    factor0 %= identifier, lambda h, s:  IdentifierNode(s[1])
+    factor0 %= number, lambda h, s:  NumberNode(s[1])
+    factor0 %= string, lambda h, s:  StringNode(s[1])
+    factor0 %= _False, lambda h, s:  BooleanNode(s[1])
+    factor0 %= _True, lambda h, s:  BooleanNode(s[1])
+    
+    kern_instance_creation %= New + def_Type + oPar + arguments + cPar, lambda h, s: KernInstanceCreationNode(s[2],s[4])
+    
+    #identifier + oPar + arguments + cPar, lambda h, s:  FunctionCallNode(s[1],s[3])
     math_call %= sqrt + oPar + expression_4 + cPar, lambda h, s: SqrtMathNode(s[3])
     math_call %= cos + oPar + expression_4 + cPar, lambda h, s: CosMathNode(s[3])
     math_call %= sin + oPar + expression_4 + cPar, lambda h, s: SinMathNode(s[3])
@@ -125,18 +140,23 @@ def gramm_Hulk_LR1():
     math_call %= exp + oPar + expression_4 + cPar, lambda h, s: ExpMathNode(s[3])
     math_call %= log + oPar + expression_4 + Comma + expression_4 + cPar, lambda h, s:  LogCallNode(s[3],s[5]) 
     math_call %= rand + oPar + cPar,  lambda h, s: RandomCallNode()
-    math_call %= PI
-  
+    math_call %= PI, lambda h, s:NumberNode(s[1])
+    
+    arguments %= expression + Comma + arguments, lambda h, s: [s[1]]+s[2]
+    arguments %= expression , lambda h, s: s[1]
+    arguments %= G.Epsilon, lambda h, s: []
+    
+    #let in
     let_in %= assignment + In + non_create_statement, lambda h, s: LetInNode(s[1], s[3])
     let_in %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3]) #NO TENGO CLARO CUANDO SE USA () Y CUANDO {}
     
     # Estructuras adicionales para tipos
-    type_definition %= Type + identifier + oPar + parameters + cPar + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(s[2],s[4], s[6], s[7], s[8])
+    type_definition %= Type + identifier + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(s[2],s[3], s[5], s[6])
     
-    attribute_definition %= kern_assignment + Semi + attribute_definition, lambda h, s: [s[1]] + s[3]
+    attribute_definition %= attribute_definition + kern_assignment + Semi, lambda h, s: s[1] + [s[2]]
     attribute_definition %= G.Epsilon, lambda h, s: []
     
-    method_definition %= identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(s[1], TypeNode('object'), s[3], s[6])] + s[8]
+    method_definition %= identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace + method_definition, lambda h, s: [MethodDefinitionNode(s[1], s[3], s[6])] + s[8]
     method_definition %= G.Epsilon , lambda h, s: []
     
     inheritance %= Inherits + def_Type, lambda h, s: InheritanceNode(s[2])
@@ -145,9 +165,6 @@ def gramm_Hulk_LR1():
     instance_creation %= Let + identifier + Equal + New + def_Type + oPar + arguments + cPar + Semi, lambda h, s: InstanceCreationNode(s[2],s[5], s[7])
     #method_override %= identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace | G.Epsilon
     
-    cont_member %= oPar + arguments + cPar, lambda h, s: s[2]
-    cont_member %= G.Epsilon, lambda h, s: []
-    member_access %= factor + Dot + identifier + cont_member , lambda h, s: MemberAccesNode(s[1], s[3], s[4]) 
     
     nonzero_digits = '|'.join(str(n) for n in range(1,10))
     zero_digits = '|'.join(str(n) for n in range(0,10))

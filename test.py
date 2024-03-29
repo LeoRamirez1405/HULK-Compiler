@@ -4,7 +4,6 @@ from lexer import Lexer
 
 
 gramatica, lexer = gramm_Hulk_LR1()
-gramatica, lexer = gramm_Hulk_LR1()
 
 
 
@@ -159,16 +158,16 @@ gramatica, lexer = gramm_Hulk_LR1()
 # text = 'print(sin(2 * PI) ^ 2 + cos(3 * PI / log(4, 64)));'
 text = '{print(42);print(sin(PI/2));print("Hello World");}'
 tokens = lexer(text)
-print(tokens)
+#print(tokens)
 
 # Extraer las propiedades "tokentype" de cada token
 tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
 
-print(tokentypes)
+#print(tokentypes)
 parser = LR1Parser(gramatica,False)
 
-derivation = parser(tokentypes)
-print(derivation)
+#derivation = parser(tokentypes)
+#print(derivation)
 
 
 
