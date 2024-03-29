@@ -46,16 +46,7 @@ class SemanticCheckingVisitor:
     @visitor.when(PrintStatmentNode)
     def visit(self, node: PrintStatmentNode, scope):
         self.visit(node.expression, scope)
-        
-    #Se usa solo para crear atributos de una clase
-    @visitor.when(TypeAttributeNode)
-    def visit(self, node: KernAssigmentNode, scope: Scope):
-        if scope.is_local(node.id):
-            self.errors.append(SemanticError(f'La variable {node.id} ya esta definida.'))
-        else:
-            scope.define_variable(node.id, self.context.get_type('object'))
-            self.visit(node.expression, scope)
-        
+    
     @visitor.when(DestroyNode)
     def visit(self, node: DestroyNode, scope: Scope):
         if not scope.is_defined(node.id):

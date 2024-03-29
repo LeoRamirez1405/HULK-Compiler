@@ -54,10 +54,9 @@ class DestroyNode(KernAssigmentNode):
     def __init__(self, id, expression) -> None:
         super().__init__(id, expression)
         
-class LetNode(Node):
+class LetNode(KernAssigmentNode):
     def __init__(self, id, expression) -> None:
-        self.id = id
-        self.expression = expression
+        super().__init__(id, expression)
         
 # TODO Podriamos instanciar la clase Type
 class TypeNode(Node):
