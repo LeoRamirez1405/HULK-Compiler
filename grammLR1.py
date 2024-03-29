@@ -1,6 +1,6 @@
 from cmp.pycompiler import Grammar
-# from semantic_checking.ast_nodes import *
 from semantic_checking.AST import *
+from lexer import Lexer
 
 def gramm_Hulk_LR1():
     G = Grammar()
@@ -14,19 +14,28 @@ def gramm_Hulk_LR1():
     Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, Arrow, Mod, Destroy  = G.Terminals('print ( ) { } ; = + - * / => % :=')
     And, Or, Not, Less, Greater, Equal, LessEqual, GreaterEqual, NotEqual, Is, In, _True, _False = G.Terminals('and or not < > == <= >= != is in True False')
     Comma, Dot, If, Else, While, For, Let, Function, Colon = G.Terminals(', . if else while for let function :')
+    Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, Arrow, Mod, Pow  = G.Terminals('print ( ) { } ; = + - * / => % ^')
+    And, Or, Not, Less, Greater, CompEqual, LessEqual, GreaterEqual, NotEqual, Is, In, _True, _False = G.Terminals('and or not < > == <= >= != is in True False')
     identifier, number, string, Elif, Type, Inherits, New, In, def_Type, arroba   = G.Terminals('identifier number string elif type inherits new in def_Type @') 
     sComil, dComill, = G.Terminals('\' \"')
-    sqrt, sin, cos, tan, exp, log, rand = G.Terminals('sqrt sin cos tan exp log rand')
+    sqrt, sin, cos, tan, exp, log, rand, PI = G.Terminals('sqrt sin cos tan exp log rand PI')
     
     Program %= statement_list, lambda h, s: ProgramNode(s[1])
     statement_list %= statement + statement_list, lambda h, s: [s[1]] + s[2] 
+    statement_list %= oBrace + statement + statement_list + cBrace, lambda h, s: [s[1]] + s[2] 
     statement_list %= G.Epsilon, lambda h, s: []
+    statement_list %= oBrace + statement_list + cBrace , lambda h, s: s[2]
+    statement %= non_create_statement + Semi, lambda h, s: s[1] 
+    statement %= create_statement + Semi, lambda h, s: s[1] 
     
-    statement %= non_create_statement, lambda h, s: s[1] 
-    statement %= create_statement, lambda h, s: s[1]
-    
+    statement %= non_create_statement, lambda h, s: s[1]
+    statement %= create_statement, lambda h, s: s[1] 
+
     non_create_statement %= print_statement, lambda h, s: s[1] 
     non_create_statement %= control_structure, lambda h, s: s[1]
+    
+    non_create_statement %= expression, lambda h, s: s[1]
+    non_create_statement %= let_in, lambda h, s: s[1] 
     
     create_statement %= type_definition, lambda h, s: s[1]
     create_statement %= function_definition, lambda h, s: s[1]
@@ -37,7 +46,8 @@ def gramm_Hulk_LR1():
     kern_assignment %= identifier + Equal + expression, lambda h, s: LetNode(s[1],s[3])
     
     multi_assignment %= kern_assignment + Comma + multi_assignment, lambda h, s: [s[1]] + s[3]
-    multi_assignment %= kern_assignment + Semi, lambda h, s: [s[1]]
+    #multi_assignment %= kern_assignment + Semi, lambda h, s: [s[1]]
+    multi_assignment %= kern_assignment, lambda h, s: [s[1]] #PARCHE
     
     assignment %= Let + multi_assignment, lambda h, s: s[2]
     assignment %= instance_creation, lambda h, s: s[1]
@@ -45,8 +55,8 @@ def gramm_Hulk_LR1():
     destructive_assignment %= identifier + Destroy + expression + destructive_assignment, lambda h, s : [DestroyNode(s[1], s[3])] + s[4]
     destructive_assignment %= G.Epsilon, lambda h, s: []
     
-    type_annotation %= Colon + def_Type, lambda h, s: TypeNode(s[2]) 
-    type_annotation %= G.Epsilon, lambda h, s: TypeNode('object')
+    destructive_assignment %= identifier + Destroy + expression + destructive_assignment, lambda h, s : [DestroyNode(s[1], s[3])] + s[4]
+    destructive_assignment %= G.Epsilon, lambda h, s: []
     
     function_definition %= Function + identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(s[2],TypeNode('object'),s[4],s[7]) 
     function_definition %= Function + identifier + oPar + parameters + cPar + Arrow + type_annotation + non_create_statement + Semi,lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8])
@@ -75,18 +85,23 @@ def gramm_Hulk_LR1():
     
     expression %= expression_0 + arroba + expression_0, lambda h, s:  StringConcatNode(s[1],s[3])
     expression %= expression_0 + arroba + arroba + expression_0, lambda h, s:  StringConcatWithSpaceNode(s[1],s[4])
+    expression %= expression_0 #AÑADI
+
     expression_0 %= expression_1 + Is + def_Type, lambda h, s:  BoolIsTypeNode(s[1],s[3])
     expression_0 %= expression_1, lambda h, s:  s[1]
+
     expression_1 %= expression_2 + And + expression_2, lambda h, s:  BoolAndNode(s[1],s[3])
     expression_1 %= expression_2 + Or + expression_2, lambda h, s:  BoolOrNode(s[1],s[3])
     expression_1 %= expression_2, lambda h, s: s[1]
+
     expression_2 %= expression_3 + Less + expression_3, lambda h, s:  BoolCompLessNode(s[1],s[3])
     expression_2 %= expression_3 + Greater + expression_3, lambda h, s:  BoolCompGreaterNode(s[1],s[3])
-    expression_2 %= expression_3 + Equal + expression_3, lambda h, s:  BoolCompEqualNode(s[1],s[3])
+    expression_2 %= expression_3 + CompEqual + expression_3, lambda h, s:  BoolCompEqualNode(s[1],s[3])
     expression_2 %= expression_3 + LessEqual + expression_3, lambda h, s:  BoolCompLessIqualNode(s[1],s[3])
     expression_2 %= expression_3 + GreaterEqual + expression_3, lambda h, s:  BoolCompGreaterIqualNode(s[1],s[3])
     expression_2 %= expression_3 + NotEqual + expression_3, lambda h, s:  BoolCompNotEqualNode(s[1],s[3])
     expression_2 %= expression_3, lambda h, s: s[1]
+
     expression_3 %= Not + expression_4, lambda h, s:  BoolNotNode(s[2])
     expression_3 %= expression_4, lambda h, s: s[1]
     
@@ -96,23 +111,16 @@ def gramm_Hulk_LR1():
     
     term %= factor + Mult + term , lambda h, s:  MultExpressionNode(s[1],s[3])
     term %= factor + Div + term , lambda h, s:  DivExpressionNode(s[1],s[3])
+    term %= factor + Pow + term
     term %= factor + Mod + term , lambda h, s:  ModExpressionNode(s[1],s[3])
     term %= factor , lambda h, s: s[1]
     
     factor %= number, lambda h, s:  NumberNode(s[1])
     factor %= string, lambda h, s:  StringNode(s[1])
-    factor %= oPar + expression + cPar , lambda h, s:  s[2]
-    factor %= function_call, lambda h, s:  s[1]
-    factor %= member_access, lambda h, s:  s[1]
+    factor %= oPar + statement_list + cPar , lambda h, s:  s[2]
     factor %= math_call, lambda h, s:  s[1]
     factor %= identifier, lambda h, s:  IdentifierNode(s[1])
-    factor %= _False, lambda h, s:  BooleanNode(s[1])
-    factor %= _True, lambda h, s:  BooleanNode(s[1])
-    factor %= kern_instance_creation, lambda h, s: s[1]
-    
-    kern_instance_creation %= New + def_Type + oPar + arguments + cPar, lambda h, s: KernInstanceCreationNode(s[2],s[4])
-    
-    function_call %= identifier + oPar + arguments + cPar, lambda h, s:  s[1]
+ 
     math_call %= sqrt + oPar + expression_4 + cPar, lambda h, s: SqrtMathNode(s[3])
     math_call %= cos + oPar + expression_4 + cPar, lambda h, s: CosMathNode(s[3])
     math_call %= sin + oPar + expression_4 + cPar, lambda h, s: SinMathNode(s[3])
@@ -120,14 +128,10 @@ def gramm_Hulk_LR1():
     math_call %= exp + oPar + expression_4 + cPar, lambda h, s: ExpMathNode(s[3])
     math_call %= log + oPar + expression_4 + Comma + expression_4 + cPar, lambda h, s:  LogCallNode(s[3],s[5]) 
     math_call %= rand + oPar + cPar,  lambda h, s: RandomCallNode()
-    
-    arguments %= expression + Comma + arguments, lambda h, s: [s[1]]+s[2]
-    arguments %= expression , lambda h, s: s[1]
-    arguments %= G.Epsilon, lambda h, s: []
-    
-    #let in
+    math_call %= PI
+  
     let_in %= assignment + In + non_create_statement, lambda h, s: LetInNode(s[1], s[3])
-    let_in %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])
+    let_in %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3]) #NO TENGO CLARO CUANDO SE USA () Y CUANDO {}
     
     # Estructuras adicionales para tipos
     type_definition %= Type + identifier + oPar + parameters + cPar + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(s[2],s[4], s[6], s[7], s[8])
@@ -147,4 +151,74 @@ def gramm_Hulk_LR1():
     cont_member %= oPar + arguments + cPar, lambda h, s: s[2]
     cont_member %= G.Epsilon, lambda h, s: []
     member_access %= factor + Dot + identifier + cont_member , lambda h, s: MemberAccesNode(s[1], s[3], s[4]) 
-    return G
+    
+    nonzero_digits = '|'.join(str(n) for n in range(1,10))
+    zero_digits = '|'.join(str(n) for n in range(0,10))
+    minletters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1)) 
+    capletters = '|'.join(chr(n) for n in range(ord('A'),ord('Z')+1)) 
+    all_characters = f"{minletters}| |{capletters}"
+
+
+    lexer = Lexer([
+    (number, f'({nonzero_digits})({zero_digits})*'),
+    (string, f'\'({all_characters}|{zero_digits})*\'|\"({all_characters}|{zero_digits})*\"'),
+    (Print, 'print'),
+    (oPar, "\("),
+    (cPar, "\)"),
+    (oBrace, '{'),
+    (cBrace, '}'),
+    (Semi, ';'),
+    (Equal, '='),
+    (Plus, '+'),
+    (Minus, '-'),
+    (Pow, '^'),
+    (Mult, "\*"),
+    (Div, '/'),
+    (Arrow, '=>'),
+    (Mod, '%'),
+    (And, 'and'),
+    (Or, 'or'),
+    (Not, 'not'),
+    (Less, '<'),
+    (Greater, '>'),
+    (CompEqual, '=='),
+    (LessEqual, '<='),
+    (GreaterEqual, '>='),
+    (NotEqual, '!='),
+    (Is, 'is'),
+    (In, 'in'),
+    (_True, 'True'),
+    (_False, 'False'),
+    (Comma, ','),
+    (Dot, '.'),
+    (If, 'if'),
+    (Else, 'else'),
+    (While, 'while'),
+    (For, 'for'),
+    (Let, 'let'),
+    ('space', '  *'),
+    (Function, 'function'),
+    (Colon, ':'),
+    (Elif, 'elif'),
+    (arroba, '@'),
+    (Type, 'type'),
+    (Inherits, 'inherits'),
+    (New, 'new'),
+    (In, 'in'),
+    (def_Type, 'def_Type'),
+    (sComil, '\''),
+    (dComill, '\"'),
+    (sqrt, 'sqrt'),
+    (sin, 'sin'),
+    (cos, 'cos'),
+    (tan, 'tan'),
+    (exp, 'exp'),
+    (log, 'log'),
+    (rand, 'rand'),
+    (PI, 'PI'),
+    (identifier, f'({minletters})({minletters}|{zero_digits})*')
+], G.EOF)
+    
+    return G, lexer
+
+    
