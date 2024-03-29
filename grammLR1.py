@@ -11,10 +11,8 @@ def gramm_Hulk_LR1():
     if_structure, while_structure, for_structure, create_statement, non_create_statement = G.NonTerminals('if_structure while_structure for_structure create_statement non_create_statement')
     let_in, multi_assignment, kern_assignment, destructive_assignment = G.NonTerminals('let_in multi_assignment kern_assignment destructive_assignment')
     cont_member, kern_instance_creation, concatStrings, concatStringsWithSpace, math_call = G.NonTerminals('cont_member kern_instance_creation concatStrings concatStringsWithSpace math_call')
-    Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, Arrow, Mod, Destroy  = G.Terminals('print ( ) { } ; = + - * / => % :=')
-    And, Or, Not, Less, Greater, Equal, LessEqual, GreaterEqual, NotEqual, Is, In, _True, _False = G.Terminals('and or not < > == <= >= != is in True False')
+    Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, Arrow, Mod, Destroy , Pow = G.Terminals('print ( ) { } ; = + - * / => % := ^')
     Comma, Dot, If, Else, While, For, Let, Function, Colon = G.Terminals(', . if else while for let function :')
-    Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, Arrow, Mod, Pow  = G.Terminals('print ( ) { } ; = + - * / => % ^')
     And, Or, Not, Less, Greater, CompEqual, LessEqual, GreaterEqual, NotEqual, Is, In, _True, _False = G.Terminals('and or not < > == <= >= != is in True False')
     identifier, number, string, Elif, Type, Inherits, New, In, def_Type, arroba   = G.Terminals('identifier number string elif type inherits new in def_Type @') 
     sComil, dComill, = G.Terminals('\' \"')
@@ -103,15 +101,15 @@ def gramm_Hulk_LR1():
     
     #expression_4 %= term + Plus + expression_4 , lambda h, s:  PlusExpressionNode(s[2],s[1],s[3])
     #expression_4 %= term + Minus + expression_4 , lambda h, s:  SubsExpressionNode(s[2],s[1],s[3])
+    expression_4 %= term , lambda h, s: s[1]
     expression_4 %= expression_4 + Plus + term , lambda h, s:  PlusExpressionNode(s[2],s[1],s[3])
     expression_4 %= expression_4 + Minus + term , lambda h, s:  SubsExpressionNode(s[2],s[1],s[3])
-    expression_4 %= term , lambda h, s: s[1]
     
+    term %= factor , lambda h, s: s[1]
     term %= term + Mult + factor   , lambda h, s:  MultExpressionNode(s[1],s[3])
     term %= term + Div + factor  , lambda h, s:  DivExpressionNode(s[1],s[3])
     term %= term + Mod + factor  , lambda h, s:  ModExpressionNode(s[1],s[3])
     term %= term + Pow + factor , lambda h, s:  PowExpressionNode(s[1],s[3]) 
-    term %= factor , lambda h, s: s[1]
     
     factor0, factor_0, factor_1 = G.NonTerminals('factor0 factor_0 factor_1')
     #function_call %= factor0 + oPar + arguments + cPar, lambda h, s:  FunctionCallNode(s[1],s[3]) #Todo function call
