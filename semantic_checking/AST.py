@@ -214,8 +214,18 @@ class ModExpressionNode(AritmeticExpression):
         super().__init__(expression_1, expresion_2)
         self.expression_1 = expression_1
         self.expression_2 = expresion_2
+
+class PowExpressionNode(AritmeticExpression):
+    def __init__(self, expression_1, expresion_2) -> None:
+        super().__init__(expression_1, expresion_2)
+        self.expression_1 = expression_1
+        self.expression_2 = expresion_2
         
-        
+class LetInExpressionNode(Node):
+    def init(self, assigments, body) -> None:
+        super().init()
+        self.assigments = assigments
+        self.body = body        
 #------------------------------------------------------------Math-Operations-----------------------------------------------------------------------------------#
 class MathOperationNode(UnaryNode):
     def __init__(self, expression) -> None:

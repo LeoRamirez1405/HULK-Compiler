@@ -25,12 +25,13 @@ def gramm_Hulk_LR1():
     statement_list %= G.Epsilon, lambda h, s: []
     statement_list %= oBrace + statement_list + cBrace , lambda h, s: s[2]
     statement %= non_create_statement + Semi, lambda h, s: s[1] 
+    New + def_Type + oPar + arguments + cPar
     statement %= create_statement + Semi, lambda h, s: s[1] 
     
-    statement %= non_create_statement, lambda h, s: s[1]
-    statement %= create_statement, lambda h, s: s[1] 
+    #statement %= non_create_statement, lambda h, s: s[1]
+    #statement %= create_statement, lambda h, s: s[1] 
 
-    non_create_statement %= print_statement, lambda h, s: s[1] 
+    #non_create_statement %= print_statement, lambda h, s: s[1] 
     non_create_statement %= control_structure, lambda h, s: s[1]
     
     non_create_statement %= expression, lambda h, s: s[1]
@@ -56,7 +57,6 @@ def gramm_Hulk_LR1():
     function_definition %= Function + identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(s[2],TypeNode('object'),s[4],s[7]) 
     function_definition %= Function + identifier + oPar + parameters + cPar + Arrow + type_annotation + non_create_statement + Semi,lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8])
     
-    ##--------------------------Redefinir luego-----------------------------------------------
     parameters %= expression + type_annotation + Comma + parameters, lambda h, s: [{s[1]:s[2]}] + s[4]
     parameters %= expression + type_annotation, lambda h, s: {s[1]:s[2]}
     parameters %= G.Epsilon, lambda h, s:[]
@@ -78,6 +78,7 @@ def gramm_Hulk_LR1():
     
     expression_0, expression_1, expression_2, expression_3, expression_4 = G.NonTerminals('expression_0 expression_1 expression_2 expression_3 expression_4')
     
+    expression %= print_statement, lambda h, s:s[1]
     expression %= expression_0 + arroba + expression_0, lambda h, s:  StringConcatNode(s[1],s[4])
     expression %= expression_0 + arroba + arroba + expression_0, lambda h, s:  StringConcatWithSpaceNode(s[1],s[4])
     expression %= expression_0 
@@ -85,8 +86,8 @@ def gramm_Hulk_LR1():
     expression_0 %= expression_1 + Is + def_Type, lambda h, s:  BoolIsTypeNode(s[1],s[3])
     expression_0 %= expression_1, lambda h, s:  s[1]
 
-    expression_1 %= expression_2 + And + expression_2, lambda h, s:  BoolAndNode(s[1],s[3])
-    expression_1 %= expression_2 + Or + expression_2, lambda h, s:  BoolOrNode(s[1],s[3])
+    expression_1 %= expression_1 + And + expression_2, lambda h, s:  BoolAndNode(s[1],s[3])
+    expression_1 %= expression_1 + Or + expression_2, lambda h, s:  BoolOrNode(s[1],s[3])
     expression_1 %= expression_2, lambda h, s: s[1]
 
     expression_2 %= expression_3 + Less + expression_3, lambda h, s:  BoolCompLessNode(s[1],s[3])
@@ -100,14 +101,16 @@ def gramm_Hulk_LR1():
     expression_3 %= Not + expression_4, lambda h, s:  BoolNotNode(s[2])
     expression_3 %= expression_4, lambda h, s: s[1]
     
-    expression_4 %= term + Plus + expression_4 , lambda h, s:  PlusExpressionNode(s[2],s[1],s[3])
-    expression_4 %= term + Minus + expression_4 , lambda h, s:  SubsExpressionNode(s[2],s[1],s[3])
+    #expression_4 %= term + Plus + expression_4 , lambda h, s:  PlusExpressionNode(s[2],s[1],s[3])
+    #expression_4 %= term + Minus + expression_4 , lambda h, s:  SubsExpressionNode(s[2],s[1],s[3])
+    expression_4 %= expression_4 + Plus + term , lambda h, s:  PlusExpressionNode(s[2],s[1],s[3])
+    expression_4 %= expression_4 + Minus + term , lambda h, s:  SubsExpressionNode(s[2],s[1],s[3])
     expression_4 %= term , lambda h, s: s[1]
     
-    term %= factor + Mult + term , lambda h, s:  MultExpressionNode(s[1],s[3])
-    term %= factor + Div + term , lambda h, s:  DivExpressionNode(s[1],s[3])
-    term %= factor + Pow + term
-    term %= factor + Mod + term , lambda h, s:  ModExpressionNode(s[1],s[3])
+    term %= term + Mult + factor   , lambda h, s:  MultExpressionNode(s[1],s[3])
+    term %= term + Div + factor  , lambda h, s:  DivExpressionNode(s[1],s[3])
+    term %= term + Mod + factor  , lambda h, s:  ModExpressionNode(s[1],s[3])
+    term %= term + Pow + factor , lambda h, s:  PowExpressionNode(s[1],s[3]) 
     term %= factor , lambda h, s: s[1]
     
     factor0, factor_0, factor_1 = G.NonTerminals('factor0 factor_0 factor_1')
@@ -121,6 +124,7 @@ def gramm_Hulk_LR1():
     #factor %= member_access, lambda h, s:s[1]
     #factor %= function_call, lambda h, s:s[1]
     factor %= factor0, lambda h, s:  s[1]
+    factor0 %= assignment + In + expression, lambda h, s: LetInExpressionNode(s[1],s[3])  
     factor0 %= oPar + statement + cPar , lambda h, s:  s[2]
     factor0 %= math_call, lambda h, s:  s[1]
     factor0 %= kern_instance_creation, lambda h, s: s[1]
@@ -147,7 +151,6 @@ def gramm_Hulk_LR1():
     arguments %= G.Epsilon, lambda h, s: []
     
     #let in
-    let_in %= assignment + In + non_create_statement, lambda h, s: LetInNode(s[1], s[3])
     let_in %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3]) #NO TENGO CLARO CUANDO SE USA () Y CUANDO {}
     
     # Estructuras adicionales para tipos
@@ -156,7 +159,7 @@ def gramm_Hulk_LR1():
     attribute_definition %= attribute_definition + kern_assignment + Semi, lambda h, s: s[1] + [s[2]]
     attribute_definition %= G.Epsilon, lambda h, s: []
     
-    method_definition %= identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace + method_definition, lambda h, s: [MethodDefinitionNode(s[1], s[3], s[6])] + s[8]
+    method_definition %= identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(s[1], s[3], s[6])] + s[8]
     method_definition %= G.Epsilon , lambda h, s: []
     
     inheritance %= Inherits + def_Type, lambda h, s: InheritanceNode(s[2])
