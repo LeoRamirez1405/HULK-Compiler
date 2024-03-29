@@ -22,16 +22,16 @@ def gramm_Hulk_LR1():
     statement_list %= statement + statement_list, lambda h, s: [s[1]] + s[2] 
     statement_list %= G.Epsilon, lambda h, s: []
     statement_list %= oBrace + statement_list + cBrace , lambda h, s: s[2]
+    
     statement %= non_create_statement + Semi, lambda h, s: s[1] 
-    New + def_Type + oPar + arguments + cPar
     statement %= create_statement + Semi, lambda h, s: s[1] 
+    #New + def_Type + oPar + arguments + cPar
     
     #statement %= non_create_statement, lambda h, s: s[1]
     #statement %= create_statement, lambda h, s: s[1] 
 
     #non_create_statement %= print_statement, lambda h, s: s[1] 
     non_create_statement %= control_structure, lambda h, s: s[1]
-    
     non_create_statement %= expression, lambda h, s: s[1]
     non_create_statement %= let_in, lambda h, s: s[1] 
     
