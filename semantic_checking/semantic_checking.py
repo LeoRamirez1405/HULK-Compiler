@@ -34,6 +34,8 @@ class SemanticCheckingVisitor:
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode, scope=None):
         
+        print('visitor en ProgframNode')
+        
         type_collector = TypeCollectorVisitor(self.context, self.errors)
         type_collector.visit(node)
         
@@ -45,6 +47,7 @@ class SemanticCheckingVisitor:
                       
     @visitor.when(PrintStatmentNode)
     def visit(self, node: PrintStatmentNode, scope):
+        print('visitor en PrintNode')
         self.visit(node.expression, scope)
     
     @visitor.when(DestroyNode)
