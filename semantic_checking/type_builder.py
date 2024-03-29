@@ -1,10 +1,7 @@
 import visitor
 from AST import *
 from semantic import *
-<<<<<<< HEAD
 
-=======
->>>>>>> 430f4664afe1575555de04617b40f7f184476698
 class TypeBuilderVisitor():
     def __init__(self,context:Context) -> None:
         self.context = context

@@ -12,10 +12,10 @@ class TypeCollectorVisitor:
         pass
 
     @visitor.when(ProgramNode)
-    def visit(self, node: ProgramNode, context: Context):
+    def visit(self, node: ProgramNode):
         
         for statment in node.statments:
-            self.visit(statment, context)
+            self.visit(statment, self.context)
             
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode, context: Context):
