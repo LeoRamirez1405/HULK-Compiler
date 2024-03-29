@@ -5,21 +5,11 @@ from semantic import Context, Scope, SemanticError, Type
 #! Hay que ver que se hace con las funciones que no son metodos de alguna clase   OJO
 
 class TypeCheckerVisitor:
-    def __init__(self, context, errors) -> None:
+    def __init__(self, context: Context, scope: Scope, errors, default_functions) -> None:
         self.context: Context = context
         self.errors: List[str] = errors
-        
-    #------------------Inicializando funciones por defecto-----------------------------------------------#
-        self.scope = Scope(parent=None)
-        self.default_functions = ['print', 'sen', 'cos', 'sqrt', 'exp']
-        for func in self.default_functions:
-            self.scope.functions[func] = [1]
-            
-        self.default_functions.extend(['rand', 'log'])
-        self.scope.functions['rand'] = [0]
-        self.scope.functions['log'] = [2]
-        
-    #----------------------------------------------------------------------------------------------------#
+        self.scope: Scope = scope
+        self.default_functions = default_functions
         
     @visitor.on('node')
     def visit(self, node, scope):
@@ -306,11 +296,13 @@ class TypeCheckerVisitor:
     @visitor.when(FunctionCallNode)
     def visit(self, node: FunctionCallNode, scope: Scope):
         try: 
-            args_len = scope.functions[id]
+            args_len = scope.functions[node.id]
             if args_len != len(node.args):
                 self.errors.append(f'La funcion {id} requiere {args_len} cantidad de parametros pero solo {len(node.args)} fueron dados')
         except:
             self.errors.append(f'La funcion {node.id} no esta definida.')
+            
+        
             
     @visitor.when(StringConcatWithSpaceNode)
     def visit(self, node: StringConcatWithSpaceNode, scope: Scope):

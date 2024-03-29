@@ -128,7 +128,7 @@ class Method:
 class Scope:
     def __init__(self, parent=None):
         self.local_variables = set()
-        self.functions: dict[str, List[int]] = {} # {key: id, valor: len(parameters)}
+        self.functions: dict[str, List[Method]] = {} # {key: id, valor: len(parameters)}
         self.parent = parent
         self.children = []
         self.index = 0 if parent is None else len(parent)
