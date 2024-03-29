@@ -52,11 +52,8 @@ def gramm_Hulk_LR1():
     assignment %= Let + multi_assignment, lambda h, s: s[2]
     assignment %= instance_creation, lambda h, s: s[1]
     
-    destructive_assignment %= identifier + Destroy + expression + destructive_assignment, lambda h, s : [DestroyNode(s[1], s[3])] + s[4]
-    destructive_assignment %= G.Epsilon, lambda h, s: []
-    
-    destructive_assignment %= identifier + Destroy + expression + destructive_assignment, lambda h, s : [DestroyNode(s[1], s[3])] + s[4]
-    destructive_assignment %= G.Epsilon, lambda h, s: []
+    destructive_assignment %= identifier + Destroy + expression + Comma + destructive_assignment, lambda h, s : [DestroyNode(s[1], s[3])] + s[4]
+    destructive_assignment %= identifier + Destroy + expression, lambda h, s: [DestroyNode(s[1], s[3])]
     
     function_definition %= Function + identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(s[2],TypeNode('object'),s[4],s[7]) 
     function_definition %= Function + identifier + oPar + parameters + cPar + Arrow + type_annotation + non_create_statement + Semi,lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8])
