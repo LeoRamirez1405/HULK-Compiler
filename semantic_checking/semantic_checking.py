@@ -7,7 +7,7 @@ from type_builder import TypeBuilderVisitor
 class SemanticCheckingVisitor:
     def __init__(self) -> None:
         #------------------Inicializando tipos por defecto---------------------------------------------------#
-        self.context = Context()
+        self.context = Context(parent=None)
         default_types = ['object', 'number', 'string', 'bool']
         for type in default_types:
             self.context.create_type(type)
@@ -16,11 +16,11 @@ class SemanticCheckingVisitor:
         self.scope = Scope()
         self.default_functions = ['print', 'sen', 'cos', 'sqrt', 'exp']
         for func in self.default_functions:
-            self.scope.functions.update(func, [1])
+            self.scope.functions[func] = [1]
             
         self.default_functions.extend(['rand', 'log'])
-        self.scope.functions.update('rand',[0])
-        self.scope.functions.update('log',[2])
+        self.scope.functions['rand'] = [0]
+        self.scope.functions['log'] = [2]
         
         #----------------------------------------------------------------------------------------------------#
         
