@@ -9,9 +9,9 @@ def gramm_Hulk_LR1():
     type_definition, attribute_definition, method_definition, inheritance, instance_creation, member_access, type_annotation = G.NonTerminals('type_definition attribute_definition method_definition inheritance instance_creation member_access type_annotation')
     print_statement, assignment, function_definition, control_structure, contElif, contElse= G.NonTerminals('print_statement assignment function_definition control_structure contElif contElse')
     if_structure, while_structure, for_structure, create_statement, non_create_statement = G.NonTerminals('if_structure while_structure for_structure create_statement non_create_statement')
-    let_in, multi_assignment, kern_assignment = G.NonTerminals('let_in multi_assignment kern_assignment')
+    let_in, multi_assignment, kern_assignment, destructive_assignment = G.NonTerminals('let_in multi_assignment kern_assignment destructive_assignment')
     cont_member, kern_instance_creation, concatStrings, concatStringsWithSpace, math_call = G.NonTerminals('cont_member kern_instance_creation concatStrings concatStringsWithSpace math_call')
-    Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, Arrow, Mod = G.Terminals('print ( ) { } ; = + - * / => %')
+    Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, Arrow, Mod, Destroy  = G.Terminals('print ( ) { } ; = + - * / => % :=')
     And, Or, Not, Less, Greater, Equal, LessEqual, GreaterEqual, NotEqual, Is, In, _True, _False = G.Terminals('and or not < > == <= >= != is in True False')
     Comma, Dot, If, Else, While, For, Let, Function, Colon = G.Terminals(', . if else while for let function :')
     identifier, number, string, Elif, Type, Inherits, New, In, def_Type, arroba   = G.Terminals('identifier number string elif type inherits new in def_Type @') 
@@ -31,6 +31,7 @@ def gramm_Hulk_LR1():
     create_statement %= type_definition, lambda h, s: s[1]
     create_statement %= function_definition, lambda h, s: s[1]
     create_statement %= assignment, lambda h, s: s[1]
+    create_statement %= destructive_assignment, lambda h, s: [1]
     
     print_statement %= Print + oPar + non_create_statement + cPar + Semi, lambda h, s: PrintStatmentNode(s[3])
     kern_assignment %= identifier + Equal + expression, lambda h, s: LetNode(s[1],s[3])
@@ -40,6 +41,9 @@ def gramm_Hulk_LR1():
     
     assignment %= Let + multi_assignment, lambda h, s: s[2]
     assignment %= instance_creation, lambda h, s: s[1]
+    
+    destructive_assignment %= identifier + Destroy + expression + destructive_assignment, lambda h, s : [DestroyNode(s[1], s[3])] + s[4]
+    destructive_assignment %= G.Epsilon, lambda h, s: []
     
     type_annotation %= Colon + def_Type, lambda h, s: TypeNode(s[2]) 
     type_annotation %= G.Epsilon, lambda h, s: TypeNode('object')
