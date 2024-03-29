@@ -370,13 +370,13 @@ class BoolCompEqualNode(BoolCompAritNode):
     #     self.left = left
     #     self.right = right
         
-class BoolCompLessIqualNode(BoolCompAritNode):
+class BoolCompLessEqualNode(BoolCompAritNode):
     def __init__(self, left, right):
         super().__init__(left, right)
         # self.left = left
         # self.right = right
         
-class BoolCompGreaterIqualNode(BoolCompAritNode):
+class BoolCompGreaterEqualNode(BoolCompAritNode):
     def __init__(self, left, right):
         super().__init__(left, right)
         # self.left = left
