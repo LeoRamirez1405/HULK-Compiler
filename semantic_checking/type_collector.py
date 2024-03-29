@@ -1,10 +1,10 @@
-from semantic import Context
+from semantic import Context, SemanticError
 import visitor
 from AST import *
 
 class TypeCollectorVisitor:
-    def __init__(self, contetx, errors) -> None:
-        self.context = contetx
+    def __init__(self, context, errors) -> None:
+        self.context = context
         self.errors = errors
         
     @visitor.on('node')
@@ -12,14 +12,15 @@ class TypeCollectorVisitor:
         pass
 
     @visitor.when(ProgramNode)
-    def visit(self, node: ProgramNode, context: Context):
+    def visit(self, node: ProgramNode):
+        
         for statment in node.statments:
-            self.visit(statment, context)
+            self.visit(statment, self.context)
             
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode, context: Context):
-        if context.is_definedd(node.id):
-            self.errors.append(f'El nombre de tipo {node.id} ya ha sido tomado')
+        if context.is_defined(node.id):
+            self.errors.append(SemanticError(f'El nombre de tipo {node.id} ya ha sido tomado'))
         else:
             context.create_type(node.id)
             
@@ -29,8 +30,7 @@ class TypeCollectorVisitor:
             
     @visitor.when(FunctionDefinitionNode)
     def visit(self, node: FunctionDefinitionNode, context: Context):
-        inner_context = context.create_child(context)
         for statment in node.body:
-            self.visit(statment, inner_context)
+            self.visit(statment, context)
             
     

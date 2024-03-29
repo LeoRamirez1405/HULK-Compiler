@@ -1,9 +1,22 @@
-# from cmp.semantic import *
+import itertools as itt
+from collections import OrderedDict
+from typing import List
 
 class SemanticError(Exception):
     @property
     def text(self):
         return self.args[0]
+    
+class Attribute:
+    def __init__(self, name, typex):
+        self.name = name
+        self.type = typex
+
+    def __str__(self):
+        return f'[attrib] {self.name} : {self.type.name};'
+
+    def __repr__(self):
+        return str(self)
 
 class VariableInfo:
     def __init__(self, name, vtype):
@@ -115,7 +128,7 @@ class Method:
 class Scope:
     def __init__(self, parent=None):
         self.local_variables = set()
-        self.functions = {} # {key: id, valor: len(parameters)}
+        self.functions: dict[str, List[int]] = {} # {key: id, valor: len(parameters)}
         self.parent = parent
         self.children = []
         self.index = 0 if parent is None else len(parent)
@@ -161,14 +174,12 @@ class Context:
         typex = self.types[name] = Type(name)
         return typex
     
-    def is_definedd(self, type: str):
+    def is_defined(self, type: str):
         try:
             self.types[type]
             return True
         except:
-            if self.parent:
-                return self.parent.is_definedd(type)
-        return False
+            return False
 
     def get_type(self, name:str):
         try:

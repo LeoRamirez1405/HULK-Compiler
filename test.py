@@ -6,6 +6,7 @@ from lexer import Lexer
 gramatica, lexer = gramm_Hulk_LR1()
 
 
+
 # print(gramatica.Terminals)
 
 # Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, Arrow, Mod = G.Terminals('print ( ) { } ; = + - * / => %')
@@ -161,16 +162,16 @@ gramatica, lexer = gramm_Hulk_LR1()
 text = 'print(((1 + 2) ^ 3) * 4);'
 
 tokens = lexer(text)
-print(tokens)
+#print(tokens)
 
 # Extraer las propiedades "tokentype" de cada token
 tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
 
-print(tokentypes)
-parser = LR1Parser(gramatica,True)
+#print(tokentypes)
+parser = LR1Parser(gramatica,False)
 
-derivation = parser(tokentypes)
-print(derivation)
+#derivation = parser(tokentypes)
+#print(derivation)
 
 
 
