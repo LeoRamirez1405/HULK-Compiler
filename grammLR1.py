@@ -13,7 +13,7 @@ def gramm_Hulk_LR1():
     cont_member, kern_instance_creation, concatStrings, concatStringsWithSpace, math_call, factorPow = G.NonTerminals('cont_member kern_instance_creation concatStrings concatStringsWithSpace math_call factorPow')
     Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, Arrow, Mod, Destroy, Pow = G.Terminals('print ( ) { } ; = + - * / => % := ^')
     And, Or, Not, Less, Greater, CompEqual, LessEqual, GreaterEqual, NotEqual, Is, In, _True, _False = G.Terminals('and or not < > == <= >= != is in True False')
-    Comma, Dot, If, Else, While, For, Let, Function, Colon = G.Terminals(', . if else while for let function :')
+    Comma, Dot, If, Else, While, For, Let, Function, Colon, PowStar = G.Terminals(', . if else while for let function : **')
     identifier, number, string, Elif, Type, Inherits, New, In, arroba,PI   = G.Terminals('identifier number string elif type inherits new in @ PI') 
     sComil, dComill, = G.Terminals('\' \"')
     sqrt, sin, cos, tan, exp, log, rand = G.Terminals('sqrt sin cos tan exp log rand')
@@ -55,20 +55,16 @@ def gramm_Hulk_LR1():
     
     assignment %= Let + multi_assignment, lambda h, s: s[2]
     multi_assignment %= kern_assignment + Comma + multi_assignment, lambda h, s: [s[1]] + s[3]
-    multi_assignment %= kern_assignment + Semi, lambda h, s: [s[1]]
-    kern_assignment %= identifier + Equal + expression, lambda h, s: KernAssigmentNode(s[1],s[3])
+    multi_assignment %= kern_assignment, lambda h, s: [s[1]]
+    kern_assignment %= identifier + Equal + expr_statement, lambda h, s: KernAssigmentNode(s[1],s[3])
     
     destructive_assignment %= identifier + Destroy + expression + Comma + destructive_assignment, lambda h, s : [DestroyNode(s[1], s[3])] + s[4]
     destructive_assignment %= identifier + Destroy + expression, lambda h, s: [DestroyNode(s[1], s[3])]
 
-    function_definition %= Function + identifier + type_annotation + oPar + parameters + cPar + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8]) 
+    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8]) 
+    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + Arrow + non_create_statement,lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8])
     
-    #TODO Revisar .. se elimino el ; al final de la creacion de la uncion con un Arrow porque ese tipo
-    #TODO de funciones terminan en un non_create_statmeng y los non_create_statment terminan en ;
-    # function_definition %= Function + identifier + type_annotation + oPar + parameters + cPar + Arrow + non_create_statement + Semi,lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8])
-    function_definition %= Function + identifier + type_annotation + oPar + parameters + cPar + Arrow + non_create_statement , lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8])
-    
-    parameters %= expression + type_annotation + Comma + parameters, lambda h, s: [{s[1]:s[2]}] + s[4]
+    parameters %= expression + type_annotation + Comma + parameters, lambda h, s: [{s[1]:s[2]}] + [s[4]]
     parameters %= expression + type_annotation, lambda h, s: {s[1]:s[2]}
     parameters %= G.Epsilon, lambda h, s:[]
     
@@ -113,6 +109,8 @@ def gramm_Hulk_LR1():
     
     factorPow %= factor, lambda h, s:s[1]
     factorPow %= factor + Pow + factorPow , lambda h, s:  PowExpressionNode(s[1],s[3])
+    factorPow %= factor + PowStar + factorPow , lambda h, s:  PowExpressionNode(s[1],s[3])
+    
     factor %= oPar + expr_statement + cPar , lambda h, s:  s[2]
     factor %= number, lambda h, s:  NumberNode(s[1])
     factor %= string, lambda h, s:  StringNode(s[1])
@@ -143,12 +141,12 @@ def gramm_Hulk_LR1():
     arguments %= G.Epsilon, lambda h, s: []
     
     # Estructuras adicionales para tipos
-    type_definition %= Type + identifier + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(s[2],s[3], s[5], s[6])
+    type_definition %= Type + identifier + oPar + parameters + cPar + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(s[2],s[4], s[6], s[8],s[9])
 
     attribute_definition %= attribute_definition + kern_assignment + Semi, lambda h, s: s[1] + [s[2]]
     attribute_definition %= G.Epsilon, lambda h, s: []
 
-    method_definition %= identifier + oPar + parameters + cPar + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(s[1], s[3], s[6])] + s[8]
+    method_definition %= identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(s[1], s[3], s[6])] + s[8]
     method_definition %= G.Epsilon , lambda h, s: []
 
     inheritance %= Inherits + identifier, lambda h, s: InheritanceNode(s[2])

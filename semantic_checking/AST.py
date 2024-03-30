@@ -271,8 +271,9 @@ class StringNode(Node):
         self.value = value
         
 class IdentifierNode(Node):
-    def __init__(self) -> None:
+    def __init__(self,id) -> None:
         super().__init__()
+        self.id = id
         
 class StringConcatNode(BinaryNode):
     def __init__(self, left, right):

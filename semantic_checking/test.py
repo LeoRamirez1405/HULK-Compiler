@@ -11,6 +11,7 @@ from grammLR1 import gramm_Hulk_LR1
 from LR1 import LR1Parser
 
 gramatica, lexer = gramm_Hulk_LR1()
+<<<<<<< HEAD
 # text = 'print(42);print(sin(4/2));print("Hello World");'
 # text_create_type = """type Point{x = 0;y = 0;getX() => x;getY() => y;setX(x) => x := x;setY(y) => y := y;}"""
 # tokens = lexer(text_create_type)
@@ -28,3 +29,23 @@ gramatica, lexer = gramm_Hulk_LR1()
 
 
 ast = Pro
+=======
+
+with open('./prueba.txt', "r", encoding="utf-8") as archivo:
+    content = archivo.read()
+    text = content
+
+text = 'let number = 42 in let text = "The meaning of life is" in print(text @ number);'
+print(text)
+#text = 'type call(x){ x = 3; }'
+tokens = lexer(text)
+tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
+parser = LR1Parser(gramatica, False)
+output,operations = parser(tokentypes)
+print(type(operations))
+ast = evaluate_reverse_parse(output, operations, tokens)
+print(ast)
+#checker = SemanticCheckingVisitor()
+#errors = checker.semantic_checking(ast)
+# print(checker.scope.define_variable)
+>>>>>>> ed7b2040b333877fc2186a61f0bbb292af57427f
