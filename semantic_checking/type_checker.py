@@ -2,22 +2,14 @@ import visitor
 from AST import *
 from semantic import Context, Scope, SemanticError, Type
 
+#! Hay que ver que se hace con las funciones que no son metodos de alguna clase   OJO
+
 class TypeCheckerVisitor:
-    def __init__(self, context, errors) -> None:
+    def __init__(self, context: Context, scope: Scope, errors, default_functions) -> None:
         self.context: Context = context
         self.errors: List[str] = errors
-        
-        #------------------Inicializando funciones por defecto-----------------------------------------------#
-        self.scope = Scope(parent=None)
-        self.default_functions = ['print', 'sen', 'cos', 'sqrt', 'exp']
-        for func in self.default_functions:
-            self.scope.functions[func] = [1]
-            
-        self.default_functions.extend(['rand', 'log'])
-        self.scope.functions['rand'] = [0]
-        self.scope.functions['log'] = [2]
-        
-        #----------------------------------------------------------------------------------------------------#
+        self.scope: Scope = scope
+        self.default_functions = default_functions
         
     @visitor.on('node')
     def visit(self, node, scope):
@@ -60,7 +52,7 @@ class TypeCheckerVisitor:
             return self.context.get_type('object')
             
     @visitor.when(FunctionDefinitionNode)
-    def visit(self, node: FunctionCallNode, scope: Scope):
+    def visit(self, node: FunctionDefinitionNode, scope: Scope):
         if node.id in self.default_functions:
             self.errors.append(SemanticError(f'Esta redefiniendo una funcion {node.id} que esta definida por defecto en el lenguaje y no se puede sobreescribir'))
             
@@ -68,17 +60,25 @@ class TypeCheckerVisitor:
             return self.context.get_type('object')
         
         try:
-            args_len_list = scope.functions[id]
-            if  len(node.args) in args_len_list:
+            args_len_list = scope.functions[node.id]
+            if  len(node.parameters) in args_len_list:
                 self.errors.append(SemanticError(f'La funcion {node.id} ya esta definida con {len(node.args)} cantidad de parametros.'))
+            else:
+                scope.functions[node.id].append(len(node.parameters))
         except:
             #TODO Se puede instanciar la clase Method de semantic~seria algo similar a scope.functions[node.id] = nodmethod(node. ...)
             #* Por el momento en el diccionario tengo el id de la funcion con su cantidad de parametros
             scope.functions[node.id].append(len(node.args))
+            
+
 #----------------------------------------Checkeo de tipos--------------------------------------------------------------------------------------------------------------#
-            for arg in node.args:
-                self.visit(arg, scope)
+            inner_scope: Scope = scope.create_child()            
+            for arg, type in node.parameters:
+                inner_scope.define_variable(arg, self.visit(type, inner_scope))
+                
+            self.visit(node.body, inner_scope)
 #----------------------------------------Checkeo de tipos--------------------------------------------------------------------------------------------------------------#
+            return self.context.get_type('object')
             
     @visitor.when(IfStructureNode)
     def visit(self, node: IfStructureNode, scope: Scope):
@@ -86,7 +86,7 @@ class TypeCheckerVisitor:
         if self.visit(node.condition).name != 'bool':
             self.errors.append(SemanticError(f'La condicion del if debe ser de tipo bool'))
             
-        inner_scope = scope.create_child(scope)
+        inner_scope = scope.create_child()
         for statment in node.body:
             self.visit(statment, inner_scope)
         
@@ -103,7 +103,7 @@ class TypeCheckerVisitor:
         if self.visit(node.condition) != 'bool':
             self.errors.append(SemanticError(f'La condicion del if debe ser de tipo bool'))
             
-        inner_scope = scope.create_child(scope)
+        inner_scope = scope.create_child()
         for statment in node.body:
             self.visit(statment, inner_scope)
             
@@ -111,7 +111,7 @@ class TypeCheckerVisitor:
         
     @visitor.when(ElseStructureNode)
     def visit(self, node: ElseStructureNode, scope: Scope):
-        inner_scope = scope.create_child(scope)
+        inner_scope = scope.create_child()
         for statment in node.body:
             self.visit(statment, inner_scope)
             
@@ -122,7 +122,7 @@ class TypeCheckerVisitor:
         if self.visit(node.condition, scope) != 'bool':
             self.errors.append(SemanticError(f'La condicion del while debe ser de tipo bool'))
             
-        inner_scope = scope.create_child(scope)
+        inner_scope = scope.create_child()
         for statment in node.body:
             self.visit(statment, inner_scope)
             
@@ -130,7 +130,7 @@ class TypeCheckerVisitor:
             
     @visitor.when(ForStructureNode)
     def visit(self, node: ForStructureNode, scope: Scope):
-        inners_scope: Scope = scope.create_child(scope)
+        inners_scope: Scope = scope.create_child()
         for id, expr in node.init_assigments:
             if scope.is_defined(node.id):
                 self.errors.append(SemanticError(f'La variable {id} ya esta definida en este scope.'))
@@ -146,7 +146,7 @@ class TypeCheckerVisitor:
             
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode, scope: Scope):
-        inner_scope: Scope = scope.create_child(scope)
+        inner_scope: Scope = scope.create_child()
         
         #TODO Ver que se hace con los argumentos porque fuera del 'constructor' ya no tienen sentido
         for arg, type_att in node.parameters:
@@ -283,7 +283,7 @@ class TypeCheckerVisitor:
         
     @visitor.when(LetInNode)
     def visit(self, node: LetInNode, scope: Scope):
-        inner_scope = scope.create_child(scope)
+        inner_scope = scope.create_child()
         for assign in node.assigments:
             self.visit(assign, inner_scope)
             
@@ -296,11 +296,13 @@ class TypeCheckerVisitor:
     @visitor.when(FunctionCallNode)
     def visit(self, node: FunctionCallNode, scope: Scope):
         try: 
-            args_len = scope.functions[id]
+            args_len = scope.functions[node.id]
             if args_len != len(node.args):
                 self.errors.append(f'La funcion {id} requiere {args_len} cantidad de parametros pero solo {len(node.args)} fueron dados')
         except:
             self.errors.append(f'La funcion {node.id} no esta definida.')
+            
+        
             
     @visitor.when(StringConcatWithSpaceNode)
     def visit(self, node: StringConcatWithSpaceNode, scope: Scope):

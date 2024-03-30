@@ -1,10 +1,11 @@
-from semantic import Context, SemanticError
+from semantic import Context, Scope, SemanticError
 import visitor
 from AST import *
 
 class TypeCollectorVisitor:
-    def __init__(self, context, errors) -> None:
+    def __init__(self, context: Context, scope: Scope, errors) -> None:
         self.context: Context = context
+        self.scope: Scope = scope
         self.errors: List[str] = errors
         
     @visitor.on('node')
@@ -19,17 +20,13 @@ class TypeCollectorVisitor:
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode):
         try:
-            self.context[node.id]
-            self.errors.append(SemanticError(f'El nombre de tipo {node.id} ya ha sido tomado'))
-        except:
             self.context.create_type(node.id)
+        except:
+            self.errors.append(SemanticError(f'El nombre de tipo {node.id} ya ha sido tomado'))
             
-        for method in node.methods:
-            self.visit(method)
-            
-    # @visitor.when(FunctionDefinitionNode)
-    # def visit(self, node: FunctionDefinitionNode):
-    #     for statment in node.body:
-    #         self.visit(statment)
-            
+    #Aqui solo se va a entrar si la funcion esta definida en el ProgramNode
+    @visitor.when(FunctionDefinitionNode)
+    def visit(self, node: FunctionDefinitionNode):
+        if not node.id in self.scope.functions:
+            self.scope.functions[node.id] = []
     

@@ -21,5 +21,5 @@ parser = LR1Parser(gramatica, True)
 
 #ast = evaluate_reverse_parse(parser, parser(tokentypes), tokens)
 # checker = SemanticCheckingVisitor(ast)
-# checker.visit(ast)
+# errors = checker.semantic_checking(ast)
 # print(checker.scope.define_variable)
