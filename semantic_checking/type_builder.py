@@ -1,6 +1,7 @@
 import visitor
-from AST import *
 from semantic import *
+# from semantic_checking.AST import *
+from AST import *
 
 class TypeBuilderVisitor():
     def __init__(self,context:Context, scope: Scope, errors) -> None:
@@ -15,7 +16,8 @@ class TypeBuilderVisitor():
     
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
-        print('TypeBuilder')
+        #print('TypeBuilder')
+        # print(f'Context in Builder: {[item for item in self.context.types.keys()]}')
         for classDef in node.statments:
             self.visit(classDef)
 
@@ -23,9 +25,9 @@ class TypeBuilderVisitor():
     def visit(self, node: TypeDefinitionNode):
         self.currentType: Type = self.context.get_type(node.id) 
         try:
-            inheritance = self.context.get_type(node.inheritance)
+            inheritance = self.context.get_type(inheritance.type)
         except:
-            self.errors.append(SemanticError(f'El tipo  {node.inheritance} del que se herada no esta definido'))
+            self.errors.append(SemanticError(f'El tipo  {node.inheritance} del que se hereda no esta definido'))
             inheritance = self.context.get_type('object')
         
         self.currentType.inhertance = inheritance
@@ -57,9 +59,10 @@ class TypeBuilderVisitor():
     @visitor.when(FunctionDefinitionNode)
     def visit(self, node: FunctionDefinitionNode):
         try: 
-            return_type = self.context.get_type(node.type_annotation)
+            type_annotation: TypeNode = node.type_annotation
+            return_type = self.context.get_type(type_annotation.type)
         except:
-            self.errors.append(f'El tipo de retorno {node.type_annotation} no esta definido')
+            self.errors.append(f'El tipo de retorno {node.type_annotation.type} no esta definido')
             return_type = self.context.get_type('object')
         
         arg_names = [parama.items[0].key for parama in node.parameters]

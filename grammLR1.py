@@ -1,5 +1,4 @@
 from cmp.pycompiler import Grammar
-# from semantic_checking.ast_nodes import *
 from semantic_checking.AST import *
 from lexer import Lexer
 import string as stringMod
@@ -10,7 +9,7 @@ def gramm_Hulk_LR1():
     statement_list, statement, condition, expression, term, factor, function_call, arguments, parameters = G.NonTerminals('statement_list statement condition expression term factor function_call arguments parameters')
     type_definition, attribute_definition, method_definition, inheritance, instance_creation, member_access, type_annotation = G.NonTerminals('type_definition attribute_definition method_definition inheritance instance_creation member_access type_annotation')
     print_statement, assignment, function_definition, control_structure, contElif, contElse= G.NonTerminals('print_statement assignment function_definition control_structure contElif contElse')
-    if_structure, while_structure, for_structure, create_statement, non_create_statement = G.NonTerminals('if_structure while_structure for_structure create_statement non_create_statement')
+    if_structure, while_structure, for_structure, create_statement, non_create_statement, expr_statementWithoutSemi = G.NonTerminals('if_structure while_structure for_structure create_statement non_create_statement expr_statementWithoutSemi')
     let_in, multi_assignment, kern_assignment, destructive_assignment, let_in_as_expr, expr_statement= G.NonTerminals('let_in multi_assignment kern_assignment destructive_assignment let_in_as_expr expr_statement')
     cont_member, kern_instance_creation, concatStrings, concatStringsWithSpace, math_call, factorPow = G.NonTerminals('cont_member kern_instance_creation concatStrings concatStringsWithSpace math_call factorPow')
     Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, Arrow, Mod, Destroy, Pow = G.Terminals('print ( ) { } ; = + - * / => % := ^')
@@ -31,14 +30,16 @@ def gramm_Hulk_LR1():
     
     non_create_statement %= control_structure, lambda h, s: s[1]
     non_create_statement %= expr_statement + Semi, lambda h, s: s[1]
-    
+    non_create_statement %= expr_statementWithoutSemi, lambda h, s: s[1]
     create_statement %= type_definition, lambda h, s: s[1]
     create_statement %= function_definition, lambda h, s: s[1]
     create_statement %= destructive_assignment+ Semi, lambda h, s: s[1]
     
     expr_statement %= print_statement, lambda h, s: s[1]
-    expr_statement %= expression, lambda h, s: s[1]
     expr_statement %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
+    expr_statement %= expression, lambda h, s: s[1]
+    expr_statementWithoutSemi %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])    
+    
     print_statement %= Print + oPar + expression + cPar, lambda h, s: PrintStatmentNode(s[3])
     
     kern_assignment %= identifier + Equal + kern_instance_creation, lambda h, s: KernAssigmentNode(s[1],s[3])
@@ -65,8 +66,8 @@ def gramm_Hulk_LR1():
     destructive_assignment %= identifier + Destroy + expression + Comma + destructive_assignment, lambda h, s : [DestroyNode(s[1], s[3])] + s[4]
     destructive_assignment %= identifier + Destroy + expression, lambda h, s: [DestroyNode(s[1], s[3])]
 
-    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8]) 
-    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + Arrow + non_create_statement,lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8])
+    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(s[2],s[6],s[4],s[8]) 
+    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + Arrow + non_create_statement,lambda h, s: FunctionDefinitionNode(s[2],s[6],s[4],s[8])
     
     parameters %= expression + type_annotation + Comma + parameters, lambda h, s: [{s[1]:s[2]}] + [s[4]]
     parameters %= expression + type_annotation, lambda h, s: {s[1]:s[2]}
@@ -124,7 +125,7 @@ def gramm_Hulk_LR1():
     factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(s[1],s[3])
     factor %= identifier, lambda h, s:  IdentifierNode(s[1])
     #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
-    factor %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])    
+    #factor %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])    
     factor %= math_call, lambda h, s:  s[1]
     factor %= member_access, lambda h, s:  s[1]    
     
@@ -139,7 +140,7 @@ def gramm_Hulk_LR1():
     math_call %= exp + oPar + ExprNum + cPar, lambda h, s: ExpMathNode(s[3])
     math_call %= log + oPar + ExprNum + Comma + ExprNum + cPar, lambda h, s:  LogCallNode(s[3],s[5]) 
     math_call %= rand + oPar + cPar,  lambda h, s: RandomCallNode()
-    math_call %= PI, lambda h, s: PINode(3.1415)
+    math_call %= PI, lambda h, s: PINode()
     
     arguments %= expr_statement + Comma + arguments, lambda h, s: [s[1]]+s[2]
     arguments %= expr_statement , lambda h, s: s[1]
@@ -151,7 +152,7 @@ def gramm_Hulk_LR1():
     attribute_definition %= attribute_definition + kern_assignment + Semi, lambda h, s: s[1] + [s[2]]
     attribute_definition %= G.Epsilon, lambda h, s: []
 
-    method_definition %= identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(s[1], s[3], s[6])] + s[8]
+    method_definition %= identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(s[1], s[5], s[3],s[7])] + s[8]
     method_definition %= G.Epsilon , lambda h, s: []
 
     inheritance %= Inherits + identifier, lambda h, s: InheritanceNode(s[2])
@@ -219,6 +220,8 @@ def gramm_Hulk_LR1():
     (log, 'log'),
     (rand, 'rand'),
     (PI, 'PI'),
+    (Destroy, ':='),
+    
     (identifier, f'({minletters}|{capletters})({minletters}|{zero_digits}|{capletters})*')
 ], G.EOF)
     
