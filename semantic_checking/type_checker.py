@@ -300,8 +300,8 @@ class TypeCheckerVisitor:
             
     @visitor.when(StringConcatWithSpaceNode)
     def visit(self, node: StringConcatWithSpaceNode, scope: Scope):
-        if self.visit(node.left, scope) != 'string' or self.visit(node.right, scope) != 'string':
-            self.errors.append(SemanticError(f'Esta operacion solo puede ser aplicada a strings.'))
+        if (self.visit(node.left, scope) != 'string' and self.visit(node.left, scope) != 'number') or (self.visit(node.right, scope) != 'string' and self.visit(node.right, scope) != 'number'):
+            self.errors.append(SemanticError(f'Esta operacion solo puede ser aplicada a strings o entre una combinacion de string con number.'))
             return self.context.get_type('object')
         
         return self.context.get_type('string')

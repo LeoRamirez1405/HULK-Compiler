@@ -28,7 +28,7 @@ class TypeBuilderVisitor():
             inheritance: TypeNode = node.inheritance
             self.context.get_type(inheritance.type)
         except:
-            self.errors.append(SemanticError(f'El tipo  {node.inheritance.type} del que se herada no esta definido'))
+            self.errors.append(SemanticError(f'El tipo  {node.inheritance.type} del que se hereda no esta definido'))
             inheritance = self.context.get_type('object')
         
         self.currentType.inhertance = inheritance

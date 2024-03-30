@@ -31,9 +31,10 @@ class SemanticCheckingVisitor:
         self.errors = []
 
         
+    #TODO Pasar a los collectors copias de context scope y errors
     def semantic_checking(self, ast):
         type_collector = TypeCollectorVisitor(self.context, self.scope, self.errors)
-        self.context, self.scope, self.errors = type_collector.visit(ast)
+        type_collector.visit(ast)
         
         type_builder = TypeBuilderVisitor(self.context, self.scope, self.errors)
         type_builder.visit(ast)
@@ -50,7 +51,12 @@ class SemanticCheckingVisitor:
     
         return self.errors
                       
-
+ast0 = NumberNode(42)
+ast1 = PrintStatmentNode(NumberNode(42))
+ast2 = PrintStatmentNode(DivExpressionNode(MultExpressionNode(PowExpressionNode(PlusExpressionNode(NumberNode(1), NumberNode(2)), NumberNode(3)), NumberNode(4)), NumberNode(5)))
+ast3 = PrintStatmentNode(StringNode('Hello World'))
+ast4 = PrintStatmentNode(StringNode(StringConcatWithSpaceNode(StringNode('The meaning of life is'), NumberNode(42))))
+ast5 = PrintStatmentNode(PlusExpressionNode(PowExpressionNode(SinMathNode(MultExpressionNode(NumberNode(2), PINode())), NumberNode(2)), CosMathNode(DivExpressionNode(MultExpressionNode(NumberNode(3), PINode()), LogCallNode(NumberNode(4), NumberNode(64))))))
 ast = ProgramNode([
     PrintStatmentNode(NumberNode(45)),
     TypeDefinitionNode(
@@ -77,10 +83,13 @@ ast = ProgramNode([
     SqrtMathNode(StringNode('arbol'))
     ])
 
-checker = SemanticCheckingVisitor()
-errors = checker.semantic_checking(ast)
-print(len(errors))
-print(errors)
+print_aritmetic_tests = [ast0, ast1, ast2, ast3, ast4, ast5]
+for index_test in range(len(print_aritmetic_tests)):
+    print(f'Test - {index_test}')
+    checker = SemanticCheckingVisitor()
+    errors = checker.semantic_checking(print_aritmetic_tests[index_test])
+    print(len(errors))
+    print(errors)
 
 
 #TODO OJO Los inhertance y los type_annotation son de tipo TypeNode
