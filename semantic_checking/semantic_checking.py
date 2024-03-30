@@ -83,7 +83,7 @@ ast5 = ProgramNode([
                     )
                 )
             ])
-ast = ProgramNode([
+ast6 = ProgramNode([
     PrintStatmentNode(NumberNode(45)),
     TypeDefinitionNode(
         id='Point', 
@@ -109,10 +109,12 @@ ast = ProgramNode([
     SqrtMathNode(StringNode('arbol'))
     ])
 
-print_aritmetic_tests = [ast0, ast1, ast2, ast3, ast4, ast5]
+print_aritmetic_tests = [ast0, ast1, ast2, ast3, ast4, ast5, ast6]
 for index_test in range(len(print_aritmetic_tests)):
     print(f'Test - {index_test}')
     checker = SemanticCheckingVisitor()
+    if index_test != 6:
+        continue
     errors = checker.semantic_checking(print_aritmetic_tests[index_test])
     print(len(errors))
     print(errors)

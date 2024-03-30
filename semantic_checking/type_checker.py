@@ -51,8 +51,7 @@ class TypeCheckerVisitor:
     @visitor.when(TypeNode)
     def visit(self, node: TypeNode, scope: Scope):
         try:
-            self.context.types[node.type]
-            return self.context.types[node.type]
+            return self.context.get_type(node.type)
         except:
             self.errors.append(SemanticError(f'Tipo {node.type} no esta definido'))
             return self.context.get_type('object')
@@ -216,11 +215,11 @@ class TypeCheckerVisitor:
         base_object_type: Type = self.visit(node.base_object, scope)
         try:
             if node.object_property_to_acces in base_object_type.methods:
-                #En caso de ser un metodo se verifica si la cantidad de parametros suministrados es correcta
+                #En caso de ser un metodo se verifica si la cantidaobject_property_to_accesd de parametros suministrados es correcta
                 index = base_object_type.methods.index(node.object_property_to_acces)
                 if len(node.args) != len(base_object_type.methods[index].param_names):
                     #Si la cantidad de parametros no es correcta se lanza un error
-                    self.errors.append(SemanticError(f'La funcion {node.object_property_to_acces} requiere {len(base_object_type.methods[index].param_names)} cantidad de parametros pero {len(node.args)} fueron dados'))
+                    self.errors.append(SemanticError(f'La funcio        n {node.object_property_to_acces} requiere {len(base_object_type.methods[index].param_names)} cantidad de parametros pero {len(node.args)} fueron dados'))
                 else:
                     #Si la cantidad de parametros es correcta se verifica si los tipos de los parametros suministrados son correctos
                     #! OJO aqui tambien hay que ver lo de la jeraquia de clases
@@ -245,7 +244,7 @@ class TypeCheckerVisitor:
         if not type_1.name == type_2.name == 'bool':
             self.errors.append(SemanticError(f'Solo se pueden emplear operadores booleanos entre expresiones booleanas.'))
             return self.context.get_type('object')
-        
+
         return type_1
         
     @visitor.when(AritmeticExpression)
