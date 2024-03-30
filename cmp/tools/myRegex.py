@@ -36,6 +36,7 @@ class ConcatNode(BinaryNode):
 
 FF=ConcatNode
 def regex_tokenizer(text,G,skip_whitespaces=True):
+  # print(text)
   h=[]
   GG={x:Token(x,G[x])for x in['|','*','(',')','\xce\xb5']}
   backlashed = False
@@ -56,6 +57,7 @@ def regex_tokenizer(text,G,skip_whitespaces=True):
         backlashed = False
         j=Token(z,G['symbol'])
       finally:
+        print(f"Added {j}")
         h.append(j)
   h.append(Token('$',G.EOF))
   return h

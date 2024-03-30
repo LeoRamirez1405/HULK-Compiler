@@ -156,18 +156,32 @@ gramatica, lexer = gramm_Hulk_LR1()
 # text = 'print(\"Hello World\");'
 # text = 'print(\"The meaning of life is \" @ 42);'
 # text = 'print(sin(2 * PI) ^ 2 + cos(3 * PI / log(4, 64)));'
-text = 'print(42);print(sin(PI/2));print("Hello World");'
-tokens = lexer(text)
-#print(tokens)
+# text = 'print(42);print(sin(PI/2));print("Hello World");
 
-# Extraer las propiedades "tokentype" de cada token
+# Abrir el archivo en modo lectura
+# Abrir el archivo en modo lectura
+with open('prueba.txt', 'r') as prueba:
+    contenido = prueba.read()
+
+    # Reemplazar saltos de línea por espacios en blanco
+    contenido = contenido.replace('\n', ' ')
+
+    # Reemplazar tabulaciones por espacios en blanco
+    contenido = contenido.replace('\t', '')
+
+
+text = "Hello World"
+tokens = lexer(text)
+print(tokens)
+
+# # Extraer las propiedades "tokentype" de cada token
 tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
 
-#print(tokentypes)
-parser = LR1Parser(gramatica,False)
+print(tokentypes)
+# parser = LR1Parser(gramatica,False)
 
-derivation = parser(tokentypes)
-print(derivation)
+# derivation = parser(tokentypes)
+# print(derivation)
 
 
 
