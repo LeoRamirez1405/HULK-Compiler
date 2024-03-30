@@ -19,10 +19,9 @@ with open('prueba.txt', 'r') as prueba:
     contenido = contenido.replace('\t', '')
     contenido = contenido.replace('"', '\"')
 
-# contenido = 'if (x is Bird) "It\'s bird!"'
-print(contenido)
-tokens = lexer(contenido)
-print(tokens)
+
+text = "Hello World"
+tokens = lexer(text)
 
 # # Extraer las propiedades "tokentype" de cada token
 tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
