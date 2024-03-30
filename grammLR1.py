@@ -1,6 +1,7 @@
 from cmp.pycompiler import Grammar
 from semantic_checking.AST import *
 from lexer import Lexer
+import string as stringMod
 
 def gramm_Hulk_LR1():
     G = Grammar()
@@ -20,14 +21,15 @@ def gramm_Hulk_LR1():
     
     Program %= statement_list, lambda h, s: ProgramNode(s[1])
     statement_list %= statement + statement_list, lambda h, s: [s[1]] + s[2] 
-    statement_list %= G.Epsilon, lambda h, s: []
     statement_list %= oBrace + statement_list + cBrace , lambda h, s: s[2]
+    statement_list %= G.Epsilon, lambda h, s: []
     
     statement %= non_create_statement, lambda h, s: s[1] 
+    statement %= assignment + Semi, lambda h, s: s[1] 
     statement %= create_statement, lambda h, s: s[1]
      
     non_create_statement %= control_structure, lambda h, s: s[1]
-    non_create_statement %= expr_statement+ Semi , lambda h, s: s[1]
+    non_create_statement %= expr_statement + Semi, lambda h, s: s[1]
     
     create_statement %= type_definition, lambda h, s: s[1]
     create_statement %= function_definition, lambda h, s: s[1]
@@ -156,12 +158,11 @@ def gramm_Hulk_LR1():
     zero_digits = '|'.join(str(n) for n in range(0,10))
     minletters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1)) 
     capletters = '|'.join(chr(n) for n in range(ord('A'),ord('Z')+1)) 
-    all_characters = f"{minletters}| |{capletters}"
-
+    all_characters = "0|1|2|3|4|5|6|7|8|9|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|!|#|$|%|&|\(|\)|\*|+|,|-|.|/|:|;|<|=|>|?|@|[|]|^|_|`|{|}|~| |\\||\'"
 
     lexer = Lexer([
-    (number, f'({nonzero_digits})({zero_digits})*'),
-    (string, f'\'({all_characters}|{zero_digits})*\'|\"({all_characters}|{zero_digits})*\"'),
+    (number, f'(({nonzero_digits})({zero_digits})*)|0'),
+    (string, f'\"(({all_characters})|(\\\\\"))*\"'),
     (Print, 'print'),
     (oPar, "\("),
     (cPar, "\)"),
@@ -205,8 +206,6 @@ def gramm_Hulk_LR1():
     (Inherits, 'inherits'),
     (New, 'new'),
     (In, 'in'),
-    #TODO Revisar cambio ... arreglar expresiones regulares de identificadores de forma general
-    (identifier, f'{all_characters}({zero_digits}|{all_characters})*'),
     (sComil, '\''),
     (dComill, '\"'),
     (sqrt, 'sqrt'),
@@ -217,7 +216,7 @@ def gramm_Hulk_LR1():
     (log, 'log'),
     (rand, 'rand'),
     (PI, 'PI'),
-    (identifier, f'({minletters})({minletters}|{zero_digits})*')
+    (identifier, f'({minletters}|{capletters})({minletters}|{zero_digits}|{capletters})*')
 ], G.EOF)
     
     return G, lexer
