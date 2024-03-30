@@ -12,7 +12,7 @@ class SemanticCheckingVisitor:
         for type in default_types:
             self.context.create_type(type)  
             
-        print(f'Context: {[item for item in self.context.types.keys()]}') 
+        # print(f'Context: {[item for item in self.context.types.keys()]}') 
     
     #------------------Inicializando funciones por defecto-----------------------------------------------#
         self.scope = Scope(parent=None)
@@ -51,12 +51,38 @@ class SemanticCheckingVisitor:
     
         return self.errors
                       
-ast0 = NumberNode(42)
-ast1 = PrintStatmentNode(NumberNode(42))
-ast2 = PrintStatmentNode(DivExpressionNode(MultExpressionNode(PowExpressionNode(PlusExpressionNode(NumberNode(1), NumberNode(2)), NumberNode(3)), NumberNode(4)), NumberNode(5)))
-ast3 = PrintStatmentNode(StringNode('Hello World'))
-ast4 = PrintStatmentNode(StringNode(StringConcatWithSpaceNode(StringNode('The meaning of life is'), NumberNode(42))))
-ast5 = PrintStatmentNode(PlusExpressionNode(PowExpressionNode(SinMathNode(MultExpressionNode(NumberNode(2), PINode())), NumberNode(2)), CosMathNode(DivExpressionNode(MultExpressionNode(NumberNode(3), PINode()), LogCallNode(NumberNode(4), NumberNode(64))))))
+ast0 = ProgramNode([NumberNode(42)])
+ast1 = ProgramNode([PrintStatmentNode(NumberNode(42))])
+ast2 = ProgramNode([PrintStatmentNode(DivExpressionNode(MultExpressionNode(PowExpressionNode(PlusExpressionNode(NumberNode(1), NumberNode(2)), NumberNode(3)), NumberNode(4)), NumberNode(5)))])
+ast3 = ProgramNode([PrintStatmentNode(StringNode('Hello World'))])
+ast4 = ProgramNode([PrintStatmentNode(StringNode(StringConcatWithSpaceNode(StringNode('The meaning of life is'), NumberNode(42))))])
+ast5 = ProgramNode([
+            PrintStatmentNode(
+                PlusExpressionNode(
+                    PowExpressionNode(
+                        SinMathNode(
+                            MultExpressionNode(
+                                NumberNode(2), 
+                                PINode()
+                                )
+                            ), 
+                        NumberNode(2)
+                        ), 
+                    CosMathNode(
+                        DivExpressionNode(
+                            MultExpressionNode(
+                                NumberNode(3), 
+                                PINode()
+                                ), 
+                            LogCallNode(
+                                NumberNode(4), 
+                                NumberNode(64)
+                                )
+                            )
+                        )
+                    )
+                )
+            ])
 ast = ProgramNode([
     PrintStatmentNode(NumberNode(45)),
     TypeDefinitionNode(
@@ -90,6 +116,3 @@ for index_test in range(len(print_aritmetic_tests)):
     errors = checker.semantic_checking(print_aritmetic_tests[index_test])
     print(len(errors))
     print(errors)
-
-
-#TODO OJO Los inhertance y los type_annotation son de tipo TypeNode

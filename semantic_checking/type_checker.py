@@ -20,7 +20,7 @@ class TypeCheckerVisitor:
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
         #print('TypeChecker')
-        print(f'Context in Checker: {[item for item in self.context.types.keys()]}')
+        # print(f'Context in Checker: {[item for item in self.context.types.keys()]}')
         for statment in node.statments:
             self.visit(statment, self.scope) 
             
@@ -81,7 +81,7 @@ class TypeCheckerVisitor:
     @visitor.when(IfStructureNode)
     def visit(self, node: IfStructureNode, scope: Scope):
         # verifico el tipo de la condicion y a la vez veo si las variables que estan dentro de ella estan ya definidas 
-        if self.visit(node.condition) != 'bool':
+        if self.visit(node.condition, scope).name != 'bool':
             self.errors.append(SemanticError(f'La condicion del if debe ser de tipo bool'))
             
         inner_scope = scope.create_child()
@@ -98,7 +98,7 @@ class TypeCheckerVisitor:
         
     @visitor.when(ElifStructureNode)
     def visit(self, node: ElifStructureNode, scope: Scope):
-        if self.visit(node.condition) != 'bool':
+        if self.visit(node.condition, scope).name != 'bool':
             self.errors.append(SemanticError(f'La condicion del if debe ser de tipo bool'))
             
         inner_scope = scope.create_child()
@@ -117,7 +117,7 @@ class TypeCheckerVisitor:
         
     @visitor.when(WhileStructureNode)
     def visit(self, node: WhileStructureNode, scope: Scope):
-        if self.visit(node.condition, scope) != 'bool':
+        if self.visit(node.condition, scope).name != 'bool':
             self.errors.append(SemanticError(f'La condicion del while debe ser de tipo bool'))
             
         inner_scope = scope.create_child()
@@ -261,7 +261,7 @@ class TypeCheckerVisitor:
         
     @visitor.when(MathOperationNode)
     def visit(self, node: MathOperationNode, scope: Scope):
-        if self.visit(node.expression) != 'number':
+        if self.visit(node.expression, scope).name != 'number':
             self.errors.append(SemanticError(f'Esta funcion solo puede ser aplicada a numeros.'))
             return self.context.get_type('object')
         
@@ -269,7 +269,7 @@ class TypeCheckerVisitor:
         
     @visitor.when(LogCallNode)
     def visit(self, node: LogCallNode, scope: Scope):
-        if self.visit(node.base, scope) != 'number' or self.visit(node.expression, scope) != 'number':
+        if self.visit(node.base, scope).name != 'number' or self.visit(node.expression, scope).name != 'number':
             self.errors.append(SemanticError(f'Esta funcion solo puede ser aplicada a numeros.'))
             return self.context.get_type('object')
         
@@ -300,7 +300,7 @@ class TypeCheckerVisitor:
             
     @visitor.when(StringConcatWithSpaceNode)
     def visit(self, node: StringConcatWithSpaceNode, scope: Scope):
-        if (self.visit(node.left, scope) != 'string' and self.visit(node.left, scope) != 'number') or (self.visit(node.right, scope) != 'string' and self.visit(node.right, scope) != 'number'):
+        if (self.visit(node.left, scope).name != 'string' and self.visit(node.left, scope).name != 'number') or (self.visit(node.right, scope).name != 'string' and self.visit(node.right, scope).name != 'number'):
             self.errors.append(SemanticError(f'Esta operacion solo puede ser aplicada a strings o entre una combinacion de string con number.'))
             return self.context.get_type('object')
         
@@ -308,7 +308,7 @@ class TypeCheckerVisitor:
         
     @visitor.when(BoolCompAritNode)
     def visit(self, node: BoolCompAritNode, scope: Scope):
-        if self.visit(node.left, scope) != 'number' or self.visit(node.right, scope) != 'number':
+        if self.visit(node.left, scope).name != 'number' or self.visit(node.right, scope).name != 'number':
             self.errors.append(SemanticError(f'Esta operacion solo puede ser aplicada a numeros.'))
             return self.context.get_type('object')
         
@@ -316,7 +316,7 @@ class TypeCheckerVisitor:
         
     @visitor.when(BoolNotNode)
     def visit(self, node: BoolNotNode, scope: Scope):
-        if self.visit(node.node) != 'bool':
+        if self.visit(node.node, scope).name != 'bool':
             self.errors.append(SemanticError(f'Esta operacion solo puede ser aplicada a booleanos.'))
             return self.context.get_type('object')
         

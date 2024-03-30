@@ -17,7 +17,7 @@ class TypeBuilderVisitor():
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
         #print('TypeBuilder')
-        print(f'Context in Builder: {[item for item in self.context.types.keys()]}')
+        # print(f'Context in Builder: {[item for item in self.context.types.keys()]}')
         for classDef in node.statments:
             self.visit(classDef)
 
@@ -25,10 +25,9 @@ class TypeBuilderVisitor():
     def visit(self, node: TypeDefinitionNode):
         self.currentType: Type = self.context.get_type(node.id) 
         try:
-            inheritance: TypeNode = node.inheritance
-            self.context.get_type(inheritance.type)
+            inheritance = self.context.get_type(inheritance.type)
         except:
-            self.errors.append(SemanticError(f'El tipo  {node.inheritance.type} del que se hereda no esta definido'))
+            self.errors.append(SemanticError(f'El tipo  {node.inheritance} del que se hereda no esta definido'))
             inheritance = self.context.get_type('object')
         
         self.currentType.inhertance = inheritance

@@ -20,8 +20,8 @@ class TypeCollectorVisitor:
         for statment in node.statments:
             self.visit(statment)
             
-        print(f'Context in Collector: {[item for item in self.context.types.keys()]}')
-        print(f'Scope in Collector: {[func for func in self.scope.functions.keys()]}')
+        # print(f'Context in Collector: {[item for item in self.context.types.keys()]}')
+        # print(f'Scope in Collector: {[func for func in self.scope.functions.keys()]}')
         return self.context, self.scope, self.errors
             
     @visitor.when(TypeDefinitionNode)
