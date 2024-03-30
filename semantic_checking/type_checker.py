@@ -56,46 +56,12 @@ class TypeCheckerVisitor:
             
     @visitor.when(FunctionDefinitionNode)
     def visit(self, node: FunctionDefinitionNode, scope: Scope):
-        if node.id in self.default_functions:
-            self.errors.append(SemanticError(f'Esta redefiniendo una funcion {node.id} que esta definida por defecto en el lenguaje y no se puede sobreescribir'))
+        # if node.id in self.default_functions:
+        #     self.errors.append(SemanticError(f'Esta redefiniendo una funcion {node.id} que esta definida por defecto en el lenguaje y no se puede sobreescribir'))
             
-            #* En los nodos que no son expresiones aritmeticas o booleanas o concatenacion o llamados a funciones deberia ponerle que tiene typo object?
-            return self.context.get_type('object')
-        
-    #--------------------Construyendo el metodo-------------------------------------------------------------------------------------#
-        # param_names = [arg.items[0].key for arg in node.parameters]
-        # params_type: List[Type] = []
-        # for param in node.parameters:
-        #     try:
-        #         type = self.context.get_type(param.items[0].value)
-        #         params_type.append(type)
-        #     except:
-        #         params_type.append(self.context.get_type('object'))
-        # try:
-        #     return_type = self.context.get_type(node.type_annotation)
-        # except:
-        #     return_type = self.context.get_type('object')
-        
-        # method = Method(node.id, param_names , params_type, return_type)
-        
-    #-------------------------------------------------------------------------------------------------------------------------------#
-        # try:
-        #     methods_list = scope.functions[node.id]
-        #     exist = False
-        #     for fun in methods_list:
-        #         if len(fun.param_names) == len(node.parameters):
-        #             exist = True
-        #             break
-        #     if not exist:
-        #         #Aqui en type_annotation no va a dar error porque cuando no se pasa un tipo de pone el object por defecto desde la gramatica
-        #         scope.functions[node.id].append(method)
-        #     else:
-        #         self.errors.append(SemanticError(f'La funcion {node.id} ya esta definida con {len(node.args)} cantidad de parametros.'))
-                
+        #     #* En los nodos que no son expresiones aritmeticas o booleanas o concatenacion o llamados a funciones deberia ponerle que tiene typo object?
         #     return self.context.get_type('object')
-        # except:
-        #     scope.functions[node.id].append(method)
-    #----------------------------------------Checkeo de tipos--------------------------------------------------------------------------------------------------------------#
+        
         if self.current_type:
             method = self.current_type.get_method(node.id)
         else:
@@ -103,10 +69,10 @@ class TypeCheckerVisitor:
                    
         inner_scope: Scope = scope.create_child()            
         for i in len(method.param_names):
-            inner_scope.define_variable(method.param_names[i],method.param_types[i])
+            inner_scope.define_variable(method.param_names[i], method.param_types[i])
             
         self.visit(node.body, inner_scope)
-    #---------------------------------------Checkeo de tipos--------------------------------------------------------------------------------------------------------------#
+    
         return self.context.get_type('object')
             
     @visitor.when(IfStructureNode)
@@ -182,7 +148,8 @@ class TypeCheckerVisitor:
         inner_scope: Scope = scope.create_child()
         
         #TODO Ver que se hace con los argumentos porque fuera del 'constructor' ya no tienen sentido
-        for arg, type_att in node.parameters:
+        for param in node.parameters:
+            arg, type_att = param.items[0].key, param.items[0].value
             inner_scope.define_variable(arg, type_att)
             
         for att in node.attributes:
@@ -222,8 +189,6 @@ class TypeCheckerVisitor:
     @visitor.when(KernInstanceCreationNode)
     def visit(self, node: KernInstanceCreationNode, scope: Scope):
         try:
-            # for arg in node.arguments:
-            #     self.visit(arg, scope)
             class_type: Type = self.context.types[node.type]
             if len[class_type.attributes] != len(node.args):
                 self.errors.append(SemanticError(f'La cantidad de argumentos no coincide con la cantidad de atributos de la clase {node.type}.'))

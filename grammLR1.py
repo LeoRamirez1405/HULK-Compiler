@@ -98,8 +98,8 @@ def gramm_Hulk_LR1():
     ExprComp %= ExprNum + Less + ExprNum, lambda h, s:  BoolCompLessNode(s[1],s[3])
     ExprComp %= ExprNum + Greater + ExprNum, lambda h, s:  BoolCompGreaterNode(s[1],s[3])
     ExprComp %= ExprNum + CompEqual + ExprNum, lambda h, s:  BoolCompEqualNode(s[1],s[3])
-    ExprComp %= ExprNum + LessEqual + ExprNum, lambda h, s:  BoolCompLessIqualNode(s[1],s[3])
-    ExprComp %= ExprNum + GreaterEqual + ExprNum, lambda h, s:  BoolCompGreaterIqualNode(s[1],s[3])
+    ExprComp %= ExprNum + LessEqual + ExprNum, lambda h, s:  BoolCompLessEqualNode(s[1],s[3])
+    ExprComp %= ExprNum + GreaterEqual + ExprNum, lambda h, s:  BoolCompGreaterEqualNode(s[1],s[3])
     ExprComp %= ExprNum + NotEqual + ExprNum, lambda h, s:  BoolCompNotEqualNode(s[1],s[3])
     
     ExprNum %= term , lambda h, s: s[1]

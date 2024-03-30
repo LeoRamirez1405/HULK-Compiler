@@ -37,6 +37,7 @@ class VariableInfo:
 class Type:
     def __init__(self, name:str):
         self.name = name
+        self.inhertance: Type = None
         self.args: List[Argument] = []
         self.attributes: List[Attribute] = []
         self.methods: List[Method] = []

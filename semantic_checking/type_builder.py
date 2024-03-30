@@ -21,10 +21,17 @@ class TypeBuilderVisitor():
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode):
         self.currentType: Type = self.context.get_type(node.id) 
+        try:
+            inheritance = self.context.get_type(node.inheritance)
+        except:
+            self.errors.append(SemanticError(f'El tipo  {node.inheritance} del que se herada no esta definido'))
+            inheritance = self.context.get_type('object')
+        
+        self.currentType.inhertance = inheritance
         
         for arg in node.parameters:
-            name = arg[0].key 
-            type = arg[0].value
+            name = arg.items[0].key 
+            type = arg.items[0].value
             
             type =  self.context.get_type(type)
             try:
