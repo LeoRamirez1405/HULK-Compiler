@@ -16,9 +16,11 @@ text = 'print(42);print(sin(4/2));print("Hello World");'
 #text = 'print(42);'
 tokens = lexer(text)
 tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
-parser = LR1Parser(gramatica, True)
-
-ast = evaluate_reverse_parse(parser, parser(tokentypes), tokens)
-# checker = SemanticCheckingVisitor(ast)
-# errors = checker.semantic_checking(ast)
+parser = LR1Parser(gramatica, False)
+output,operations = parser(tokentypes)
+print(type(operations))
+ast = evaluate_reverse_parse(output, operations, tokens)
+print(ast)
+checker = SemanticCheckingVisitor()
+errors = checker.semantic_checking(ast)
 # print(checker.scope.define_variable)

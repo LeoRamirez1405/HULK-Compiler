@@ -81,7 +81,7 @@ def gramm_Hulk_LR1():
     ExprOr %= ExprAnd, lambda h, s: s[1]
     ExprOr %= ExprOr + Or + ExprAnd, lambda h, s:  BoolOrNode(s[1],s[3])
     
-    ExprAnd %= ExprNeg, lambda h, s: s[3]
+    ExprAnd %= ExprNeg, lambda h, s: s[1]
     ExprAnd %= ExprAnd + And + ExprNeg, lambda h, s:  BoolAndNode(s[1],s[3])
     
     ExprNeg %= ExprIsType, lambda h, s: s[1]

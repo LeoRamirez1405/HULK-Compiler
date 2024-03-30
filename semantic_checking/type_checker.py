@@ -17,6 +17,7 @@ class TypeCheckerVisitor:
     
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
+        print('TypeChecker')
         for statment in node.statments:
             self.visit(statment, self.scope) 
             
