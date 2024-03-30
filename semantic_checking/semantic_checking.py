@@ -1,6 +1,6 @@
 from AST import *
 import visitor
-from semantic import Context, Scope, SemanticError, Method, Type
+from semantic import Context, Scope, Method
 from type_collector import TypeCollectorVisitor
 from type_builder import TypeBuilderVisitor
 from type_checker import TypeCheckerVisitor
