@@ -10,7 +10,7 @@ from grammLR1 import gramm_Hulk_LR1
 from LR1 import LR1Parser
 
 gramatica, lexer = gramm_Hulk_LR1()
-text = 'print((1 + 2) ^ 3);'
+text = 'function cot(x) => 1 / tan(x);'
 #text = 'print(42);'
 tokens = lexer(text)
 tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
