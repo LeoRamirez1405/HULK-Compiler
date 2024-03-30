@@ -32,16 +32,11 @@ def gramm_Hulk_LR1():
     
     create_statement %= type_definition, lambda h, s: s[1]
     create_statement %= function_definition, lambda h, s: s[1]
-    #create_statement %= assignment, lambda h, s: s[1]
     create_statement %= destructive_assignment+ Semi, lambda h, s: s[1]
     
     expr_statement %= print_statement, lambda h, s: s[1]
     expr_statement %= expression, lambda h, s: s[1]
-    print_statement %= Print + oPar + expression + cPar + Semi, lambda h, s: PrintStatmentNode(s[3])
-    
-    #let_in_as_expr %= assignment + In + oPar + expr_statement + cPar, lambda h, s: LetInNode(s[1], s[4])
-    #let_in %= let_in_as_expr, lambda h,s: s[1]
-    #let_in %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])
+    print_statement %= Print + oPar + expression + cPar, lambda h, s: PrintStatmentNode(s[3])
     
     kern_assignment %= identifier + Equal + kern_instance_creation, lambda h, s: KernAssigmentNode(s[1],s[3])
     control_structure %= if_structure , lambda h, s: s[1]
@@ -115,7 +110,6 @@ def gramm_Hulk_LR1():
     
     factorPow %= factor, lambda h, s:s[1]
     factorPow %= factor + Pow + factorPow , lambda h, s:  PowExpressionNode(s[1],s[3])
-    # term / .... -> let_in_expr
     factor %= oPar + expr_statement + cPar , lambda h, s:  s[2]
     factor %= number, lambda h, s:  NumberNode(s[1])
     factor %= string, lambda h, s:  StringNode(s[1])
