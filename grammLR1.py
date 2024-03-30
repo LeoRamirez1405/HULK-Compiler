@@ -126,8 +126,8 @@ def gramm_Hulk_LR1():
     factor %= kern_instance_creation, lambda h, s: s[1]
     factor %= let_in_as_expr, lambda h,s: s[1]
     
-    member_access %= factor + Dot + identifier + oPar + arguments + cPar , lambda h, s: MemberAccesNode(s[1], s[3], s[5]) 
-    member_access %= factor + Dot + identifier , lambda h, s: MemberAccesNode(s[1], s[3], [])  #Todo member access
+    member_access %= factor + Dot + identifier + oPar + arguments + cPar , lambda h, s: MemberAccessNode(s[1], s[3], s[5]) 
+    member_access %= factor + Dot + identifier , lambda h, s: MemberAccessNode(s[1], s[3], [])  #Todo member access
 
     kern_instance_creation %= New + identifier + oPar + arguments + cPar, lambda h, s: KernInstanceCreationNode(s[2],s[4])
     

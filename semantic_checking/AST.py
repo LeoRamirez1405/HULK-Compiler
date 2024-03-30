@@ -1,4 +1,5 @@
 from typing import List
+import math
 
 class Node():
     pass
@@ -44,6 +45,7 @@ class PrintStatmentNode(Node):
         super().__init__()
         self.expression = expression
         
+#TODO creo que se deberia poner el type_annotation en el kern_assigment
 class KernAssigmentNode(Node):
     def __init__(self, id, expression) -> None:
         super().__init__()
@@ -54,11 +56,12 @@ class DestroyNode(KernAssigmentNode):
     def __init__(self, id, expression) -> None:
         super().__init__(id, expression)
         
-class LetNode(KernAssigmentNode):
-    def __init__(self, id, expression) -> None:
-        super().__init__(id, expression)
+# class LetNode(KernAssigmentNode):
+#     def __init__(self, id, expression) -> None:
+#         super().__init__(id, expression)
         
-# TODO Podriamos instanciar la clase Type
+#? Podriamos instanciar la clase Type
+#* Eso se hace luego cuando se viita el nodo en el visitor
 class TypeNode(Node):
     def __init__(self, type) -> None:
         super().__init__()
@@ -100,7 +103,7 @@ class WhileStructureNode(Node):
         self.body = body
 
 class ForStructureNode(Node):
-    def __init__(self, init_assigments: List[LetNode], condition, increment_assigment: List[KernAssigmentNode], body) -> None:
+    def __init__(self, init_assigments: List[KernAssigmentNode], condition, increment_assigment: List[KernAssigmentNode], body) -> None:
         super().__init__() 
         self.init_assigments = init_assigments
         self.condition = condition
@@ -109,46 +112,30 @@ class ForStructureNode(Node):
         
 #-----------------------------------Class----------------------------------------------------------------------------------------------#
 class TypeDefinitionNode(Node):
-    def __init__(self, id, parameters:list[dict],inheritance, attributes: List[LetNode], methods) -> None:
+    def __init__(self, id, parameters:list[dict],inheritance, attributes: List[KernAssigmentNode], methods) -> None:
         super().__init__()
         self.id = id
         self.parameters = parameters
         self.inheritance = inheritance
-        self.attribute: List[LetNode] = attributes
+        self.attributes: List[KernAssigmentNode] = attributes
         self.methods = methods
-        
-# Esto debe recibir un type annotation?
-# class MethodDefinitionNode(Node):
-#     def __init__(self, id, parameters, body) -> None:
-#         super().__init__()
-#         self.id = id
-#         self.parameters = parameters
-#         self.body = body
         
 class InheritanceNode(Node):
     def __init__(self, type) -> None:
         super().__init__()
         self.type = type
-        
-#? Verificar si son necesarios tanto InstanceCreation node como KernInstanceCreationNode 
-#* R/ Aca se verifica si es valido la reacion de la variable por el id y el KernInstance creation se usa en caso de que se quiera parasar como parametro a alguna funcion
-#*         la creacion de una instancia de una clase
-class InstanceCreationNode(Node):
-    def __init__(self, id, type, arguments) -> None:
-        super().__init__()
-        self.id = id
-        self.type = type
-        self.arguments = arguments
 
-#TODO Verificar que son los parametros type y args
+#? Verificar que son los parametros type y args
+#* En new type (args = [param_1, param_2, ...])
 class KernInstanceCreationNode(BinaryNode):
     def __init__(self, type, args):
         super().__init__(type, args)
         self.type = type
         self.args = args
         
-#TODO Ver bien que en que consiste el member acces
-class MemberAccesNode(Node):
+#? Ver bien que en que consiste el member acces
+#* x.method_name(parametro_1, parametro_2, ...)
+class MemberAccessNode(Node):
     def __init__(self, base_object, object_property_to_acces, args) -> None:
         super().__init__()
         self.base_object = base_object
@@ -157,20 +144,20 @@ class MemberAccesNode(Node):
         
 #! No son necesarios los operadores
 #------------------------------------Operators----------------------------------------------------------------------------------------------------#       
-class BooleanOperator(Node):
-    def __init__(self, operator) -> None:
-        super().__init__()
-        self.operator = operator
+# class BooleanOperator(Node):
+#     def __init__(self, operator) -> None:
+#         super().__init__()
+#         self.operator = operator
         
-class AritmeticOperator(Node):
-    def __init__(self, operator) -> None:
-        super().__init__()
-        self.operator = operator
+# class AritmeticOperator(Node):
+#     def __init__(self, operator) -> None:
+#         super().__init__()
+#         self.operator = operator
         
-class ConcatOperator(Node):
-    def __init__(self, operator) -> None:
-        super().__init__()
-        self.operator = operator
+# class ConcatOperator(Node):
+#     def __init__(self, operator) -> None:
+#         super().__init__()
+#         self.operator = operator
         
 #-------------------------------------------Abstrct-Expressions------------------------------------------------------------------------------------------#
 class BooleanExpression(BinaryNode):
@@ -189,59 +176,33 @@ class AritmeticExpression(Node):
 class PlusExpressionNode(AritmeticExpression):
     def __init__(self, expression_1, expresion_2) -> None:
         super().__init__(expression_1, expresion_2)
-        self.expression_1 = expression_1
-        self.expression_2 = expresion_2
         
 class SubsExpressionNode(AritmeticExpression):
     def __init__(self, expression_1, expresion_2) -> None:
         super().__init__(expression_1, expresion_2)
         self.expression_1 = expression_1
-        self.expression_2 = expresion_2
         
 class DivExpressionNode(AritmeticExpression):
     def __init__(self, expression_1, expresion_2) -> None:
         super().__init__(expression_1, expresion_2)
-        self.expression_1 = expression_1
-        self.expression_2 = expresion_2
         
 class MultExpressionNode(AritmeticExpression):
     def __init__(self, expression_1, expresion_2) -> None:
         super().__init__(expression_1, expresion_2)
-        self.expression_1 = expression_1
-        self.expression_2 = expresion_2
 class ModExpressionNode(AritmeticExpression):
     def __init__(self, expression_1, expresion_2) -> None:
         super().__init__(expression_1, expresion_2)
-        self.expression_1 = expression_1
-        self.expression_2 = expresion_2
-
 class PowExpressionNode(AritmeticExpression):
     def __init__(self, expression_1, expresion_2) -> None:
         super().__init__(expression_1, expresion_2)
-        self.expression_1 = expression_1
-        self.expression_2 = expresion_2
-        
-class LetInExpressionNode(Node):
-    def init(self, assigments, body) -> None:
-        super().init()
-        self.assigments = assigments
-        self.body = body    
-
-class LetInExpressionNode(Node):
-    def init(self, assigments, body) -> None:
-        super().init()
-        self.assigments = assigments
-        self.body = body
-    
+           
 class NumberNode(Node):
     def __init__(self, value) -> None:
         super().__init__()
         self.value = value
-
 class PINode(NumberNode):
-    def __init__(self, value) -> None:
-        super().__init__()
-        self.value = value
+    def __init__(self) -> None:
+        super().__init__(math.pi)
     
 #------------------------------------------------------------Math-Operations-----------------------------------------------------------------------------------#
 class MathOperationNode(UnaryNode):
@@ -252,17 +213,14 @@ class MathOperationNode(UnaryNode):
 class SqrtMathNode(MathOperationNode):
     def __init__(self, expression) -> None:
         super().__init__(expression)
-        self.expression = expression
         
 class SinMathNode(MathOperationNode):
     def __init__(self, expression) -> None:
         super().__init__(expression)
-        self.expression = expression
         
 class CosMathNode(MathOperationNode):
     def __init__(self, expression) -> None:
         super().__init__(expression)
-        self.expression = expression
         
 class TanMathNode(MathOperationNode):
     def __init__(self, expression) -> None:
@@ -272,8 +230,6 @@ class TanMathNode(MathOperationNode):
 class ExpMathNode(MathOperationNode):
     def __init__(self, expression) -> None:
         super().__init__(expression)
-        self.expression = expression
-
 class RandomCallNode(Node):
     def __init__(self) -> None:
         super().__init__()
@@ -290,6 +246,12 @@ class LetInNode(Node):
         super().__init__()
         self.assigments = assigments
         self.body = body
+        
+class LetInExpressionNode(Node):
+    def init(self, assigments, body) -> None:
+        super().__init__()
+        self.assigments = assigments
+        self.body = body 
 
 #----------------------------------Factor-Nodes----------------------------------------------------------------------------------------------------------------#
 class FunctionCallNode(Node):
@@ -299,11 +261,6 @@ class FunctionCallNode(Node):
         self.args = args
 
 class BooleanNode(Node):
-    def __init__(self, value) -> None:
-        super().__init__()
-        self.value = value
-
-class NumberNode(Node):
     def __init__(self, value) -> None:
         super().__init__()
         self.value = value
@@ -320,14 +277,10 @@ class IdentifierNode(Node):
 class StringConcatNode(BinaryNode):
     def __init__(self, left, right):
         super().__init__(left, right)
-        # self.left = left
-        # self.right = right
         
 class StringConcatWithSpaceNode(StringConcatNode):
     def __init__(self, left, right):
         super().__init__(left, right)
-        # self.left = left
-        # self.right = right
         
 #TODO Ver que es esto
 class BoolIsTypeNode(BinaryNode):
@@ -339,69 +292,39 @@ class BoolIsTypeNode(BinaryNode):
 class BoolAndNode(BooleanExpression):
     def __init__(self, expression_1, expression_2) -> None:
         super().__init__(expression_1, expression_2)
-    # def __init__(self, left, right):
-    #     super().__init__(left, right)
-    #     self.left = left
-    #     self.right = right
         
 class BoolOrNode(BooleanExpression):
     def __init__(self, expression_1, expression_2) -> None:
         super().__init__(expression_1, expression_2)
-    # def __init__(self, left, right):
-    #     super().__init__(left, right)
-    #     self.left = left
-    #     self.right = right
-        
+
 class BoolCompAritNode(BinaryNode):
     def __init__(self, left, right):
         super().__init__(left, right)
-        # self.left = left
-        # self.right = right
         
 class BoolNotNode(UnaryNode):
     def __init__(self, node):
-        super().__init__(node)
-        # self.node = node
-        
+        super().__init__(node)        
 class BoolCompLessNode(BoolCompAritNode):
     def __init__(self, left, right):
         super().__init__(left, right)
-    # def __init__(self, left, right):
-    #     super().__init__(left, right)
-    #     self.left = left
-    #     self.right = right
              
 class BoolCompGreaterNode(BoolCompAritNode):
     def __init__(self, left, right):
         super().__init__(left, right)
-    # def __init__(self, left, right):
-    #     super().__init__(left, right)
-    #     self.left = left
-    #     self.right = right
         
 class BoolCompEqualNode(BoolCompAritNode):
     def __init__(self, left, right):
         super().__init__(left, right)
-    # def __init__(self, left, right):
-    #     super().__init__(left, right)
-    #     self.left = left
-    #     self.right = right
         
 class BoolCompLessEqualNode(BoolCompAritNode):
     def __init__(self, left, right):
         super().__init__(left, right)
-        # self.left = left
-        # self.right = right
         
 class BoolCompGreaterEqualNode(BoolCompAritNode):
     def __init__(self, left, right):
         super().__init__(left, right)
-        # self.left = left
-        # self.right = right
         
 class BoolCompNotEqualNode(BoolCompAritNode):
     def __init__(self, left, right):
         super().__init__(left, right)
-        # self.left = left
-        # self.right = right
         
