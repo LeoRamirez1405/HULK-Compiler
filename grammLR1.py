@@ -14,7 +14,7 @@ def gramm_Hulk_LR1():
     cont_member, kern_instance_creation, concatStrings, concatStringsWithSpace, math_call, factorPow = G.NonTerminals('cont_member kern_instance_creation concatStrings concatStringsWithSpace math_call factorPow')
     Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, Arrow, Mod, Destroy, Pow = G.Terminals('print ( ) { } ; = + - * / => % := ^')
     And, Or, Not, Less, Greater, CompEqual, LessEqual, GreaterEqual, NotEqual, Is, In, _True, _False = G.Terminals('and or not < > == <= >= != is in True False')
-    Comma, Dot, If, Else, While, For, Let, Function, Colon = G.Terminals(', . if else while for let function :')
+    Comma, Dot, If, Else, While, For, Let, Function, Colon, PowStar = G.Terminals(', . if else while for let function : **')
     identifier, number, string, Elif, Type, Inherits, New, In, arroba,PI   = G.Terminals('identifier number string elif type inherits new in @ PI') 
     sComil, dComill, = G.Terminals('\' \"')
     sqrt, sin, cos, tan, exp, log, rand = G.Terminals('sqrt sin cos tan exp log rand')
@@ -110,6 +110,8 @@ def gramm_Hulk_LR1():
     
     factorPow %= factor, lambda h, s:s[1]
     factorPow %= factor + Pow + factorPow , lambda h, s:  PowExpressionNode(s[1],s[3])
+    factorPow %= factor + PowStar + factorPow , lambda h, s:  PowExpressionNode(s[1],s[3])
+    
     factor %= oPar + expr_statement + cPar , lambda h, s:  s[2]
     factor %= number, lambda h, s:  NumberNode(s[1])
     factor %= string, lambda h, s:  StringNode(s[1])
