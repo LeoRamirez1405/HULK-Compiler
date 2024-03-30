@@ -10,7 +10,7 @@ class SemanticError(Exception):
 class Attribute:
     def __init__(self, name, typex):
         self.name = name
-        self.type = typex
+        self.type: Type = typex
 
     def __str__(self):
         return f'[attrib] {self.name} : {self.type.name};'
@@ -21,7 +21,7 @@ class Attribute:
 class Argument:
     def __init__(self, name, typex):
         self.name = name
-        self.type = typex
+        self.type: Type = typex
 
     def __str__(self):
         return f'[attrib] {self.name} : {self.type.name};'
@@ -37,9 +37,9 @@ class VariableInfo:
 class Type:
     def __init__(self, name:str):
         self.name = name
-        self.args = []
-        self.attributes = []
-        self.methods = []
+        self.args: List[Argument] = []
+        self.attributes: List[Attribute] = []
+        self.methods: List[Method] = []
         self.parent = None
 
     def set_parent(self, parent):

@@ -1,6 +1,6 @@
 import visitor
 from AST import *
-from semantic import Context, Scope, SemanticError, Type
+from semantic import Context, Scope, SemanticError, Type, Method
 
 #! Hay que ver que se hace con las funciones que no son metodos de alguna clase   OJO
 
@@ -10,6 +10,7 @@ class TypeCheckerVisitor:
         self.errors: List[str] = errors
         self.scope: Scope = scope
         self.default_functions = default_functions
+        self.current_type: Type = None
         
     @visitor.on('node')
     def visit(self, node, scope):
@@ -24,6 +25,8 @@ class TypeCheckerVisitor:
     def visit(self, node: PrintStatmentNode, scope):
         print('visitor en PrintNode')
         self.visit(node.expression, scope)
+        
+        return self.context.get_type('void')
             
     @visitor.when(DestroyNode)
     def visit(self, node: DestroyNode, scope: Scope):
@@ -32,8 +35,8 @@ class TypeCheckerVisitor:
             
         return self.visit(node.expression, scope)
         
-    @visitor.when(LetNode)
-    def visit(self, node: LetNode, scope: Scope):
+    @visitor.when(KernAssigmentNode)
+    def visit(self, node: KernAssigmentNode, scope: Scope):
         if scope.is_local(node.id) or scope.is_defined(node.id):
             self.errors.append(SemanticError(f'La variable {node.id} ya esta definida.'))
         else:
@@ -56,34 +59,60 @@ class TypeCheckerVisitor:
         if node.id in self.default_functions:
             self.errors.append(SemanticError(f'Esta redefiniendo una funcion {node.id} que esta definida por defecto en el lenguaje y no se puede sobreescribir'))
             
-            #* En los nodos que no son expresiones aritmeticas o booleanas o concatenacion dberia ponerle qu etiene typo object?
+            #* En los nodos que no son expresiones aritmeticas o booleanas o concatenacion o llamados a funciones deberia ponerle que tiene typo object?
             return self.context.get_type('object')
         
-        try:
-            args_len_list = scope.functions[node.id]
-            if  len(node.parameters) in args_len_list:
-                self.errors.append(SemanticError(f'La funcion {node.id} ya esta definida con {len(node.args)} cantidad de parametros.'))
-            else:
-                scope.functions[node.id].append(len(node.parameters))
-        except:
-            #TODO Se puede instanciar la clase Method de semantic~seria algo similar a scope.functions[node.id] = nodmethod(node. ...)
-            #* Por el momento en el diccionario tengo el id de la funcion con su cantidad de parametros
-            scope.functions[node.id].append(len(node.args))
-            
-
-#----------------------------------------Checkeo de tipos--------------------------------------------------------------------------------------------------------------#
-            inner_scope: Scope = scope.create_child()            
-            for arg, type in node.parameters:
-                inner_scope.define_variable(arg, self.visit(type, inner_scope))
+    #--------------------Construyendo el metodo-------------------------------------------------------------------------------------#
+        # param_names = [arg.items[0].key for arg in node.parameters]
+        # params_type: List[Type] = []
+        # for param in node.parameters:
+        #     try:
+        #         type = self.context.get_type(param.items[0].value)
+        #         params_type.append(type)
+        #     except:
+        #         params_type.append(self.context.get_type('object'))
+        # try:
+        #     return_type = self.context.get_type(node.type_annotation)
+        # except:
+        #     return_type = self.context.get_type('object')
+        
+        # method = Method(node.id, param_names , params_type, return_type)
+        
+    #-------------------------------------------------------------------------------------------------------------------------------#
+        # try:
+        #     methods_list = scope.functions[node.id]
+        #     exist = False
+        #     for fun in methods_list:
+        #         if len(fun.param_names) == len(node.parameters):
+        #             exist = True
+        #             break
+        #     if not exist:
+        #         #Aqui en type_annotation no va a dar error porque cuando no se pasa un tipo de pone el object por defecto desde la gramatica
+        #         scope.functions[node.id].append(method)
+        #     else:
+        #         self.errors.append(SemanticError(f'La funcion {node.id} ya esta definida con {len(node.args)} cantidad de parametros.'))
                 
-            self.visit(node.body, inner_scope)
-#----------------------------------------Checkeo de tipos--------------------------------------------------------------------------------------------------------------#
-            return self.context.get_type('object')
+        #     return self.context.get_type('object')
+        # except:
+        #     scope.functions[node.id].append(method)
+    #----------------------------------------Checkeo de tipos--------------------------------------------------------------------------------------------------------------#
+        if self.current_type:
+            method = self.current_type.get_method(node.id)
+        else:
+            method = filter(lambda x: len(x.param_names) == len(node.parameters), self.scope.functions[node.id])[0]  
+                   
+        inner_scope: Scope = scope.create_child()            
+        for i in len(method.param_names):
+            inner_scope.define_variable(method.param_names[i],method.param_types[i])
+            
+        self.visit(node.body, inner_scope)
+    #---------------------------------------Checkeo de tipos--------------------------------------------------------------------------------------------------------------#
+        return self.context.get_type('object')
             
     @visitor.when(IfStructureNode)
     def visit(self, node: IfStructureNode, scope: Scope):
         # verifico el tipo de la condicion y a la vez veo si las variables que estan dentro de ella estan ya definidas 
-        if self.visit(node.condition).name != 'bool':
+        if self.visit(node.condition) != 'bool':
             self.errors.append(SemanticError(f'La condicion del if debe ser de tipo bool'))
             
         inner_scope = scope.create_child()
@@ -130,59 +159,65 @@ class TypeCheckerVisitor:
             
     @visitor.when(ForStructureNode)
     def visit(self, node: ForStructureNode, scope: Scope):
-        inners_scope: Scope = scope.create_child()
-        for id, expr in node.init_assigments:
-            if scope.is_defined(node.id):
+        inner_scope: Scope = scope.create_child()
+        for assin in node.init_assigments:
+            id, expr = assin.id, assin.expression
+            
+            if scope.is_defined(id):
                 self.errors.append(SemanticError(f'La variable {id} ya esta definida en este scope.'))
             else:
-                inners_scope.define_variable(id, self.visit(expr, inners_scope)) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
+                inner_scope.define_variable(id, self.visit(expr, inner_scope)) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
             
-        self.visit(node.body, inners_scope)
+        self.visit(node.body, inner_scope)
         
         for increment_assigment in node.increment_condition:
-            self.visit(increment_assigment, inners_scope)
+            self.visit(increment_assigment, inner_scope)
             
         return self.context.get_type('object')
             
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode, scope: Scope):
+        self.current_type = self.context.get_type(node.id)
+        
         inner_scope: Scope = scope.create_child()
         
         #TODO Ver que se hace con los argumentos porque fuera del 'constructor' ya no tienen sentido
         for arg, type_att in node.parameters:
             inner_scope.define_variable(arg, type_att)
             
-        for att in node.attribute:
+        for att in node.attributes:
             inner_scope.define_variable(att.id, self.visit(att.expression, inner_scope)) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
             
         for method in node.methods:
             self.visit(method, inner_scope)
             
+        self.current_type = None
+        
         return self.context.get_type('object')
             
-    @visitor.when(InstanceCreationNode)
-    def visit(self, node: InstanceCreationNode, scope: Scope):
-        if scope.is_local(node.id) or scope.is_defined(node.id):
-            self.errors.append(SemanticError(f'El nombre de varible {node.id} ya ha sido tomado.'))
-        else:
-            try:
-                # for arg in node.arguments:
-                #     self.visit(arg, scope)
-                class_type: Type = self.context.types[node.type]
-                if len[class_type.attributes] != len(node.arguments):
-                    self.errors.append(SemanticError(f'La cantidad de argumentos no coincide con la cantidad de atributos de la clase {node.type}.'))
-                else:
-                    correct = True
-                    for i in range(len(node.arguments)):
-                        #! Hay que crear una jerarquia de tipos por causa de la herencia de clases
-                        if class_type.attributes[i].type != self.visit(node.arguments[i], scope):
-                            self.errors.append(SemanticError(f'El tipo del argumento {i} no coincide con el tipo del atributo {i} de la clase {node.type}.'))
-                        else: correct = False
+    # @visitor.when(InstanceCreationNode)
+    # def visit(self, node: InstanceCreationNode, scope: Scope):
+    #     if scope.is_local(node.id) or scope.is_defined(node.id):
+    #         self.errors.append(SemanticError(f'El nombre de varible {node.id} ya ha sido tomado.'))
+    #     else:
+    #         try:
+    #             # for arg in node.arguments:
+    #             #     self.visit(arg, scope)
+    #             class_type: Type = self.context.types[node.type]
+    #             if len[class_type.attributes] != len(node.arguments):
+    #                 self.errors.append(SemanticError(f'La cantidad de argumentos no coincide con la cantidad de atributos de la clase {node.type}.'))
+    #             else:
+    #                 correct = True
+    #                 for i in range(len(node.arguments)):
+    #                     # Hay que crear una jerarquia de tipos por causa de la herencia de clases
+    #                     if class_type.attributes[i].type != self.visit(node.arguments[i], scope):
+    #                         self.errors.append(SemanticError(f'El tipo del argumento {i} no coincide con el tipo del atributo {i} de la clase {node.type}.'))
+    #                     else: correct = False
                             
-                    if correct: 
-                        scope.define_variable(node.id, self.context.types[node.type])
-            except:
-                self.errors.append(SemanticError(f'El tipo {node.type} no esta definido.')) 
+    #                 if correct: 
+    #                     scope.define_variable(node.id, self.context.types[node.type])
+    #         except:
+    #             self.errors.append(SemanticError(f'El tipo {node.type} no esta definido.')) 
             
     @visitor.when(KernInstanceCreationNode)
     def visit(self, node: KernInstanceCreationNode, scope: Scope):
@@ -190,38 +225,29 @@ class TypeCheckerVisitor:
             # for arg in node.arguments:
             #     self.visit(arg, scope)
             class_type: Type = self.context.types[node.type]
-            if len[class_type.attributes] != len(node.arguments):
+            if len[class_type.attributes] != len(node.args):
                 self.errors.append(SemanticError(f'La cantidad de argumentos no coincide con la cantidad de atributos de la clase {node.type}.'))
             else:
                 correct = True
-                for i in range(len(node.arguments)):
+                for i in range(len(node.args)):
                     #! Hay que crear una jerarquia de tipos por causa de la herencia de clases
-                    if class_type.attributes[i].type != self.visit(node.arguments[i], scope):
-                        self.errors.append(SemanticError(f'El tipo del argumento {i} no coincide con el tipo del atributo {i} de la clase {node.type}.'))
-                    else: correct = False
+                    if class_type.attributes[i].type != self.visit(node.args[i], scope):
+                        self.errors.append(SemanticError(f'El tipo del argumento {i} no coincide con el tipo del atributo {class_type.attributes[i].name} de la clase {node.type}.'))
+                        correct = False
                         
                 if correct: 
-                    scope.define_variable(node.id, self.context.types[node.type])
+                    return self.context.get_type(node.type)
         except:
             self.errors.append(SemanticError(f'El tipo {node.type} no esta definido.')) 
             
-    @visitor.when(MemberAccesNode)
-    def visit(self, node: MemberAccesNode, scope: Scope):
+        return self.context.get_type('object')
+            
+    @visitor.when(MemberAccessNode)
+    def visit(self, node: MemberAccessNode, scope: Scope):
         #! Hay que hacer la diferenciacion de casos entre una variable y otro tipo de factor
         base_object_type: Type = self.visit(node.base_object, scope)
         try:
-            #Verifico si se quiere acceder a un atributo del tipo en cuestion
-            if node.object_property_to_acces in base_object_type.attributes:
-                #Si se quiere acceder a un atributo pero fueron asignados parametros entonces se lanza un error
-                if len(node.args) != 0:
-                    self.errors.append(SemanticError(f'El objeto {node.base_object} no tiene un metodo {node.object_property_to_acces}.'))
-                else:
-                    #En otro caso el acceso es correcto
-                    index = base_object_type.attributes.index(node.object_property_to_acces)
-                    #El tipo del member_acces es el tipo del tributo al que se accedio
-                    return base_object_type.attributes[index].type
-            #Si el id suministrado no es un atributo entonces se verifica si es un metodo
-            elif node.object_property_to_acces in base_object_type.methods:
+            if node.object_property_to_acces in base_object_type.methods:
                 #En caso de ser un metodo se verifica si la cantidad de parametros suministrados es correcta
                 index = base_object_type.methods.index(node.object_property_to_acces)
                 if len(node.args) != len(base_object_type.methods[index].param_names):
