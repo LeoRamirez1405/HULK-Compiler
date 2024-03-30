@@ -1,36 +1,27 @@
-from grammLR1Leo import gramm_Hulk_LR1
+from semantic_checking.AST import *
+#from semantic_checking.semantic_checking import SemanticCheckingVisitor
+#from semantic_checking.evaluation import evaluate_reverse_parse
+from grammLR1 import gramm_Hulk_LR1
 from LR1 import LR1Parser
-from lexer import Lexer
-
-
 
 gramatica, lexer = gramm_Hulk_LR1()
 
-# Abrir el archivo en modo lectura
-with open('prueba.txt', 'r') as prueba:
-    contenido = prueba.read()
+# with open('./prueba.txt', "r", encoding="utf-8") as archivo:
+#     content = archivo.read()
+#     text = content
 
-    # contenido = "if (x is Bird) \"It's bird!\""
-    
-    # Reemplazar saltos de línea por espacios en blano
-    contenido = contenido.replace('\n', ' ')
-
-    # Reemplazar tabulaciones por espacios en blanco
-    contenido = contenido.replace('\t', '')
-    contenido = contenido.replace('"', '\"')
-
-
-text = "Hello World"
+text = '''let a = 0 in { print(a); a := 1; print(a);}'''
+#text = '{print(text @ number);}'
+print(text)
+#text = 'type call(x){ x = 3; }'
 tokens = lexer(text)
-
-# # Extraer las propiedades "tokentype" de cada token
 tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
-
+parser = LR1Parser(gramatica,False)
+output,operations = parser(tokentypes)
 print(tokentypes)
-# parser = LR1Parser(gramatica,False)
-
-# derivation = parser(tokentypes)
-# print(derivation)
-
-
-
+#print(output)
+#ast = evaluate_reverse_parse(output, operations, tokens)
+#print(ast)
+#checker = SemanticCheckingVisitor()
+#errors = checker.semantic_checking(ast)
+# print(checker.scope.define_variable)
