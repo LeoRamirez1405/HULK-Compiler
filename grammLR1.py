@@ -1,5 +1,4 @@
 from cmp.pycompiler import Grammar
-# from semantic_checking.ast_nodes import *
 from semantic_checking.AST import *
 from lexer import Lexer
 import string as stringMod
@@ -139,7 +138,7 @@ def gramm_Hulk_LR1():
     math_call %= exp + oPar + ExprNum + cPar, lambda h, s: ExpMathNode(s[3])
     math_call %= log + oPar + ExprNum + Comma + ExprNum + cPar, lambda h, s:  LogCallNode(s[3],s[5]) 
     math_call %= rand + oPar + cPar,  lambda h, s: RandomCallNode()
-    math_call %= PI, lambda h, s: PINode(3.1415)
+    math_call %= PI, lambda h, s: PINode()
     
     arguments %= expr_statement + Comma + arguments, lambda h, s: [s[1]]+s[2]
     arguments %= expr_statement , lambda h, s: s[1]
