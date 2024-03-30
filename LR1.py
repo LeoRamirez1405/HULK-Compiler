@@ -22,6 +22,7 @@ class ShiftReduceParser:
         stack = [ 0 ]
         cursor = 0
         output = []
+        operations = []
         
         while True:
             state = stack[-1]
@@ -35,22 +36,25 @@ class ShiftReduceParser:
                 if action == ShiftReduceParser.SHIFT:
                     print(f'Shift: Tag: {tag} State: {state} Lookahead: {lookahead}')
                     stack.append(tag)
+                    operations.append(ShiftReduceParser.SHIFT)
                     cursor += 1
                 # Reduce case
                 elif action == ShiftReduceParser.REDUCE:
                     print(f'Reduce: Tag: {tag} State: {state} Lookahead: {lookahead}')
                     for _ in range(len(tag.Right)): stack.pop()
                     stack.append(self.goto[stack[-1], tag.Left])
+                    operations.append(ShiftReduceParser.REDUCE)
+                    
                     output.append(tag)
                 # OK case
                 elif action == ShiftReduceParser.OK:
-                    return output
+                    return output,operations
                 # Invalid case
                 else:
                     assert False, 'Must be something wrong!'
             except KeyError:
                 raise Exception('Aborting parsing, item is not viable.')
-
+        
 class LR1Parser(ShiftReduceParser):
     def _build_parsing_table(self):
         G = self.G.AugmentedGrammar(True)

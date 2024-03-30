@@ -29,7 +29,7 @@ class SemanticCheckingVisitor:
 
         
     def semantic_checking(self, ast):
-        type_collector = TypeCollectorVisitor(self.context, self.errors)
+        type_collector = TypeCollectorVisitor(self.context, self.scope, self.errors)
         type_collector.visit(ast)
         
         type_builder = TypeBuilderVisitor(self.context, self.scope, self.errors)

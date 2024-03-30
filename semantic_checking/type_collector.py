@@ -14,6 +14,7 @@ class TypeCollectorVisitor:
 
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
+        print('TypeCollector')
         for statment in node.statments:
             self.visit(statment)
             
