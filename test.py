@@ -1,4 +1,4 @@
-from grammLR1 import gramm_Hulk_LR1
+from grammLR1Leo import gramm_Hulk_LR1
 from LR1 import LR1Parser
 from lexer import Lexer
 

@@ -15,16 +15,16 @@ with open('./prueba.txt', "r", encoding="utf-8") as archivo:
     content = archivo.read()
     text = content
 
-text = '''let text = 4 in 2;'''
+text = '''3 + (let text = 4 in 2);'''
 #text = '''let text = 4;'''
 #text = '{print(text @ number);}'
 print(text)
 #text = 'type call(x){ x = 3; }'
 tokens = lexer(text)
 tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
-parser = LR1Parser(gramatica,True)
+parser = LR1Parser(gramatica,False)
 output,operations = parser(tokentypes)
-#print(type(operations))
+#print(output)
 ast = evaluate_reverse_parse(output, operations, tokens)
 print(ast)
 #checker = SemanticCheckingVisitor()
