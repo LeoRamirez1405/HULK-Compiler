@@ -36,7 +36,7 @@ class ConcatNode(BinaryNode):
 
 FF=ConcatNode
 def regex_tokenizer(text,G,skip_whitespaces=True):
-  print(text)
+  # print(text)
   h=[]
   GG={x:Token(x,G[x])for x in['|','*','(',')','\xce\xb5']}
   backlashed = False
