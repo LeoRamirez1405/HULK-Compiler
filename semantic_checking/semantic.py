@@ -10,7 +10,18 @@ class SemanticError(Exception):
 class Attribute:
     def __init__(self, name, typex):
         self.name = name
-        self.type = typex
+        self.type: Type = typex
+
+    def __str__(self):
+        return f'[attrib] {self.name} : {self.type.name};'
+
+    def __repr__(self):
+        return str(self)
+    
+class Argument:
+    def __init__(self, name, typex):
+        self.name = name
+        self.type: Type = typex
 
     def __str__(self):
         return f'[attrib] {self.name} : {self.type.name};'
@@ -26,8 +37,10 @@ class VariableInfo:
 class Type:
     def __init__(self, name:str):
         self.name = name
-        self.attributes = []
-        self.methods = []
+        self.inhertance: Type = None
+        self.args: List[Argument] = []
+        self.attributes: List[Attribute] = []
+        self.methods: List[Method] = []
         self.parent = None
 
     def set_parent(self, parent):
@@ -45,6 +58,17 @@ class Type:
                 return self.parent.get_attribute(name)
             except SemanticError:
                 raise SemanticError(f'Attribute "{name}" is not defined in {self.name}.')
+            
+    def get_arg(self, name:str):
+        try:
+            return next(arg for arg in self.args if arg.name == name)
+        except StopIteration:
+            if self.parent is None:
+                raise SemanticError(f'Argument "{name}" is not defined in {self.name}.')
+            try:
+                return self.parent.get_arg(name)
+            except SemanticError:
+                raise SemanticError(f'Argument "{name}" is not defined in {self.name}.')
 
     def define_attribute(self, name:str, typex):
         try:
@@ -53,6 +77,16 @@ class Type:
             attribute = Attribute(name, typex)
             self.attributes.append(attribute)
             return attribute
+        else:
+            raise SemanticError(f'Attribute "{name}" is already defined in {self.name}.')
+        
+    def define_arg(self, name:str, typex):
+        try:
+            self.get_arg(name)
+        except SemanticError:
+            arg = Argument(name, typex)
+            self.attributes.append(arg)
+            return arg
         else:
             raise SemanticError(f'Attribute "{name}" is already defined in {self.name}.')
 

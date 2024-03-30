@@ -4,11 +4,10 @@ from semantic import *
 
 class TypeBuilderVisitor():
     def __init__(self,context:Context, scope: Scope, errors) -> None:
-        self.context = context
-        self.scope = scope
+        self.context: Context = context
+        self.scope: Scope = scope
         self.errors: List[str] = errors
         self.currentType: Type
-        self.args = dict
         
     @visitor.on('node')
     def visit(self, node, tabs):
@@ -22,19 +21,28 @@ class TypeBuilderVisitor():
 
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode):
-        self.currentType = self.context.get_type(node.id) 
-        arg_types = [self.context.get_type(t[0].value) for t in node.parameters]
+        self.currentType: Type = self.context.get_type(node.id) 
+        try:
+            inheritance = self.context.get_type(node.inheritance)
+        except:
+            self.errors.append(SemanticError(f'El tipo  {node.inheritance} del que se herada no esta definido'))
+            inheritance = self.context.get_type('object')
         
-        arg_names = [self.context.get_type(t[0].key) for t in node.parameters]
+        self.currentType.inhertance = inheritance
         
-        for i in range(arg_names):
-            self.currentType.define_attribute(arg_names[i],arg_types[i])        
-            self.args.update(self.currentType.name, self.currentType)       
+        for arg in node.parameters:
+            name = arg.items[0].key 
+            type = arg.items[0].value
             
-        
-       # self.currentType.attributes(arg_types)
-        for attrDef in node.attribute:
+            type =  self.context.get_type(type)
+            try:
+                self.currentType.define_arg(name, type)      
+            except:
+                self.errors.append(f'Existenten dos argumentos con el nombre {name}')
+                
+        for attrDef in node.attributes:
             self.visit(attrDef)
+            
         for methodDef in node.methods:
             self.visit(methodDef)
             
@@ -43,27 +51,35 @@ class TypeBuilderVisitor():
     
     @visitor.when(KernAssigmentNode)
     def visit(self, node: KernAssigmentNode):
-        if node.id in self.args:    
-            self.currentType.define_attribute(node.id,self.args[node.id])
-        else:
-            attr_type = self.context.get_type(node.id)
-            if self.currentType.get_attribute(node.id,attr_type) is not None: 
-                self.currentType.define_attribute(node.id,attr_type)
-            else:
-                self.currentType.define_attribute(node.id,Type('object'))    
+        #TODO Ponerle type_annotation al kernassigmentnode
+        self.currentType.define_attribute(node.id, self.context.get_type('object'))    
         
     @visitor.when(FunctionDefinitionNode)
     def visit(self, node: FunctionDefinitionNode):
-        return_type = self.context.get_type(node.type_annotation)
-        arg_types = [self.context.get_type(t[0].value)  if t[0].value in self.context else Type('object') for t in node.parameters]
-        arg_names = [t[0].key for t in node.parameters]
+        try: 
+            return_type = self.context.get_type(node.type_annotation)
+        except:
+            self.errors.append(f'El tipo de retorno {node.type_annotation} no esta definido')
+            return_type = self.context.get_type('object')
+        
+        arg_names = [parama.items[0].key for parama in node.parameters]
+        arg_types = []
+        
+        for parama in node.parameters:
+            try:
+                arg_types.append(self.context.get_type(parama.items[0].value))
+            except:
+                self.errors.append(f'El tipo del parametro {parama.items[0].key} que se le pasa a la funcion {node.id} no esta definido')
+                arg_types.append(self.context.get_type('object'))
+        
         if self.currentType:
             try:
                 self.currentType.define_method(node.id, arg_names, arg_types, return_type)
             except:
                 self.errors.append(f'La funcion {node.id} ya existe en el contexto de {self.currentType.name}.')
         else:
-            exist = True
+            exist = False
+            #Esto nnunca va a lanzar excepcion xq solo entraria a este nodo si es un metodo de un typo o si ya esta node.id en el scope
             for func in self.scope.functions[node.id]:
                 if len(arg_names) == len(func.param_names):
                     exist = True
@@ -71,7 +87,7 @@ class TypeBuilderVisitor():
             if exist:
                 self.errors.append(f'La funcion {node.id} ya existe en este scope con {len(arg_names)} cantidad de parametros')
             else:
-                method = Method(node.id, [name for name, type in node.parameters], [type for name, type in node.parameters], return_type)
+                method = Method(node.id, arg_names, arg_types, return_type)
                 self.scope.functions[node.id].append(method)
                 
 

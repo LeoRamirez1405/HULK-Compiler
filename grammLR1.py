@@ -122,7 +122,7 @@ def gramm_Hulk_LR1():
     factor %= math_call, lambda h, s:  s[1]
     factor %= member_access, lambda h, s:  s[1]    
     
-    member_access %= factor + Dot + identifier + oPar + arguments + cPar , lambda h, s: MemberAccesNode(s[1], s[3], s[5]) 
+    member_access %= factor + Dot + identifier + oPar + arguments + cPar , lambda h, s: MemberAccessNode(s[1], s[3], s[5]) 
     #member_access %= factor + Dot + identifier , lambda h, s: MemberAccesNode(s[1], s[3], [])  #Todo member access Los parametros son privados de la clase #! NAOMI ARREGLA ESTO EN EL CHECKEO SEMANTICO ❤️
     kern_instance_creation %= New + identifier + oPar + arguments + cPar, lambda h, s: KernInstanceCreationNode(s[2],s[4])
     
@@ -214,7 +214,7 @@ def gramm_Hulk_LR1():
     (exp, 'exp'),
     (log, 'log'),
     (rand, 'rand'),
-    # (PI, 'PI'),
+    (PI, 'PI'),
     (identifier, f'({minletters})({minletters}|{zero_digits})*')
 ], G.EOF)
     

@@ -6,11 +6,9 @@ sys.path.insert(0, current_dir)
 from AST import *
 from semantic_checking.semantic_checking import SemanticCheckingVisitor
 from evaluation import evaluate_reverse_parse
-#from grammLR1 import gramm_Hulk_LR1
 from grammLR1 import gramm_Hulk_LR1
 from LR1 import LR1Parser
 
-#gramatica, lexer = gramm_Hulk_LR1()
 gramatica, lexer = gramm_Hulk_LR1()
 text = 'print((1 + 2) ^ 3);'
 #text = 'print(42);'
