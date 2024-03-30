@@ -168,7 +168,7 @@ class Scope:
         self.index = 0 if parent is None else len(parent)
 
     def __len__(self):
-        return len(self.locals)
+        return len(self.local_variables)
 
     def create_child(self):
         child = Scope(self)
@@ -195,7 +195,7 @@ class Scope:
     
 class Context:
     def __init__(self):
-        self.types = {}
+        self.types: dict[str, Type] = {}
 
     def create_type(self, name:str):
         if name in self.types:

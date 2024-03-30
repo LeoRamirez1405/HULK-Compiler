@@ -1,6 +1,7 @@
 import visitor
-from AST import *
 from semantic import Context, Scope, SemanticError, Type, Method
+# from semantic_checking.AST import *
+from AST import *
 
 #! Hay que ver que se hace con las funciones que no son metodos de alguna clase   OJO
 
@@ -18,13 +19,14 @@ class TypeCheckerVisitor:
     
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
-        print('TypeChecker')
+        #print('TypeChecker')
+        print(f'Context in Checker: {[item for item in self.context.types.keys()]}')
         for statment in node.statments:
             self.visit(statment, self.scope) 
             
     @visitor.when(PrintStatmentNode)
     def visit(self, node: PrintStatmentNode, scope):
-        print('visitor en PrintNode')
+        #print('visitor en PrintNode')
         self.visit(node.expression, scope)
         
         return self.context.get_type('void')
@@ -66,10 +68,10 @@ class TypeCheckerVisitor:
         if self.current_type:
             method = self.current_type.get_method(node.id)
         else:
-            method = filter(lambda x: len(x.param_names) == len(node.parameters), self.scope.functions[node.id])[0]  
+            method = list(filter(lambda x: len(x.param_names) == len(node.parameters), self.scope.functions[node.id]))[0]  
                    
         inner_scope: Scope = scope.create_child()            
-        for i in len(method.param_names):
+        for i in method.param_names:
             inner_scope.define_variable(method.param_names[i], method.param_types[i])
             
         self.visit(node.body, inner_scope)
@@ -248,11 +250,11 @@ class TypeCheckerVisitor:
         
     @visitor.when(AritmeticExpression)
     def visit(self, node: AritmeticExpression, scope: Scope):
-        type_1: Type = self.visit(node.left, scope)
-        type_2: Type = self.visit(node.right, scope)
+        type_1: Type = self.visit(node.expression_1, scope)
+        type_2: Type = self.visit(node.expression_2, scope)
         
-        if not type_1.name == type_2.name == 'bool':
-            self.errors.append(SemanticError(f'Solo se pueden emplear aritmeticos booleanos entre expresiones aritmeticas.'))
+        if not type_1.name == type_2.name == 'number':
+            self.errors.append(SemanticError(f'Solo se pueden emplear aritmeticos entre expresiones aritmeticas.'))
             return self.context.get_type('object')
         
         return type_1
@@ -319,6 +321,20 @@ class TypeCheckerVisitor:
             return self.context.get_type('object')
         
         return self.context.get_type('bool')
-
-            
     
+    @visitor.when(NumberNode)
+    def visit(self, node: NumberNode, scope):
+        try:
+            a: float = float(node.value)
+            return self.context.get_type('number')
+        except:
+            self.errors.append(SemanticError(f'El elemento {node.value} no es un numero'))
+            return self.context.get_type('object')
+        
+    @visitor.when(InheritanceNode)
+    def visit(self, node: InheritanceNode, scope):
+        try:
+            return self.context.get_type(node.type)
+        except:
+            self.errors.append(SemanticError(f'El tipo {node.type} no esta definifo'))
+            return self.context.get_type('object') 

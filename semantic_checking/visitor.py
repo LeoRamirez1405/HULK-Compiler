@@ -55,11 +55,6 @@ class Dispatcher(object):
     self.targets = {}
 
   def __call__(self, *args, **kw):
-#----------------------------------------------------------------------------------------------#
-    if self.param_index >= len(args):
-      return
-    
-#----------------------------------------------------------------------------------------------#
     typ = args[self.param_index].__class__
     d = self.targets.get(typ)
     if d is not None:

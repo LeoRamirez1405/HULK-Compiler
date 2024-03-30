@@ -1,5 +1,6 @@
-from semantic import Context, Scope, SemanticError
+from semantic import Context, Scope, SemanticError, Type
 import visitor
+# from semantic_checking.AST import *
 from AST import *
 
 class TypeCollectorVisitor:
@@ -14,9 +15,14 @@ class TypeCollectorVisitor:
 
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
-        print('TypeCollector')
+        #print('TypeCollector')
+        # self.context.types['test'] = Type('test')
         for statment in node.statments:
             self.visit(statment)
+            
+        print(f'Context in Collector: {[item for item in self.context.types.keys()]}')
+        print(f'Scope in Collector: {[func for func in self.scope.functions.keys()]}')
+        return self.context, self.scope, self.errors
             
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode):

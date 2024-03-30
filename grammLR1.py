@@ -1,5 +1,4 @@
 from cmp.pycompiler import Grammar
-# from semantic_checking.ast_nodes import *
 from semantic_checking.AST import *
 from lexer import Lexer
 
@@ -63,7 +62,11 @@ def gramm_Hulk_LR1():
     destructive_assignment %= identifier + Destroy + expression, lambda h, s: [DestroyNode(s[1], s[3])]
 
     function_definition %= Function + identifier + type_annotation + oPar + parameters + cPar + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8]) 
-    function_definition %= Function + identifier + type_annotation + oPar + parameters + cPar + Arrow + non_create_statement + Semi,lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8])
+    
+    #TODO Revisar .. se elimino el ; al final de la creacion de la uncion con un Arrow porque ese tipo
+    #TODO de funciones terminan en un non_create_statmeng y los non_create_statment terminan en ;
+    # function_definition %= Function + identifier + type_annotation + oPar + parameters + cPar + Arrow + non_create_statement + Semi,lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8])
+    function_definition %= Function + identifier + type_annotation + oPar + parameters + cPar + Arrow + non_create_statement , lambda h, s: FunctionDefinitionNode(s[2],s[3],s[5],s[8])
     
     parameters %= expression + type_annotation + Comma + parameters, lambda h, s: [{s[1]:s[2]}] + s[4]
     parameters %= expression + type_annotation, lambda h, s: {s[1]:s[2]}
@@ -75,7 +78,7 @@ def gramm_Hulk_LR1():
     ExprAnd, ExprNeg, ExprIsType, ExprComp, ExprNum, ExprOr= G.NonTerminals('ExprAnd ExprNeg ExprIsType ExprComp ExprNum ExprOr')
     
     expression %= ExprOr, lambda h, s: s[1] 
-    expression %= expression + arroba + ExprOr, lambda h, s:  StringConcatNode(s[1],s[4])
+    expression %= expression + arroba + ExprOr, lambda h, s:  StringConcatNode(s[1],s[3])
     expression %= expression + arroba + arroba + ExprOr, lambda h, s:  StringConcatWithSpaceNode(s[1],s[4])
  
     ExprOr %= ExprAnd, lambda h, s: s[1]
@@ -133,7 +136,7 @@ def gramm_Hulk_LR1():
     math_call %= exp + oPar + ExprNum + cPar, lambda h, s: ExpMathNode(s[3])
     math_call %= log + oPar + ExprNum + Comma + ExprNum + cPar, lambda h, s:  LogCallNode(s[3],s[5]) 
     math_call %= rand + oPar + cPar,  lambda h, s: RandomCallNode()
-    math_call %= PI, lambda h, s: PINode(3.1415)
+    math_call %= PI, lambda h, s: PINode()
     
     arguments %= expr_statement + Comma + arguments, lambda h, s: [s[1]]+s[2]
     arguments %= expr_statement , lambda h, s: s[1]
@@ -204,7 +207,8 @@ def gramm_Hulk_LR1():
     (Inherits, 'inherits'),
     (New, 'new'),
     (In, 'in'),
-    (identifier, 'identifier'),
+    #TODO Revisar cambio ... arreglar expresiones regulares de identificadores de forma general
+    (identifier, f'{all_characters}({zero_digits}|{all_characters})*'),
     (sComil, '\''),
     (dComill, '\"'),
     (sqrt, 'sqrt'),
