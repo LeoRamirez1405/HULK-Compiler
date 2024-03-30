@@ -137,3 +137,4 @@ type Range(min:number, max:number) {
     next(): boolean => (current := current + 1) < max;
     current(): number => current;
 }
+

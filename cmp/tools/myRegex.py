@@ -36,12 +36,11 @@ class ConcatNode(BinaryNode):
 
 FF=ConcatNode
 def regex_tokenizer(text,G,skip_whitespaces=True):
-  # print(text)
   h=[]
   GG={x:Token(x,G[x])for x in['|','*','(',')','\xce\xb5']}
   backlashed = False
   for z in text:  
-      if(z == '\\'):
+      if(z == '\\' and not backlashed):
         backlashed = True
         continue
       
@@ -52,14 +51,13 @@ def regex_tokenizer(text,G,skip_whitespaces=True):
           j=GG[z]
         else:
           raise KeyError
-        
       except KeyError:
-        backlashed = False
         j=Token(z,G['symbol'])
+        backlashed = False
       finally:
-        print(f"Added {j}")
         h.append(j)
   h.append(Token('$',G.EOF))
+
   return h
 
 def build_grammar():
@@ -99,6 +97,7 @@ class Regex:
         h=regex_tokenizer(regex,G,skip_whitespaces=False)
         f=L(h)
         T=evaluate_parse(f,h)
+        print(h)
         H=T.evaluate()
         X=nfa_to_dfa(H)
         k=automata_minimization(X)
