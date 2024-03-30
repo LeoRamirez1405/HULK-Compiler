@@ -159,11 +159,11 @@ def gramm_Hulk_LR1():
     zero_digits = '|'.join(str(n) for n in range(0,10))
     minletters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1)) 
     capletters = '|'.join(chr(n) for n in range(ord('A'),ord('Z')+1)) 
-    all_characters = "0|1|2|3|4|5|6|7|8|9|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|!|\"|#|$|%|&|'|(|)|*|+|,|-|.|/|:|;|<|=|>|?|@|[|\|]|^|_|`|{|}|~"
+    all_characters = "0|1|2|3|4|5|6|7|8|9|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|!|#|$|%|&|\(|\)|\*|+|,|-|.|/|:|;|<|=|>|?|@|[|]|^|_|`|{|}|~| |\\||\'"
 
     lexer = Lexer([
     (number, f'(({nonzero_digits})({zero_digits})*)|0'),
-    # (string, f'\'({all_characters})*\'|\"({all_characters})*\"'),
+    (string, f'\"(({all_characters})|(\\\\\"))*\"'),
     (Print, 'print'),
     (oPar, "\("),
     (cPar, "\)"),
