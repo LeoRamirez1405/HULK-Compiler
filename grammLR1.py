@@ -28,7 +28,7 @@ def gramm_Hulk_LR1():
     #statement %= create_statement, lambda h, s: s[1]
      
     #non_create_statement %= control_structure, lambda h, s: s[1]
-    non_create_statement %= expr_statement , lambda h, s: s[1]
+    non_create_statement %= expr_statement+ Semi , lambda h, s: s[1]
     
     #create_statement %= let_in, lambda h, s: s[1]
     #create_statement %= type_definition, lambda h, s: s[1]
@@ -115,13 +115,14 @@ def gramm_Hulk_LR1():
     
     factorPow %= factor, lambda h, s:s[1]
     factorPow %= factor + Pow + factorPow , lambda h, s:  PowExpressionNode(s[1],s[3])
-    # C ( A and B )
+    # term / .... -> let_in_expr
+    # identifier ( identifier ) -> function_call
     factor %= oPar + expr_statement + cPar , lambda h, s:  s[2]
     factor %= number, lambda h, s:  NumberNode(s[1])
     factor %= string, lambda h, s:  StringNode(s[1])
     factor %= _False, lambda h, s:  BooleanNode(s[1])
     factor %= _True, lambda h, s:  BooleanNode(s[1])
-    #factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(s[1],s[3])
+    factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(s[1],s[3])
     factor %= identifier, lambda h, s:  IdentifierNode(s[1])
     #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
     factor %= math_call, lambda h, s:  s[1]
