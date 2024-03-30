@@ -57,8 +57,8 @@ def gramm_Hulk_LR1():
     
     assignment %= Let + multi_assignment, lambda h, s: s[2]
     multi_assignment %= kern_assignment + Comma + multi_assignment, lambda h, s: [s[1]] + s[3]
-    multi_assignment %= kern_assignment + Semi, lambda h, s: [s[1]]
-    kern_assignment %= identifier + Equal + expression, lambda h, s: KernAssigmentNode(s[1],s[3])
+    multi_assignment %= kern_assignment, lambda h, s: [s[1]]
+    kern_assignment %= identifier + Equal + expr_statement, lambda h, s: KernAssigmentNode(s[1],s[3])
     
     destructive_assignment %= identifier + Destroy + expression + Comma + destructive_assignment, lambda h, s : [DestroyNode(s[1], s[3])] + s[4]
     destructive_assignment %= identifier + Destroy + expression, lambda h, s: [DestroyNode(s[1], s[3])]
@@ -143,7 +143,7 @@ def gramm_Hulk_LR1():
     arguments %= G.Epsilon, lambda h, s: []
     
     # Estructuras adicionales para tipos
-    type_definition %= Type + identifier + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(s[2],s[3], s[5], s[6])
+    type_definition %= Type + identifier + oPar + parameters + cPar + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(s[2],s[4], s[6], s[8],s[9])
 
     attribute_definition %= attribute_definition + kern_assignment + Semi, lambda h, s: s[1] + [s[2]]
     attribute_definition %= G.Epsilon, lambda h, s: []
