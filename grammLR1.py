@@ -28,7 +28,7 @@ def gramm_Hulk_LR1():
     statement %= non_create_statement, lambda h, s: s[1] 
     statement %= assignment + Semi, lambda h, s: s[1] 
     statement %= create_statement, lambda h, s: s[1]
-     
+    
     non_create_statement %= control_structure, lambda h, s: s[1]
     non_create_statement %= expr_statement + Semi, lambda h, s: s[1]
     
@@ -38,6 +38,7 @@ def gramm_Hulk_LR1():
     
     expr_statement %= print_statement, lambda h, s: s[1]
     expr_statement %= expression, lambda h, s: s[1]
+    expr_statement %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
     print_statement %= Print + oPar + expression + cPar, lambda h, s: PrintStatmentNode(s[3])
     
     kern_assignment %= identifier + Equal + kern_instance_creation, lambda h, s: KernAssigmentNode(s[1],s[3])
@@ -79,7 +80,8 @@ def gramm_Hulk_LR1():
     expression %= ExprOr, lambda h, s: s[1] 
     expression %= expression + arroba + ExprOr, lambda h, s:  StringConcatNode(s[1],s[3])
     expression %= expression + arroba + arroba + ExprOr, lambda h, s:  StringConcatWithSpaceNode(s[1],s[4])
- 
+    
+
     ExprOr %= ExprAnd, lambda h, s: s[1]
     ExprOr %= ExprOr + Or + ExprAnd, lambda h, s:  BoolOrNode(s[1],s[3])
     
@@ -121,7 +123,7 @@ def gramm_Hulk_LR1():
     factor %= _True, lambda h, s:  BooleanNode(s[1])
     factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(s[1],s[3])
     factor %= identifier, lambda h, s:  IdentifierNode(s[1])
-    factor %= assignment + In + expr_statement + Semi, lambda h, s: LetInExpressionNode(s[1], s[3])
+    #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
     factor %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])    
     factor %= math_call, lambda h, s:  s[1]
     factor %= member_access, lambda h, s:  s[1]    
