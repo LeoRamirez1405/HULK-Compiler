@@ -37,7 +37,7 @@ def gramm_Hulk_LR1():
     
     expr_statement %= print_statement, lambda h, s: s[1]
     expr_statement %= expression, lambda h, s: s[1]
-    print_statement %= Print + oPar + expression + cPar + Semi, lambda h, s: PrintStatmentNode(s[3])
+    print_statement %= Print + oPar + expression + cPar, lambda h, s: PrintStatmentNode(s[3])
     
     #let_in_as_expr %= assignment + In + oPar + expr_statement + cPar, lambda h, s: LetInNode(s[1], s[4])
     #let_in %= let_in_as_expr, lambda h,s: s[1]
@@ -220,7 +220,7 @@ def gramm_Hulk_LR1():
     (exp, 'exp'),
     (log, 'log'),
     (rand, 'rand'),
-    # (PI, 'PI'),
+    (PI, 'PI'),
     (identifier, f'({minletters})({minletters}|{zero_digits})*')
 ], G.EOF)
     
