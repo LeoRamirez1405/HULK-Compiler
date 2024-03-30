@@ -172,7 +172,6 @@ with open('prueba.txt', 'r') as prueba:
 
 text = "Hello World"
 tokens = lexer(text)
-print(tokens)
 
 # # Extraer las propiedades "tokentype" de cada token
 tokentypes = [token.token_type for token in tokens if token.token_type != 'space']

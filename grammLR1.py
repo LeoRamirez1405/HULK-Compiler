@@ -22,14 +22,15 @@ def gramm_Hulk_LR1():
     
     Program %= statement_list, lambda h, s: ProgramNode(s[1])
     statement_list %= statement + statement_list, lambda h, s: [s[1]] + s[2] 
-    statement_list %= G.Epsilon, lambda h, s: []
     statement_list %= oBrace + statement_list + cBrace , lambda h, s: s[2]
+    statement_list %= G.Epsilon, lambda h, s: []
     
     statement %= non_create_statement, lambda h, s: s[1] 
+    statement %= assignment + Semi, lambda h, s: s[1] 
     statement %= create_statement, lambda h, s: s[1]
      
     non_create_statement %= control_structure, lambda h, s: s[1]
-    non_create_statement %= expr_statement+ Semi , lambda h, s: s[1]
+    non_create_statement %= expr_statement + Semi, lambda h, s: s[1]
     
     create_statement %= type_definition, lambda h, s: s[1]
     create_statement %= function_definition, lambda h, s: s[1]
@@ -76,7 +77,7 @@ def gramm_Hulk_LR1():
     ExprAnd, ExprNeg, ExprIsType, ExprComp, ExprNum, ExprOr= G.NonTerminals('ExprAnd ExprNeg ExprIsType ExprComp ExprNum ExprOr')
     
     expression %= ExprOr, lambda h, s: s[1] 
-    expression %= expression + arroba + ExprOr, lambda h, s:  StringConcatNode(s[1],s[4])
+    expression %= expression + arroba + ExprOr, lambda h, s:  StringConcatNode(s[1],s[3])
     expression %= expression + arroba + arroba + ExprOr, lambda h, s:  StringConcatWithSpaceNode(s[1],s[4])
  
     ExprOr %= ExprAnd, lambda h, s: s[1]
