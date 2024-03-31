@@ -20,8 +20,8 @@ def gramm_Hulk_LR1():
     sqrt, sin, cos, tan, exp, log, rand = G.Terminals('sqrt sin cos tan exp log rand')
     
     Program %= statement_list, lambda h, s: ProgramNode(s[1])
+    statement_list %= oBrace + statement_list + cBrace + statement_list , lambda h, s: s[2] + s[4]
     statement_list %= statement + statement_list, lambda h, s: [s[1]] + s[2] 
-    statement_list %= oBrace + statement_list + cBrace , lambda h, s: s[2]
     statement_list %= G.Epsilon, lambda h, s: []
     
     statement %= non_create_statement, lambda h, s: s[1] 
@@ -30,6 +30,7 @@ def gramm_Hulk_LR1():
     
     non_create_statement %= control_structure, lambda h, s: s[1]
     non_create_statement %= expr_statement + Semi, lambda h, s: s[1]
+
     #non_create_statement %= expr_statementWithoutSemi, lambda h, s: s[1]
     
     create_statement %= type_definition, lambda h, s: s[1]
