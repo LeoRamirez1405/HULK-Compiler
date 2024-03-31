@@ -23,6 +23,7 @@ with open('./prueba.txt', "r") as archivo:
 print(text)
 tokens = lexer(text)
 tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
+print(tokentypes)
 parser = LR1Parser(gramatica,False)
 output,operations = parser(tokentypes)
 tokensAST = [token for token in tokens if token.token_type != 'space']

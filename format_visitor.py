@@ -127,37 +127,37 @@ class FormatVisitor(object):
     def visit(self, node: PlusExpressionNode, tabs = 0):
         expression_1 = self.visit(node.expression_1, tabs + 1)
         expression_2 = self.visit(node.expression_2, tabs + 1)
-        return '\t' * tabs + f'\\__PlusExpressionNode\n\\____expression_1:\n{expression_1}\n\\____expression_2:\n{expression_2}'
+        return '\t' * tabs + f'\\__PlusExpressionNode\n' + '\t' * tabs + f'\\____expression_1:\n{expression_1}\n' + '\t' * tabs + f'\\____expression_2:\n{expression_2}'
 
     @visitor.when(SubsExpressionNode)
     def visit(self, node: SubsExpressionNode, tabs = 0):
         expression_1 = self.visit(node.expression_1, tabs + 1)
         expression_2 = self.visit(node.expression_2, tabs + 1)
-        return '\t' * tabs + f'\\__SubsExpressionNode\n\\____expression_1:\n{expression_1}\n\\____expression_2:\n{expression_2}'
+        return '\t' * tabs + f'\\__SubsExpressionNode\n' + '\t' * tabs + f'\\____expression_1:\n{expression_1}\n' + '\t' * tabs + f'\\____expression_2:\n{expression_2}'
 
     @visitor.when(DivExpressionNode)
     def visit(self, node: DivExpressionNode, tabs = 0):
         expression_1 = self.visit(node.expression_1, tabs + 1)
         expression_2 = self.visit(node.expression_2, tabs + 1)
-        return '\t' * tabs + f'\\__DivExpressionNode\n\\____expression_1:\n{expression_1}\n\\____expression_2:\n{expression_2}'
+        return '\t' * tabs + f'\\__DivExpressionNode\n' + '\t' * tabs + f'\\____expression_1:\n{expression_1}\n' + '\t' * tabs + f'\\____expression_2:\n{expression_2}'
 
     @visitor.when(MultExpressionNode)
     def visit(self, node: MultExpressionNode, tabs = 0):
         expression_1 = self.visit(node.expression_1, tabs + 1)
         expression_2 = self.visit(node.expression_2, tabs + 1)
-        return '\t' * tabs + f'\\__MultExpressionNode\n\\____expression_1:\n{expression_1}\n\\____expression_2:\n{expression_2}'
+        return '\t' * tabs + f'\\__MultExpressionNode\n' + '\t' * tabs + f'\\____expression_1:\n{expression_1}\n' + '\t' * tabs + f'\\____expression_2:\n{expression_2}'
 
     @visitor.when(ModExpressionNode)
     def visit(self, node: ModExpressionNode, tabs = 0):
         expression_1 = self.visit(node.expression_1, tabs + 1)
         expression_2 = self.visit(node.expression_2, tabs + 1)
-        return '\t' * tabs + f'\\__ModExpressionNode\n\\____expression_1:\n{expression_1}\n\\____expression_2:\n{expression_2}'
+        return '\t' * tabs + f'\\__ModExpressionNode\n' + '\t' * tabs + f'\\____expression_1:\n{expression_1}\n' + '\t' * tabs + f'\\____expression_2:\n{expression_2}'
 
     @visitor.when(PowExpressionNode)
     def visit(self, node: PowExpressionNode, tabs = 0):
         expression_1 = self.visit(node.expression_1, tabs + 1)
         expression_2 = self.visit(node.expression_2, tabs + 1)
-        return '\t' * tabs + f'\\__PowExpressionNode\n\\____expression_1:\n{expression_1}\n\\____expression_2:\n{expression_2}'
+        return '\t' * tabs + f'\\__PowExpressionNode\n' + '\t' * tabs + f'\\____expression_1:\n{expression_1}\n' + '\t' * tabs + f'\\____expression_2:\n{expression_2}'
 
     @visitor.when(NumberNode)
     def visit(self, node: NumberNode, tabs = 0):
