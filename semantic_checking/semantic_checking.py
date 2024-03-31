@@ -112,6 +112,9 @@ ast7 = ProgramNode([
     KernAssigmentNode(IdentifierNode('x'), NumberNode(5)),
     KernAssigmentNode(IdentifierNode('y'), PlusExpressionNode(NumberNode(9), IdentifierNode('x'))),
 ])
+ast8 = ProgramNode([
+    
+])
 
 # print_aritmetic_tests = [ast0, ast1, ast2, ast3, ast4, ast5, ast6]
 # for index_test in range(len(print_aritmetic_tests)):

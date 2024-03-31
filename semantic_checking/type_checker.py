@@ -300,7 +300,13 @@ class TypeCheckerVisitor:
         except:
             self.errors.append(f'La funcion {node.id.id} no esta definida.')
             
+    @visitor.when(StringConcatNode)
+    def visit(self, node: StringConcatNode, scope: Scope):
+        if (self.visit(node.left, scope).name != 'string' and self.visit(node.left, scope).name != 'number') or (self.visit(node.right, scope).name != 'string' and self.visit(node.right, scope).name != 'number'):
+            self.errors.append(SemanticError(f'Esta operacion solo puede ser aplicada a strings o entre una combinacion de string con number.'))
+            return self.context.get_type('object')
         
+        return self.context.get_type('string')
             
     @visitor.when(StringConcatWithSpaceNode)
     def visit(self, node: StringConcatWithSpaceNode, scope: Scope):
