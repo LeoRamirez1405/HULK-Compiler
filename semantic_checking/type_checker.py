@@ -1,7 +1,7 @@
-import visitor
-from semantic import Context, Scope, SemanticError, Type, Method
-# from semantic_checking.AST import *
-from AST import *
+from semantic_checking.semantic import *
+import semantic_checking.visitor as visitor
+from semantic_checking.AST import *
+# from AST import *
 
 #! Hay que ver que se hace con las funciones que no son metodos de alguna clase   OJO
 
@@ -41,7 +41,14 @@ class TypeCheckerVisitor:
         
     @visitor.when(KernAssigmentNode)
     def visit(self, node: KernAssigmentNode, scope: Scope):
-        #node_id: IdentifierNode = node.id
+        if scope.parent == None:
+            try:
+                var: VariableInfo = self.scope.find_variable(node.id.id)
+                var.type = self.visit(node.expression, scope)
+            except:
+                self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida.'))
+            return self.context.get_type('object')
+    
         if scope.is_local(node.id.id) or scope.is_defined(node.id.id):
             self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida.'))
         else:
@@ -73,7 +80,7 @@ class TypeCheckerVisitor:
             method = list(filter(lambda x: len(x.param_names) == len(node.parameters), self.scope.functions[node.id.id]))[0]  
                    
         inner_scope: Scope = scope.create_child()            
-        for i in method.param_names:
+        for i in range(len(method.param_names)):
             inner_scope.define_variable(method.param_names[i], method.param_types[i])
             
         self.visit(node.body, inner_scope)
@@ -224,7 +231,7 @@ class TypeCheckerVisitor:
                 index = base_object_type.methods.index(node.object_property_to_acces)
                 if len(node.args) != len(base_object_type.methods[index].param_names):
                     #Si la cantidad de parametros no es correcta se lanza un error
-                    self.errors.append(SemanticError(f'La funcio        n {node.object_property_to_acces} requiere {len(base_object_type.methods[index].param_names)} cantidad de parametros pero {len(node.args)} fueron dados'))
+                    self.errors.append(SemanticError(f'La funcion {node.object_property_to_acces} requiere {len(base_object_type.methods[index].param_names)} cantidad de parametros pero {len(node.args)} fueron dados'))
                 else:
                     #Si la cantidad de parametros es correcta se verifica si los tipos de los parametros suministrados son correctos
                     #! OJO aqui tambien hay que ver lo de la jeraquia de clases

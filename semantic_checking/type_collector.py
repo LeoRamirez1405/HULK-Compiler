@@ -1,7 +1,7 @@
-from semantic import Context, Scope, SemanticError, Type
-import visitor
-# from semantic_checking.AST import *
-from AST import *
+from semantic_checking.semantic import Context, Scope, SemanticError, Type
+import semantic_checking.visitor as visitor
+from semantic_checking.AST import *
+# from AST import *
 
 class TypeCollectorVisitor:
     def __init__(self, context: Context, scope: Scope, errors) -> None:
@@ -35,7 +35,15 @@ class TypeCollectorVisitor:
     #Aqui solo se va a entrar si la funcion esta definida en el ProgramNode
     @visitor.when(FunctionDefinitionNode)
     def visit(self, node: FunctionDefinitionNode):
-        node_id: IdentifierNode = node.id
-        if not node_id.id in self.scope.functions:
-            self.scope.functions[node_id.id] = []
+        if not node.id.id in self.scope.functions:
+            self.scope.functions[node.id.id] = []
+        else:
+            self.errors.append(SystemError(f'El metodo {node.id.id} ya existe'))
     
+    @visitor.when(KernAssigmentNode)
+    def visit(self, node: KernAssigmentNode):
+        if not self.scope.is_defined(node.id.id):
+            self.scope.define_variable(node.id.id, self.context.get_type('object')) 
+        else:
+            # print(node.id.id)
+            self.errors.append(SemanticError(f'La variable {node.id.id} ya existe')) 
