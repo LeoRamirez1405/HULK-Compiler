@@ -1,7 +1,7 @@
-import visitor
-from semantic import Context, Scope, SemanticError, Type, VariableInfo
-# from semantic_checking.AST import *
-from AST import *
+from semantic_checking.semantic import *
+import semantic_checking.visitor as visitor
+from semantic_checking.AST import *
+# from AST import *
 
 #! Hay que ver que se hace con las funciones que no son metodos de alguna clase   OJO
 

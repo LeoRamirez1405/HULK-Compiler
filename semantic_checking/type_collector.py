@@ -1,7 +1,7 @@
-from semantic import Context, Scope, SemanticError, Type
-import visitor
-# from semantic_checking.AST import *
-from AST import *
+from semantic_checking.semantic import Context, Scope, SemanticError, Type
+import semantic_checking.visitor as visitor
+from semantic_checking.AST import *
+# from AST import *
 
 class TypeCollectorVisitor:
     def __init__(self, context: Context, scope: Scope, errors) -> None:

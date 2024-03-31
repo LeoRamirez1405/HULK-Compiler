@@ -1,4 +1,5 @@
 from semantic_checking.AST import *
+from semantic_checking.semantic_checking import SemanticCheckingVisitor
 #from semantic_checking.semantic_checking import SemanticCheckingVisitor
 #from semantic_checking.evaluation import evaluate_reverse_parse
 from grammLR1 import gramm_Hulk_LR1
@@ -19,7 +20,8 @@ output,operations = parser(tokentypes)
 tokensAST = [token for token in tokens if token.token_type != 'space']
 
 ast = evaluate_reverse_parse(output,operations,tokensAST)
-print(ast)
+checker = SemanticCheckingVisitor()
+print(checker.semantic_checking(ast))
 
 
 

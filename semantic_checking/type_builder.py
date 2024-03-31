@@ -1,7 +1,7 @@
-import visitor
-from semantic import *
-# from semantic_checking.AST import *
-from AST import *
+from semantic_checking.semantic import *
+import semantic_checking.visitor as visitor
+from semantic_checking.AST import *
+# from AST import *
 
 class TypeBuilderVisitor():
     def __init__(self,context:Context, scope: Scope, errors) -> None:
