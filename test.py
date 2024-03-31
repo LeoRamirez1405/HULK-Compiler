@@ -10,7 +10,7 @@ gramatica, lexer = gramm_Hulk_LR1()
 #     content = archivo.read()
 #     text = content
 
-text = '''let a = 0 in { print(a); a := 1; print(a);}'''
+text = '''let b = a in { print(a);};'''
 #text = '{print(text @ number);}'
 print(text)
 #text = 'type call(x){ x = 3; }'

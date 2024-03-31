@@ -30,7 +30,8 @@ def gramm_Hulk_LR1():
     
     non_create_statement %= control_structure, lambda h, s: s[1]
     non_create_statement %= expr_statement + Semi, lambda h, s: s[1]
-    non_create_statement %= expr_statementWithoutSemi, lambda h, s: s[1]
+    #non_create_statement %= expr_statementWithoutSemi, lambda h, s: s[1]
+    
     create_statement %= type_definition, lambda h, s: s[1]
     create_statement %= function_definition, lambda h, s: s[1]
     create_statement %= destructive_assignment+ Semi, lambda h, s: s[1]
@@ -38,7 +39,9 @@ def gramm_Hulk_LR1():
     expr_statement %= print_statement, lambda h, s: s[1]
     expr_statement %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
     expr_statement %= expression, lambda h, s: s[1]
-    expr_statementWithoutSemi %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])    
+    expr_statement %=  oBrace + statement_list + cBrace, lambda h, s:s[2]
+    #expr_statement %= expr_statementWithoutSemi, lambda h, s: s[1]    
+    #expr_statementWithoutSemi %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])    
     
     print_statement %= Print + oPar + expression + cPar, lambda h, s: PrintStatmentNode(s[3])
     
@@ -61,7 +64,8 @@ def gramm_Hulk_LR1():
     assignment %= Let + multi_assignment, lambda h, s: s[2]
     multi_assignment %= kern_assignment + Comma + multi_assignment, lambda h, s: [s[1]] + s[3]
     multi_assignment %= kern_assignment, lambda h, s: [s[1]]
-    kern_assignment %= identifier + Equal + expr_statement, lambda h, s: KernAssigmentNode(s[1],s[3])
+    kern_assignment %= identifier + Equal + expr_statement, lambda h, s: KernAssigmentNode(s[1],s[3])  
+    #kern_assignment %= identifier + Equal + expr_statementWithoutSemi, lambda h, s: KernAssigmentNode(s[1],s[3])  
     
     destructive_assignment %= identifier + Destroy + expression + Comma + destructive_assignment, lambda h, s : [DestroyNode(s[1], s[3])] + s[4]
     destructive_assignment %= identifier + Destroy + expression, lambda h, s: [DestroyNode(s[1], s[3])]
