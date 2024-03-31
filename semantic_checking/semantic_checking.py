@@ -125,6 +125,16 @@ ast10 = ProgramNode([
     KernAssigmentNode(IdentifierNode('x'), NumberNode(5)),
     KernAssigmentNode(IdentifierNode('y'), PlusExpressionNode(NumberNode(9), IdentifierNode('z'))),
 ])
+ast11 = ProgramNode([
+    KernAssigmentNode(IdentifierNode('x'), NumberNode(5)),
+    KernAssigmentNode(IdentifierNode('y'), PlusExpressionNode(NumberNode(9), IdentifierNode('x'))),
+    FunctionDefinitionNode(
+        IdentifierNode('method'), 
+        TypeNode('number'), 
+        [{IdentifierNode('a'): TypeNode('number')}, {IdentifierNode('b'): TypeNode('number')}],
+        [PlusExpressionNode(IdentifierNode('x'), IdentifierNode('y'))]
+    )
+])
 
 # print_aritmetic_tests = [ast0, ast1, ast2, ast3, ast4, ast5, ast6]
 # for index_test in range(len(print_aritmetic_tests)):
@@ -137,5 +147,5 @@ ast10 = ProgramNode([
 #     print(errors)
 
 checker = SemanticCheckingVisitor()  
-errors = checker.semantic_checking(ast10)
+errors = checker.semantic_checking(ast11)
 print(errors)
