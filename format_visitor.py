@@ -50,9 +50,15 @@ class FormatVisitor(object):
 
     @visitor.when(KernAssigmentNode)
     def visit(self, node: KernAssigmentNode, tabs = 0):
+        print(type(node.id))
+        print(type(node.expression))
         id = self.visit(node.id, tabs + 1)
         expression = self.visit(node.expression, tabs + 1)
-        return '\t' * tabs + f'\\__KernAssigmentNode\n{id}\n{expression}'
+        return '\t' * tabs + f'\\__KernAssigmentNode\n' '\t' * tabs + f'{id}\n' '\t' * tabs + f'{expression}'
+    
+    @visitor.when(StringNode)
+    def visit(self, node: StringNode, tabs = 0):
+        return '\t' * tabs + f'\\__StringNode [{node.value}]'
 
     @visitor.when(DestroyNode)
     def visit(self, node: DestroyNode, tabs = 0):
@@ -209,6 +215,12 @@ class FormatVisitor(object):
     def visit(self, node: LogCallNode, tabs = 0):
         expression = self.visit(node.expression, tabs + 1)
         return '\t' * tabs + f'\\__LogCallNode\n{expression}'
+    
+    @visitor.when(LetInExpressionNode)
+    def visit(self, node: LetInExpressionNode, tabs = 0):
+        assigments = '\n'.join(self.visit(assigment, tabs + 1) for assigment in node.assigments)
+        body = self.visit(node.body, tabs + 1)
+        return '\t' * tabs + f'\\__LetInExpressionNode\n\\____Assigments:\n''\t'  * tabs + f'{assigments}\n''\t'  * tabs + f'\\____Body:\n''\t'  * tabs + f'{body}'
 
 
     
