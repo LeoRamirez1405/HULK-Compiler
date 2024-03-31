@@ -126,6 +126,7 @@ def gramm_Hulk_LR1():
     factor %= string, lambda h, s:  StringNode(s[1])
     factor %= _False, lambda h, s:  BooleanNode(s[1])
     factor %= _True, lambda h, s:  BooleanNode(s[1])
+    
     factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(s[1],s[3])
     factor %= identifier, lambda h, s:  IdentifierNode(s[1])
     #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
@@ -181,6 +182,7 @@ def gramm_Hulk_LR1():
     (Plus, '+'),
     (Minus, '-'),
     (Pow, '^'),
+    (PowStar, '\*\*'),
     (Mult, "\*"),
     (Div, '/'),
     (Arrow, '=>'),

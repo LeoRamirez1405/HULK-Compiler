@@ -30,12 +30,12 @@ output,operations = parser(tokentypes)
 tokensAST = [token for token in tokens if token.token_type != 'space']
 
 ast = evaluate_reverse_parse(output,operations,tokensAST)
-checker = SemanticCheckingVisitor()
-print(checker.semantic_checking(ast))
 
 formatter = FormatVisitor()
 tree = formatter.visit(ast)
 print(tree)
 
+checker = SemanticCheckingVisitor()
+print(checker.semantic_checking(ast))
 
 
