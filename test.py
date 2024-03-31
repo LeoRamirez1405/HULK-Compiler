@@ -20,7 +20,13 @@ with open('./prueba.txt', "r") as archivo:
     contenido = contenido.replace('\t', '')
     contenido = contenido.replace('"', '\"')
     text = contenido
+# type Nombre (first:string,last:string)
+# { 
+#     nombre = first @@ last; 
+#     getNombreInv():string => last @ first ; 
+# }
 
+#Nombre(Leo,Ramirez);
 print(text)
 tokens = lexer(text)
 tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
