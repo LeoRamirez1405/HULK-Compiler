@@ -1,1 +1,1 @@
-let msg = "Hello, World!" in print(msg);
+Nombre(Leo,Ramirez);

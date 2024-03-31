@@ -20,8 +20,9 @@ def gramm_Hulk_LR1():
     sqrt, sin, cos, tan, exp, log, rand = G.Terminals('sqrt sin cos tan exp log rand')
     
     Program %= statement_list, lambda h, s: ProgramNode(s[1])
-    statement_list %= oBrace + statement_list + cBrace + statement_list , lambda h, s: s[2] + s[4]
     statement_list %= statement + statement_list, lambda h, s: [s[1]] + s[2] 
+    statement_list %= oBrace + statement_list + cBrace + statement_list , lambda h, s: s[2] + s[4]
+    statement_list %= oBrace + statement_list + cBrace , lambda h, s: s[2]
     statement_list %= G.Epsilon, lambda h, s: []
     
     statement %= non_create_statement, lambda h, s: s[1] 
@@ -30,7 +31,6 @@ def gramm_Hulk_LR1():
     
     non_create_statement %= control_structure, lambda h, s: s[1]
     non_create_statement %= expr_statement + Semi, lambda h, s: s[1]
-
     #non_create_statement %= expr_statementWithoutSemi, lambda h, s: s[1]
     
     create_statement %= type_definition, lambda h, s: s[1]
@@ -71,8 +71,8 @@ def gramm_Hulk_LR1():
     destructive_assignment %= identifier + Destroy + expression + Comma + destructive_assignment, lambda h, s : [DestroyNode(s[1], s[3])] + s[4]
     destructive_assignment %= identifier + Destroy + expression, lambda h, s: [DestroyNode(s[1], s[3])]
 
-    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(s[2],s[6],s[4],s[8]) 
-    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + Arrow + non_create_statement,lambda h, s: FunctionDefinitionNode(s[2],s[6],s[4],s[8])
+    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4],s[8]) 
+    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + Arrow + non_create_statement,lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4],s[8])
     
     parameters %= expression + type_annotation + Comma + parameters, lambda h, s: [{s[1]:s[2]}] + [s[4]]
     parameters %= expression + type_annotation, lambda h, s: {s[1]:s[2]}
@@ -127,17 +127,16 @@ def gramm_Hulk_LR1():
     factor %= string, lambda h, s:  StringNode(s[1])
     factor %= _False, lambda h, s:  BooleanNode(s[1])
     factor %= _True, lambda h, s:  BooleanNode(s[1])
-    
-    factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(s[1],s[3])
+    factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(IdentifierNode(s[1]),s[3])
     factor %= identifier, lambda h, s:  IdentifierNode(s[1])
+    factor %= function_call, lambda h, s: s[1]
     #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
-    #factor %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])    
+    #factor %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])  
     factor %= math_call, lambda h, s:  s[1]
     factor %= member_access, lambda h, s:  s[1]    
-    
-    member_access %= factor + Dot + identifier + oPar + arguments + cPar , lambda h, s: MemberAccessNode(s[1], s[3], s[5]) 
+    member_access %= factor + Dot + identifier + oPar + arguments + cPar , lambda h, s: MemberAccessNode(s[1], IdentifierNode(s[3]), s[5]) 
     #member_access %= factor + Dot + identifier , lambda h, s: MemberAccesNode(s[1], s[3], [])  #Todo member access Los parametros son privados de la clase #! NAOMI ARREGLA ESTO EN EL CHECKEO SEMANTICO ❤️
-    kern_instance_creation %= New + identifier + oPar + arguments + cPar, lambda h, s: KernInstanceCreationNode(s[2],s[4])
+    kern_instance_creation %= New + identifier + oPar + arguments + cPar, lambda h, s: KernInstanceCreationNode(IdentifierNode(s[2]),s[4])
     
     math_call %= sqrt + oPar + ExprNum + cPar, lambda h, s: SqrtMathNode(s[3])
     math_call %= cos + oPar + ExprNum + cPar, lambda h, s: CosMathNode(s[3])
@@ -148,20 +147,20 @@ def gramm_Hulk_LR1():
     math_call %= rand + oPar + cPar,  lambda h, s: RandomCallNode()
     math_call %= PI, lambda h, s: PINode()
     
-    arguments %= expr_statement + Comma + arguments, lambda h, s: [s[1]]+s[2]
-    arguments %= expr_statement , lambda h, s: s[1]
+    arguments %= expr_statement + Comma + arguments, lambda h, s: [s[1]] + s[3]
+    arguments %= expr_statement , lambda h, s: [s[1]]
     arguments %= G.Epsilon, lambda h, s: []
     
     # Estructuras adicionales para tipos
-    type_definition %= Type + identifier + oPar + parameters + cPar + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(s[2],s[4], s[6], s[8],s[9])
+    type_definition %= Type + identifier + oPar + parameters + cPar + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(s[2],IdentifierNode(s[4]), s[6], s[8],s[9])
 
     attribute_definition %= attribute_definition + kern_assignment + Semi, lambda h, s: s[1] + [s[2]]
     attribute_definition %= G.Epsilon, lambda h, s: []
 
-    method_definition %= identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(s[1], s[5], s[3],s[7])] + s[8]
+    method_definition %= identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],s[7])] + s[8]
     method_definition %= G.Epsilon , lambda h, s: []
 
-    inheritance %= Inherits + identifier, lambda h, s: InheritanceNode(s[2])
+    inheritance %= Inherits + identifier, lambda h, s: InheritanceNode(IdentifierNode(s[2]))
     inheritance %= G.Epsilon, lambda h, s: InheritanceNode("object")
     
     nonzero_digits = '|'.join(str(n) for n in range(1,10))
@@ -183,7 +182,6 @@ def gramm_Hulk_LR1():
     (Plus, '+'),
     (Minus, '-'),
     (Pow, '^'),
-    (PowStar, '\*\*'),
     (Mult, "\*"),
     (Div, '/'),
     (Arrow, '=>'),
