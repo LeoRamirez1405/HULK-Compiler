@@ -2,7 +2,7 @@ from semantic_checking.semantic import Context, Scope
 from semantic_checking.type_collector import TypeCollectorVisitor
 from semantic_checking.type_builder import TypeBuilderVisitor
 from semantic_checking.type_checker import TypeCheckerVisitor
-#from AST import *
+from semantic_checking.AST import *
 
 class SemanticCheckingVisitor:
     def __init__(self) -> None:
@@ -147,6 +147,7 @@ class SemanticCheckingVisitor:
 #     print(len(errors))
 #     print(errors)
 
+
 # checker = SemanticCheckingVisitor()  
-# errors = checker.semantic_checking(ast11)
+# errors = checker.semantic_checking(ast)
 # print(errors)

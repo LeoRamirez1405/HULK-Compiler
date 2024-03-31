@@ -36,13 +36,13 @@ output,operations = parser(tokentypes)
 tokensAST = [token for token in tokens if token.token_type != 'space']
 
 ast = evaluate_reverse_parse(output,operations,tokensAST)
-
+# ast = ProgramNode([PlusExpressionNode(NumberNode(5), StringNode('casa'))])
 checker = SemanticCheckingVisitor()
 print(checker.semantic_checking(ast))
 
-formatter = FormatVisitor()
-tree = formatter.visit(ast)
-print(tree)
+# formatter = FormatVisitor()
+# tree = formatter.visit(ast)
+# print(tree)
 
 
 

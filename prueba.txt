@@ -1,5 +1,1 @@
-<<<<<<< HEAD
-function cotan(x) => sin(x) / cos(x);
-=======
-Nombre(Leo,Ramirez);
->>>>>>> 58c0fac27a021b8354e42d5a1a652f5d4607d026
+let a = 7 + "casa"; print(b);
