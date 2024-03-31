@@ -23,7 +23,7 @@ class TypeBuilderVisitor():
 
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode):
-        self.currentType: Type = self.context.get_type(node.id) 
+        self.currentType: Type = self.context.get_type(node.id.id) 
         try:
             inheritance = self.context.get_type(inheritance.type)
         except:
@@ -33,14 +33,14 @@ class TypeBuilderVisitor():
         self.currentType.inhertance = inheritance
         
         for arg in node.parameters:
-            name = arg.items[0].key 
+            name: IdentifierNode = arg.items[0].key 
             type = arg.items[0].value
             
             type =  self.context.get_type(type)
             try:
-                self.currentType.define_arg(name, type)      
+                self.currentType.define_arg(name.id, type)      
             except:
-                self.errors.append(f'Existenten dos argumentos con el nombre {name}')
+                self.errors.append(f'Existenten dos argumentos con el nombre {name.id}')
                 
         for attrDef in node.attributes:
             self.visit(attrDef)
@@ -54,7 +54,8 @@ class TypeBuilderVisitor():
     @visitor.when(KernAssigmentNode)
     def visit(self, node: KernAssigmentNode):
         #TODO Ponerle type_annotation al kernassigmentnode
-        self.currentType.define_attribute(node.id, self.context.get_type('object'))    
+        #node_id: IdentifierNode = node.id
+        self.currentType.define_attribute(node.id.id, self.context.get_type('object'))    
         
     @visitor.when(FunctionDefinitionNode)
     def visit(self, node: FunctionDefinitionNode):
@@ -65,33 +66,35 @@ class TypeBuilderVisitor():
             self.errors.append(f'El tipo de retorno {node.type_annotation.type} no esta definido')
             return_type = self.context.get_type('object')
         
-        arg_names = [parama.items[0].key for parama in node.parameters]
+        arg_names: List[IdentifierNode] = [parama.items[0].key for parama in node.parameters]
+        arg_names = [name.id for name in arg_names]
         arg_types = []
         
         for parama in node.parameters:
             try:
                 arg_types.append(self.context.get_type(parama.items[0].value))
             except:
-                self.errors.append(f'El tipo del parametro {parama.items[0].key} que se le pasa a la funcion {node.id} no esta definido')
+                self.errors.append(f'El tipo del parametro {parama.items[0].key} que se le pasa a la funcion {node.id.id} no esta definido')
                 arg_types.append(self.context.get_type('object'))
         
+        #node_id: IdentifierNode = node.id
         if self.currentType:
             try:
-                self.currentType.define_method(node.id, arg_names, arg_types, return_type)
+                self.currentType.define_method(node.id.id, arg_names, arg_types, return_type)
             except:
-                self.errors.append(f'La funcion {node.id} ya existe en el contexto de {self.currentType.name}.')
+                self.errors.append(f'La funcion {node.id.id} ya existe en el contexto de {self.currentType.name}.')
         else:
             exist = False
             #Esto nnunca va a lanzar excepcion xq solo entraria a este nodo si es un metodo de un typo o si ya esta node.id en el scope
-            for func in self.scope.functions[node.id]:
+            for func in self.scope.functions[node.id.id]:
                 if len(arg_names) == len(func.param_names):
                     exist = True
                     break
             if exist:
-                self.errors.append(f'La funcion {node.id} ya existe en este scope con {len(arg_names)} cantidad de parametros')
+                self.errors.append(f'La funcion {node.id.id} ya existe en este scope con {len(arg_names)} cantidad de parametros')
             else:
-                method = Method(node.id, arg_names, arg_types, return_type)
-                self.scope.functions[node.id].append(method)
+                method = Method(node.id.id, arg_names, arg_types, return_type)
+                self.scope.functions[node.id.id].append(method)
                 
 
   

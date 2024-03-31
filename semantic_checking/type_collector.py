@@ -26,14 +26,16 @@ class TypeCollectorVisitor:
             
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode):
+        node_id: IdentifierNode = node.id
         try:
-            self.context.create_type(node.id)
+            self.context.create_type(node_id.id)
         except:
-            self.errors.append(SemanticError(f'El nombre de tipo {node.id} ya ha sido tomado'))
+            self.errors.append(SemanticError(f'El nombre de tipo {node_id.id} ya ha sido tomado'))
             
     #Aqui solo se va a entrar si la funcion esta definida en el ProgramNode
     @visitor.when(FunctionDefinitionNode)
     def visit(self, node: FunctionDefinitionNode):
-        if not node.id in self.scope.functions:
-            self.scope.functions[node.id] = []
+        node_id: IdentifierNode = node.id
+        if not node_id.id in self.scope.functions:
+            self.scope.functions[node_id.id] = []
     

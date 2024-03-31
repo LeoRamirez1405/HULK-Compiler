@@ -33,17 +33,19 @@ class TypeCheckerVisitor:
             
     @visitor.when(DestroyNode)
     def visit(self, node: DestroyNode, scope: Scope):
-        if not scope.is_defined(node.id):
-            self.errors.append(SemanticError(f'La variable {node.id} no esta definida en este scope'))
+        # node_id: IdentifierNode = node.id
+        if not scope.is_defined(node.id.id):
+            self.errors.append(SemanticError(f'La variable {node.id.id} no esta definida en este scope'))
             
         return self.visit(node.expression, scope)
         
     @visitor.when(KernAssigmentNode)
     def visit(self, node: KernAssigmentNode, scope: Scope):
-        if scope.is_local(node.id) or scope.is_defined(node.id):
-            self.errors.append(SemanticError(f'La variable {node.id} ya esta definida.'))
+        #node_id: IdentifierNode = node.id
+        if scope.is_local(node.id.id) or scope.is_defined(node.id.id):
+            self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida.'))
         else:
-            scope.define_variable(node.id, self.visit(node.expression, scope)) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
+            scope.define_variable(node.id.id, self.visit(node.expression, scope)) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
             
         return self.context.get_type('object')
     
@@ -64,10 +66,11 @@ class TypeCheckerVisitor:
         #     #* En los nodos que no son expresiones aritmeticas o booleanas o concatenacion o llamados a funciones deberia ponerle que tiene typo object?
         #     return self.context.get_type('object')
         
+        # node_id: IdentifierNode = node.id
         if self.current_type:
-            method = self.current_type.get_method(node.id)
+            method = self.current_type.get_method(node.id.id)
         else:
-            method = list(filter(lambda x: len(x.param_names) == len(node.parameters), self.scope.functions[node.id]))[0]  
+            method = list(filter(lambda x: len(x.param_names) == len(node.parameters), self.scope.functions[node.id.id]))[0]  
                    
         inner_scope: Scope = scope.create_child()            
         for i in method.param_names:
@@ -129,7 +132,7 @@ class TypeCheckerVisitor:
     def visit(self, node: ForStructureNode, scope: Scope):
         inner_scope: Scope = scope.create_child()
         for assin in node.init_assigments:
-            id, expr = assin.id, assin.expression
+            id, expr = assin.id.id, assin.expression
             
             if scope.is_defined(id):
                 self.errors.append(SemanticError(f'La variable {id} ya esta definida en este scope.'))
@@ -145,7 +148,9 @@ class TypeCheckerVisitor:
             
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode, scope: Scope):
-        self.current_type = self.context.get_type(node.id)
+        #node_id: IdentifierNode = node.id
+        
+        self.current_type = self.context.get_type(node.id.id)
         
         inner_scope: Scope = scope.create_child()
         
@@ -155,7 +160,7 @@ class TypeCheckerVisitor:
             inner_scope.define_variable(arg, type_att)
             
         for att in node.attributes:
-            inner_scope.define_variable(att.id, self.visit(att.expression, inner_scope)) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
+            inner_scope.define_variable(att.id.id, self.visit(att.expression, inner_scope)) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
             
         for method in node.methods:
             self.visit(method, inner_scope)
@@ -191,7 +196,7 @@ class TypeCheckerVisitor:
     @visitor.when(KernInstanceCreationNode)
     def visit(self, node: KernInstanceCreationNode, scope: Scope):
         try:
-            class_type: Type = self.context.types[node.type]
+            class_type: Type = self.context.types[node.type.id]
             if len[class_type.attributes] != len(node.args):
                 self.errors.append(SemanticError(f'La cantidad de argumentos no coincide con la cantidad de atributos de la clase {node.type}.'))
             else:
@@ -199,13 +204,13 @@ class TypeCheckerVisitor:
                 for i in range(len(node.args)):
                     #! Hay que crear una jerarquia de tipos por causa de la herencia de clases
                     if class_type.attributes[i].type != self.visit(node.args[i], scope):
-                        self.errors.append(SemanticError(f'El tipo del argumento {i} no coincide con el tipo del atributo {class_type.attributes[i].name} de la clase {node.type}.'))
+                        self.errors.append(SemanticError(f'El tipo del argumento {i} no coincide con el tipo del atributo {class_type.attributes[i].name} de la clase {node.type.id}.'))
                         correct = False
                         
                 if correct: 
-                    return self.context.get_type(node.type)
+                    return self.context.get_type(node.type.id)
         except:
-            self.errors.append(SemanticError(f'El tipo {node.type} no esta definido.')) 
+            self.errors.append(SemanticError(f'El tipo {node.type.id} no esta definido.')) 
             
         return self.context.get_type('object')
             
@@ -252,7 +257,7 @@ class TypeCheckerVisitor:
         type_1: Type = self.visit(node.expression_1, scope)
         type_2: Type = self.visit(node.expression_2, scope)
         
-        if not type_1.name == type_2.name == 'number':
+        if type_1.name != 'number' or type_2.name != 'number':
             self.errors.append(SemanticError(f'Solo se pueden emplear aritmeticos entre expresiones aritmeticas.'))
             return self.context.get_type('object')
         
@@ -289,11 +294,11 @@ class TypeCheckerVisitor:
     @visitor.when(FunctionCallNode)
     def visit(self, node: FunctionCallNode, scope: Scope):
         try: 
-            args_len = scope.functions[node.id]
+            args_len = scope.functions[node.id.id]
             if args_len != len(node.args):
                 self.errors.append(f'La funcion {id} requiere {args_len} cantidad de parametros pero solo {len(node.args)} fueron dados')
         except:
-            self.errors.append(f'La funcion {node.id} no esta definida.')
+            self.errors.append(f'La funcion {node.id.id} no esta definida.')
             
         
             
@@ -337,3 +342,28 @@ class TypeCheckerVisitor:
         except:
             self.errors.append(SemanticError(f'El tipo {node.type} no esta definifo'))
             return self.context.get_type('object') 
+
+    @visitor.when(StringNode)
+    def visit(self, node: StringNode, scope):
+        try:
+            string = str(node.value)
+            return self.context.get_type('string')
+        except:
+            return self.context.get_type('string')
+        
+    @visitor.when(BooleanNode)
+    def visit(self, node: BooleanNode, scope):
+        try:
+            boolean = bool(node.value)
+            return self.context.create_type('bool')
+        except:
+            return self.context.get_type('object')
+        
+    @visitor.when(IdentifierNode)
+    def visit(self, node: IdentifierNode, scope: Scope):
+        if self.scope.is_defined(node.id):
+            return self.scope.find_variable(node.id).type
+            
+        self.errors.append(SemanticError(f'La variable {node.id} no esta deifinida'))
+        return self.context.get_type('object')
+        

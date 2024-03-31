@@ -19,9 +19,10 @@ tokentypes = [token.token_type for token in tokens if token.token_type != 'space
 parser = LR1Parser(gramatica,False)
 output,operations = parser(tokentypes)
 print(tokentypes)
-#print(output)
-#ast = evaluate_reverse_parse(output, operations, tokens)
-#print(ast)
-#checker = SemanticCheckingVisitor()
-#errors = checker.semantic_checking(ast)
-# print(checker.scope.define_variable)
+parser = LR1Parser(gramatica,True)
+
+derivation = parser(tokentypes)
+print(derivation)
+
+
+
