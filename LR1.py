@@ -2,6 +2,7 @@ from cmp.pycompiler import Item
 from cmp.utils import ContainerSet
 from cmp.automata import multiline_formatter,State
 from FirstsAndFollows import compute_firsts,compute_local_first
+from cmp.pycompiler import EOF
 
 class ShiftReduceParser:
     SHIFT = 'SHIFT'
@@ -201,6 +202,8 @@ def evaluate_reverse_parse(right_parse, operations, tokens):
         else:
             raise Exception('Invalid action!!!')
 
+    last = next(tokens).token_type
+
     assert len(stack) == 1
-    assert isinstance(next(tokens).token_type, EOF)
+    assert isinstance(last, EOF)
     return stack[0]
