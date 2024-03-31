@@ -6,22 +6,14 @@ from LR1 import LR1Parser
 
 gramatica, lexer = gramm_Hulk_LR1()
 
-# Abrir el archivo en modo lectura
-with open('prueba.txt', 'r') as prueba:
-    contenido = prueba.read()
+# with open('./prueba.txt', "r", encoding="utf-8") as archivo:
+#     content = archivo.read()
+#     text = content
 
-    # contenido = "if (x is Bird) \"It's bird!\""
-    
-    # Reemplazar saltos de línea por espacios en blano
-    contenido = contenido.replace('\n', ' ')
-
-    # Reemplazar tabulaciones por espacios en blanco
-    contenido = contenido.replace('\t', '')
-    contenido = contenido.replace('"', '\"')
-
-
-text = '''3 + (let text = 4 in 2);'''
-# text = "Hello World"
+text = '''let b = a in { print(a);};'''
+#text = '{print(text @ number);}'
+print(text)
+#text = 'type call(x){ x = 3; }'
 tokens = lexer(text)
 tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
 parser = LR1Parser(gramatica,False)
