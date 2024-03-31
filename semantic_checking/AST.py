@@ -70,7 +70,7 @@ class TypeNode(Node):
 class FunctionDefinitionNode(Node):
     def __init__(self, id, type_annotation: TypeNode, parameters:list[dict], body) -> None:
         super().__init__()
-        self.id = id
+        self.id: IdentifierNode = id
         self.type_annotation = type_annotation
         self.parameters = parameters
         self.body = body
