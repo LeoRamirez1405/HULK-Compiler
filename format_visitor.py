@@ -70,8 +70,8 @@ class FormatVisitor(object):
     def visit(self, node: IfStructureNode, tabs = 0):
         condition = self.visit(node.condition, tabs + 1)
         body = self.visit(node.body, tabs + 1)
-        _elif = self.visit(node._elif) if node._elif else ''
-        _else = self.visit(node._else) if node._else else ''
+        _elif = self.visit(node._elif, tabs + 1) if node._elif else ''
+        _else = self.visit(node._else, tabs + 1) if node._else else ''
         return '\t' * tabs + f'\\__IfStructureNode\n\\____Condition:\n{condition}\n\\____Body:\n{body}\n\\____Elif:\n{_elif}\n\\____Else:\n{_else}'
 
     @visitor.when(ElifStructureNode)
@@ -93,9 +93,9 @@ class FormatVisitor(object):
 
     @visitor.when(ForStructureNode)
     def visit(self, node: ForStructureNode, tabs = 0):
-        init_assigments = '\n'.join(self.visit(assigment) for assigment in node.init_assigments)
+        init_assigments = '\n'.join(self.visit(assigment, tabs + 1)  for assigment in node.init_assigments)
         condition = self.visit(node.condition, tabs + 1)
-        increment_assigment = '\n'.join(self.visit(assigment) for assigment in node.increment_assigment)
+        increment_assigment = '\n'.join(self.visit(assigment, tabs + 1) for assigment in node.increment_assigment)
         body = self.visit(node.body, tabs + 1)
         return '\t' * tabs + f'\\__ForStructureNode\n\\____Init Assigments:\n{init_assigments}\n\\____Condition:\n{condition}\n\\____Increment Assigment:\n{increment_assigment}\n\\____Body:\n{body}'
 
@@ -127,7 +127,7 @@ class FormatVisitor(object):
     def visit(self, node: PlusExpressionNode, tabs = 0):
         expression_1 = self.visit(node.expression_1, tabs + 1)
         expression_2 = self.visit(node.expression_2, tabs + 1)
-        return '\t' * tabs + f'\\__PlusExpressionNode\n\\____expression_1:\n{expression_1}\n\\____Right:\n{expression_2}'
+        return '\t' * tabs + f'\\__PlusExpressionNode\n\\____expression_1:\n{expression_1}\n\\____expression_2:\n{expression_2}'
 
     @visitor.when(SubsExpressionNode)
     def visit(self, node: SubsExpressionNode, tabs = 0):
@@ -137,6 +137,7 @@ class FormatVisitor(object):
 
     @visitor.when(DivExpressionNode)
     def visit(self, node: DivExpressionNode, tabs = 0):
+        raise Exception
         expression_1 = self.visit(node.expression_1, tabs + 1)
         expression_2 = self.visit(node.expression_2, tabs + 1)
         return '\t' * tabs + f'\\__DivExpressionNode\n\\____expression_1:\n{expression_1}\n\\____expression_2:\n{expression_2}'
