@@ -122,7 +122,7 @@ class Type:
         return plain.values() if clean else plain
 
     def conforms_to(self, other):
-        return other.bypass() or self == other or self.parent is not None and self.parent.conforms_to(other)
+        return other.bypass() or self.name == other or self.inhertance is not None and self.inhertance.conforms_to(other)
 
     def bypass(self):
         return False
