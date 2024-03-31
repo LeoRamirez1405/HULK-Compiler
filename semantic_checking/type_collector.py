@@ -1,4 +1,4 @@
-from semantic_checking.semantic import Context, Scope, SemanticError, Type
+from semantic_checking.semantic import Context, Scope, SemanticError
 import semantic_checking.visitor as visitor
 from semantic_checking.AST import *
 # from AST import *
@@ -35,7 +35,7 @@ class TypeCollectorVisitor:
     #Aqui solo se va a entrar si la funcion esta definida en el ProgramNode
     @visitor.when(FunctionDefinitionNode)
     def visit(self, node: FunctionDefinitionNode):
-        print(node.id)
+        print(type(node.id))
         if not node.id.id in self.scope.functions:
             self.scope.functions[node.id.id] = []
         else:

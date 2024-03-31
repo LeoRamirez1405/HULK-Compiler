@@ -39,6 +39,11 @@ class ProgramNode(Node):
     def __init__(self, statments) -> None:
         super().__init__()
         self.statments = statments
+        
+class IdentifierNode(Node):
+    def __init__(self, id) -> None:
+        super().__init__()
+        self.id = id
              
 class PrintStatmentNode(Node):
     def __init__(self, expression) -> None:
@@ -68,7 +73,7 @@ class TypeNode(Node):
         self.type = type
         
 class FunctionDefinitionNode(Node):
-    def __init__(self, id, type_annotation: TypeNode, parameters:list[dict], body) -> None:
+    def __init__(self, id: IdentifierNode, type_annotation: TypeNode, parameters:list[dict], body) -> None:
         super().__init__()
         self.id: IdentifierNode = id
         self.type_annotation = type_annotation
@@ -269,11 +274,6 @@ class StringNode(Node):
     def __init__(self, value) -> None:
         super().__init__()
         self.value = value
-        
-class IdentifierNode(Node):
-    def __init__(self,id) -> None:
-        super().__init__()
-        self.id = id
         
 class StringConcatNode(BinaryNode):
     def __init__(self, left, right):
