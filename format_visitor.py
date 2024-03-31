@@ -62,10 +62,15 @@ class FormatVisitor(object):
 
     @visitor.when(FunctionDefinitionNode)
     def visit(self, node: FunctionDefinitionNode, tabs = 0):
-        params = ', '.join(f'{param["id"]} : {self.visit(param["type_annotation"], tabs + 1)}' for param in node.parameters)
+        params = ', '.join(f'{self.visit(param, tabs + 1)}' for param in node.parameters)
         body = self.visit(node.body, tabs + 1)
-        return '\t' * tabs + f'\\__FunctionDefinitionNode\n\\____ID: {node.id}\n\\____Parameters: {params}\n\\____Body:\n{body}'
+        return '\t' * tabs + f'\\__FunctionDefinitionNode\n' '\t' * tabs + f'\\____ID: {node.id}\n' '\t' * tabs + f'\\____Parameters: {params}\n' '\t' * tabs + f'\\____Body:\n{body}'
 
+    @visitor.when(FunctionCallNode)
+    def visit(self, node: FunctionCallNode, tabs = 0):
+        id = node.id
+        return '\t' * tabs + f'\\__FunctionCallNode\n' + '\t' * tabs + f'\\____ID: {id}'
+    
     @visitor.when(IfStructureNode)
     def visit(self, node: IfStructureNode, tabs = 0):
         condition = self.visit(node.condition, tabs + 1)
@@ -102,7 +107,7 @@ class FormatVisitor(object):
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode, tabs = 0):
         id = self.visit(node.id, tabs + 1)
-        parameters = ', '.join(f'{param["id"]} : {self.visit(param["type_annotation"], tabs + 1)}' for param in node.parameters)
+        parameters = ', '.join(f'{node.id} : {self.visit(node.type_annotation, tabs + 1)}' for param in node.parameters)
         attributes = '\n'.join(self.visit(attr, tabs + 1) for attr in node.attributes)
         methods = '\n'.join(self.visit(method, tabs + 1) for method in node.methods)
         return '\t' * tabs + f'\\__TypeDefinitionNode\n\\____ID: {id}\n\\____Parameters: {parameters}\n\\____Attributes:\n{attributes}\n\\____Methods:\n{methods}'
@@ -146,6 +151,10 @@ class FormatVisitor(object):
         expression_1 = self.visit(node.expression_1, tabs + 1)
         expression_2 = self.visit(node.expression_2, tabs + 1)
         return '\t' * tabs + f'\\__MultExpressionNode\n' + '\t' * tabs + f'\\____expression_1:\n{expression_1}\n' + '\t' * tabs + f'\\____expression_2:\n{expression_2}'
+
+    @visitor.when(IdentifierNode)
+    def visit(self, node: IdentifierNode, tabs = 0):
+        return '\t' * tabs + f'\\__IdentifierNode [{node.id}]'
 
     @visitor.when(ModExpressionNode)
     def visit(self, node: ModExpressionNode, tabs = 0):

@@ -21,7 +21,7 @@ def gramm_Hulk_LR1():
     
     Program %= statement_list, lambda h, s: ProgramNode(s[1])
     statement_list %= statement + statement_list, lambda h, s: [s[1]] + s[2] 
-    statement_list %= oBrace + statement_list + cBrace , lambda h, s: s[2]
+    statement_list %= oBrace + statement_list + cBrace + statement_list , lambda h, s: s[2] + s[4]
     statement_list %= G.Epsilon, lambda h, s: []
     
     statement %= non_create_statement, lambda h, s: s[1] 
