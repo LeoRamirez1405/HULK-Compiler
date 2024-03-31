@@ -97,7 +97,7 @@ class Regex:
         h=regex_tokenizer(regex,G,skip_whitespaces=False)
         f=L(h)
         T=evaluate_parse(f,h)
-        print(h)
+        # print(h)
         H=T.evaluate()
         X=nfa_to_dfa(H)
         k=automata_minimization(X)

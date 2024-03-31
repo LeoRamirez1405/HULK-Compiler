@@ -248,7 +248,7 @@ class LetInNode(Node):
         self.body = body
         
 class LetInExpressionNode(Node):
-    def init(self, assigments, body) -> None:
+    def __init__(self, assigments, body) -> None:
         super().__init__()
         self.assigments = assigments
         self.body = body 
