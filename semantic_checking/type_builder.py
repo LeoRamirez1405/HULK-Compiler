@@ -65,15 +65,19 @@ class TypeBuilderVisitor():
             self.errors.append(f'El tipo de retorno {node.type_annotation.type} no esta definido')
             return_type = self.context.get_type('object')
         
-        arg_names: List[IdentifierNode] = [parama.items[0].key for parama in node.parameters]
-        arg_names = [name.id for name in arg_names]
+        arg_names: List[IdentifierNode] = [list(parama.items())[0] for parama in node.parameters]
+        arg_names = [name[0].id for name in arg_names]
+        print(arg_names)
         arg_types = []
         
-        for parama in node.parameters:
+        aux = [list(parama.items())[0] for parama in node.parameters]
+        aux = [name for name in aux]
+        print(aux)
+        for parama in aux:
             try:
-                arg_types.append(self.context.get_type(parama.items[0].value))
+                arg_types.append(self.context.get_type(parama[1].type))
             except:
-                self.errors.append(f'El tipo del parametro {parama.items[0].key} que se le pasa a la funcion {node.id.id} no esta definido')
+                self.errors.append(f'El tipo del parametro {parama[0].id} que se le pasa a la funcion {node.id.id} no esta definido')
                 arg_types.append(self.context.get_type('object'))
         
         #node_id: IdentifierNode = node.id
