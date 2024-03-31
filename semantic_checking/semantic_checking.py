@@ -86,35 +86,42 @@ ast5 = ProgramNode([
 ast6 = ProgramNode([
     PrintStatmentNode(NumberNode(45)),
     TypeDefinitionNode(
-        id='Point', 
+        id=IdentifierNode('Point'), 
         parameters=[],
         inheritance=TypeNode('object'),
         attributes=[
-            KernAssigmentNode('x', TypeNode('number')),
+            KernAssigmentNode(IdentifierNode('x'), TypeNode('number')),
             ],
         methods=[
             FunctionDefinitionNode(
-                'setX',
+                IdentifierNode('setX'),
                 TypeNode('number'),
                 [],
                 PlusExpressionNode(NumberNode(4), NumberNode(5))
             )]
         ),
     FunctionDefinitionNode(
-                'global_func',
-                TypeNode('Point'),
-                [],
-                PlusExpressionNode(NumberNode(4), NumberNode(5))
+                id=IdentifierNode('global_func'),
+                type_annotation=TypeNode('Point'),
+                parameters=[],
+                body=PlusExpressionNode(NumberNode(4), NumberNode(5))
             ),
     SqrtMathNode(StringNode('arbol'))
     ])
+ast7 = ProgramNode([
+    KernAssigmentNode(IdentifierNode('x'), NumberNode(5)),
+    KernAssigmentNode(IdentifierNode('y'), PlusExpressionNode(NumberNode(9), IdentifierNode('x'))),
+])
 
-print_aritmetic_tests = [ast0, ast1, ast2, ast3, ast4, ast5, ast6]
-for index_test in range(len(print_aritmetic_tests)):
-    print(f'Test - {index_test}')
-    checker = SemanticCheckingVisitor()
-    if index_test != 6:
-        continue
-    errors = checker.semantic_checking(print_aritmetic_tests[index_test])
-    print(len(errors))
-    print(errors)
+# print_aritmetic_tests = [ast0, ast1, ast2, ast3, ast4, ast5, ast6]
+# for index_test in range(len(print_aritmetic_tests)):
+#     print(f'Test - {index_test}')
+#     checker = SemanticCheckingVisitor()
+#     if index_test != 7:
+#         continue
+#     errors = checker.semantic_checking(print_aritmetic_tests[index_test])
+#     print(len(errors))
+#     print(errors)
+
+checker = SemanticCheckingVisitor()  
+errors = checker.semantic_checking(ast7)
