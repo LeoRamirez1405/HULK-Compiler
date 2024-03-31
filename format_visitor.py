@@ -137,7 +137,6 @@ class FormatVisitor(object):
 
     @visitor.when(DivExpressionNode)
     def visit(self, node: DivExpressionNode, tabs = 0):
-        raise Exception
         expression_1 = self.visit(node.expression_1, tabs + 1)
         expression_2 = self.visit(node.expression_2, tabs + 1)
         return '\t' * tabs + f'\\__DivExpressionNode\n\\____expression_1:\n{expression_1}\n\\____expression_2:\n{expression_2}'
