@@ -1,1 +1,2 @@
-Nombre(Leo,Ramirez);
+let a = 4,c=5, d = 10 in {print(a);};
+juancjo(a);
