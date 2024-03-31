@@ -1,0 +1,4 @@
+let a = 4,c=5, d = 10 in {print(a);};
+juancjo(a);
+let a = 7 + "casa"; print(b);
+Nombre(Leo,Ramirez);

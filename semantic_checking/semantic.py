@@ -10,7 +10,18 @@ class SemanticError(Exception):
 class Attribute:
     def __init__(self, name, typex):
         self.name = name
-        self.type = typex
+        self.type: Type = typex
+
+    def __str__(self):
+        return f'[attrib] {self.name} : {self.type.name};'
+
+    def __repr__(self):
+        return str(self)
+    
+class Argument:
+    def __init__(self, name, typex):
+        self.name = name
+        self.type: Type = typex
 
     def __str__(self):
         return f'[attrib] {self.name} : {self.type.name};'
@@ -26,8 +37,10 @@ class VariableInfo:
 class Type:
     def __init__(self, name:str):
         self.name = name
-        self.attributes = []
-        self.methods = []
+        self.inhertance: Type = None
+        self.args: List[Argument] = []
+        self.attributes: List[Attribute] = []
+        self.methods: List[Method] = []
         self.parent = None
 
     def set_parent(self, parent):
@@ -45,6 +58,17 @@ class Type:
                 return self.parent.get_attribute(name)
             except SemanticError:
                 raise SemanticError(f'Attribute "{name}" is not defined in {self.name}.')
+            
+    def get_arg(self, name:str):
+        try:
+            return next(arg for arg in self.args if arg.name == name)
+        except StopIteration:
+            if self.parent is None:
+                raise SemanticError(f'Argument "{name}" is not defined in {self.name}.')
+            try:
+                return self.parent.get_arg(name)
+            except SemanticError:
+                raise SemanticError(f'Argument "{name}" is not defined in {self.name}.')
 
     def define_attribute(self, name:str, typex):
         try:
@@ -53,6 +77,16 @@ class Type:
             attribute = Attribute(name, typex)
             self.attributes.append(attribute)
             return attribute
+        else:
+            raise SemanticError(f'Attribute "{name}" is already defined in {self.name}.')
+        
+    def define_arg(self, name:str, typex):
+        try:
+            self.get_arg(name)
+        except SemanticError:
+            arg = Argument(name, typex)
+            self.attributes.append(arg)
+            return arg
         else:
             raise SemanticError(f'Attribute "{name}" is already defined in {self.name}.')
 
@@ -88,7 +122,7 @@ class Type:
         return plain.values() if clean else plain
 
     def conforms_to(self, other):
-        return other.bypass() or self == other or self.parent is not None and self.parent.conforms_to(other)
+        return self.name == other or self.inhertance is not None and self.inhertance.conforms_to(other)
 
     def bypass(self):
         return False
@@ -114,7 +148,7 @@ class Method:
         self.name = name
         self.param_names = param_names
         self.param_types = params_types
-        self.return_type = return_type
+        self.return_type: Type = return_type
 
     def __str__(self):
         params = ', '.join(f'{n}:{t.name}' for n,t in zip(self.param_names, self.param_types))
@@ -128,13 +162,13 @@ class Method:
 class Scope:
     def __init__(self, parent=None):
         self.local_variables = set()
-        self.functions: dict[str, List[int]] = {} # {key: id, valor: len(parameters)}
+        self.functions: dict[str, List[Method]] = {} # {key: id, valor: len(parameters)}
         self.parent = parent
         self.children = []
         self.index = 0 if parent is None else len(parent)
 
     def __len__(self):
-        return len(self.locals)
+        return len(self.local_variables)
 
     def create_child(self):
         child = Scope(self)
@@ -151,7 +185,7 @@ class Scope:
         try:
             return next(x for x in locals if x.name == vname)
         except StopIteration:
-            return self.parent.find_variable(vname, self.index) if self.parent is None else None
+            return self.parent.find_variable(vname, self.index) if not self.parent is None else None
 
     def is_defined(self, vname):
         return self.find_variable(vname) is not None
@@ -160,26 +194,14 @@ class Scope:
         return any(True for x in self.local_variables if x.name == vname)
     
 class Context:
-    def __init__(self, parent):
-        self.types = {}
-        self.parent: Context = parent
-        
-    def create_child(self):
-        child = Context(self)
-        return child
+    def __init__(self):
+        self.types: dict[str, Type] = {}
 
     def create_type(self, name:str):
         if name in self.types:
             raise SemanticError(f'Type with the same name ({name}) already in context.')
         typex = self.types[name] = Type(name)
         return typex
-    
-    def is_defined(self, type: str):
-        try:
-            self.types[type]
-            return True
-        except:
-            return False
 
     def get_type(self, name:str):
         try:
