@@ -8,7 +8,7 @@ class TypeBuilderVisitor():
         self.context: Context = context
         self.scope: Scope = scope
         self.errors: List[str] = errors
-        self.currentType: Type
+        self.currentType: Type = None
         
     @visitor.on('node')
     def visit(self, node, tabs):
@@ -53,9 +53,8 @@ class TypeBuilderVisitor():
     
     @visitor.when(KernAssigmentNode)
     def visit(self, node: KernAssigmentNode):
-        #TODO Ponerle type_annotation al kernassigmentnode
-        #node_id: IdentifierNode = node.id
-        self.currentType.define_attribute(node.id.id, self.context.get_type('object'))    
+        if self.currentType:
+            self.currentType.define_attribute(node.id.id, self.context.get_type('object'))    
         
     @visitor.when(FunctionDefinitionNode)
     def visit(self, node: FunctionDefinitionNode):

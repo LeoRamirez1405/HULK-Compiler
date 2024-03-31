@@ -1,5 +1,5 @@
 import visitor
-from semantic import Context, Scope, SemanticError, Type, Method
+from semantic import Context, Scope, SemanticError, Type, VariableInfo
 # from semantic_checking.AST import *
 from AST import *
 
@@ -41,7 +41,14 @@ class TypeCheckerVisitor:
         
     @visitor.when(KernAssigmentNode)
     def visit(self, node: KernAssigmentNode, scope: Scope):
-        #node_id: IdentifierNode = node.id
+        if scope.parent == None:
+            try:
+                var: VariableInfo = self.scope.find_variable(node.id.id)
+                var.type = self.visit(node.expression, scope)
+            except:
+                self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida.'))
+            return self.context.get_type('object')
+    
         if scope.is_local(node.id.id) or scope.is_defined(node.id.id):
             self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida.'))
         else:

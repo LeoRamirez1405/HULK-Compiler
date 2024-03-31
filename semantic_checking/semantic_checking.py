@@ -115,6 +115,16 @@ ast7 = ProgramNode([
 ast8 = ProgramNode([
     
 ])
+# Trata de definir una variable ya definifa
+ast9 = ProgramNode([
+    KernAssigmentNode(IdentifierNode('x'), NumberNode(5)),
+    KernAssigmentNode(IdentifierNode('x'), PlusExpressionNode(NumberNode(9), IdentifierNode('x'))),
+])
+# Trata de utilizar una variable que no esta definida
+ast10 = ProgramNode([
+    KernAssigmentNode(IdentifierNode('x'), NumberNode(5)),
+    KernAssigmentNode(IdentifierNode('y'), PlusExpressionNode(NumberNode(9), IdentifierNode('z'))),
+])
 
 # print_aritmetic_tests = [ast0, ast1, ast2, ast3, ast4, ast5, ast6]
 # for index_test in range(len(print_aritmetic_tests)):
@@ -127,4 +137,5 @@ ast8 = ProgramNode([
 #     print(errors)
 
 checker = SemanticCheckingVisitor()  
-errors = checker.semantic_checking(ast7)
+errors = checker.semantic_checking(ast10)
+print(errors)
