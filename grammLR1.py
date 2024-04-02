@@ -164,7 +164,7 @@ def gramm_Hulk_LR1():
     attribute_definition %= G.Epsilon, lambda h, s: []
 
     method_definition %= identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],s[7])] + s[9]
-    method_definition %= identifier + oPar + parameters + cPar + type_annotation + Arrow + statement + Semi + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],s[7])] + s[9]
+    method_definition %= identifier + oPar + parameters + cPar + type_annotation + Arrow + statement + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],s[7])] + s[8]
     method_definition %= G.Epsilon , lambda h, s: []
 
     inheritance %= Inherits + identifier, lambda h, s: InheritanceNode(IdentifierNode(s[2]))

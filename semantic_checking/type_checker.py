@@ -160,7 +160,7 @@ class TypeCheckerVisitor:
         
         #* Creando un temp_scope me aseguro de que los argumentos del 'constructor' solo sean utiles a la hora de inicializar los atributos
         for param in node.parameters:
-            arg, type_att = param.items[0].key, param.items[0].value
+            arg, type_att = list(param.items())[0][0], list(param.items())[0][1]
             temp_scope.define_variable(arg, type_att)
             
         inner_scope = self.scope.create_child()

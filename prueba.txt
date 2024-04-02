@@ -1,2 +1,2 @@
-type Nombre (first:string,last:string){ self.nombre = first @@ last ; }
+type Nombre (first:string,last:string){ getNombreInv():string => last @ first ; }
 
