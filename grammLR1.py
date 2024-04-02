@@ -25,13 +25,13 @@ def gramm_Hulk_LR1():
     statement_list %= G.Epsilon, lambda h, s: []
     
     statement %= non_create_statement, lambda h, s: s[1] 
-    statement %= assignment + Semi, lambda h, s: s[1] 
     statement %= create_statement, lambda h, s: s[1]
     
     non_create_statement %= control_structure, lambda h, s: s[1]
     non_create_statement %= expr_statement + Semi, lambda h, s: s[1]
     #non_create_statement %= expr_statementWithoutSemi, lambda h, s: s[1]
     
+    create_statement %= assignment + Semi, lambda h, s: s[1] 
     create_statement %= type_definition, lambda h, s: s[1]
     create_statement %= function_definition, lambda h, s: s[1]
     create_statement %= destructive_assignment+ Semi, lambda h, s: s[1]
@@ -59,7 +59,12 @@ def gramm_Hulk_LR1():
     contElse %= G.Epsilon , lambda h, s:  ElseStructureNode([])
 
     while_structure %= While + oPar + condition + cPar + oBrace + statement_list + cBrace , lambda h, s:  WhileStructureNode(s[3], s[6])
-    for_structure %= For + oPar + assignment + Semi + condition + Semi + destructive_assignment + cPar + oBrace + statement_list + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10])
+    #for_structure %= For + oPar + assignment + Semi + condition + Semi + destructive_assignment + cPar + oBrace + statement_list + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10])
+    for_assignment = G.NonTerminal('for_assignment')
+    for_assignment %= G.Epsilon, lambda h, s:[]
+    for_assignment %= assignment, lambda h, s:s[1]
+    for_assignment %= destructive_assignment, lambda h, s:s[1]
+    for_structure %= For + oPar + for_assignment + Semi + condition + Semi + destructive_assignment + cPar + oBrace + statement_list + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10])
     
     assignment %= Let + multi_assignment, lambda h, s: s[2]
     multi_assignment %= kern_assignment + Comma + multi_assignment, lambda h, s: [s[1]] + s[3]
@@ -128,7 +133,7 @@ def gramm_Hulk_LR1():
     factor %= _True, lambda h, s:  BooleanNode(s[1])
     factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(IdentifierNode(s[1]),s[3])
     factor %= identifier, lambda h, s:  IdentifierNode(s[1])
-    factor %= function_call, lambda h, s: s[1]
+    #factor %= function_call, lambda h, s: s[1]
     #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
     #factor %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])  
     factor %= math_call, lambda h, s:  s[1]
@@ -164,12 +169,12 @@ def gramm_Hulk_LR1():
     
     nonzero_digits = '|'.join(str(n) for n in range(1,10))
     zero_digits = '|'.join(str(n) for n in range(0,10))
-    minletters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1)) 
+    minletters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1))+"|_" 
     capletters = '|'.join(chr(n) for n in range(ord('A'),ord('Z')+1)) 
     all_characters = "0|1|2|3|4|5|6|7|8|9|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|!|#|$|%|&|\(|\)|\*|+|,|-|.|/|:|;|<|=|>|?|@|[|]|^|_|`|{|}|~| |\\||\'"
 
     lexer = Lexer([
-    (number, f'(({nonzero_digits})({zero_digits})*)|0'),
+    (number, f'(((({nonzero_digits})({zero_digits})*)|0)(.({zero_digits})*))|((({nonzero_digits})({zero_digits})*)|0)'),
     (string, f'\"(({all_characters})|(\\\\\"))*\"'),
     (Print, 'print'),
     (oPar, "\("),
@@ -181,6 +186,7 @@ def gramm_Hulk_LR1():
     (Plus, '+'),
     (Minus, '-'),
     (Pow, '^'),
+    (PowStar, '\*\*'),
     (Mult, "\*"),
     (Div, '/'),
     (Arrow, '=>'),

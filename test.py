@@ -17,7 +17,6 @@ with open('./prueba.txt', "r") as archivo:
     contenido = contenido.replace('\n', ' ')
 
     # Reemplazar tabulaciones por espacios en blanco
-    contenido = contenido.replace('\t', '')
     contenido = contenido.replace('"', '\"')
     text = contenido
 # type Nombre (first:string,last:string)
@@ -28,7 +27,10 @@ with open('./prueba.txt', "r") as archivo:
 
 #Nombre(Leo,Ramirez);
 print(text)
-tokens = lexer(text)
+tokens = []
+for line in lineas:
+    tokens.extend(lexer(line))
+#tokens = lexer(text)
 tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
 print(tokentypes)
 parser = LR1Parser(gramatica,False)

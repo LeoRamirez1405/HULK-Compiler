@@ -35,6 +35,7 @@ class Lexer:
     def _walk(self, string):
         state = self.automaton
 
+        #Si comentas este for da bateo con la variable -final-
         for s in state.state:
                     if s.final:
                         final = state
