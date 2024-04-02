@@ -18,8 +18,8 @@ class TypeBuilderVisitor():
     def visit(self, node: ProgramNode):
         #print('TypeBuilder')
         # print(f'Context in Builder: {[item for item in self.context.types.keys()]}')
-        for classDef in node.statments:
-            self.visit(classDef)
+        for statment in node.statments:
+            self.visit(statment)
 
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode):
@@ -27,7 +27,7 @@ class TypeBuilderVisitor():
         try:
             inheritance = self.context.get_type(inheritance.type)
         except:
-            self.errors.append(SemanticError(f'El tipo  {node.inheritance} del que se hereda no esta definido'))
+            self.errors.append(SemanticError(f'El tipo {node.inheritance.type} del que se hereda no esta definido'))
             inheritance = self.context.get_type('object')
         
         self.currentType.inhertance = inheritance
@@ -36,7 +36,12 @@ class TypeBuilderVisitor():
             name: IdentifierNode = arg.items[0].key 
             type = arg.items[0].value
             
-            type =  self.context.get_type(type)
+            try:
+                type =  self.context.get_type(type)
+            except:
+                type = self.context.get_type('object')
+                self.errors.append(f'El tipo del argumento {name.id} no esta definido.')
+                
             try:
                 self.currentType.define_arg(name.id, type)      
             except:
@@ -54,7 +59,16 @@ class TypeBuilderVisitor():
     @visitor.when(KernAssigmentNode)
     def visit(self, node: KernAssigmentNode):
         if self.currentType:
-            self.currentType.define_attribute(node.id.id, self.context.get_type('object'))    
+            try:
+                self.currentType.define_attribute(node.id.id, self.context.get_type('object')) 
+            except:
+                self.errors.append(SemanticError(f'El atributo {node.id.id} ya esta definido'))      
+        else:
+            try:
+                self.scope.define_variable(node.id.id, self.context.get_type('object'))
+            except:
+                self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida'))      
+
         
     @visitor.when(FunctionDefinitionNode)
     def visit(self, node: FunctionDefinitionNode):
@@ -68,32 +82,24 @@ class TypeBuilderVisitor():
         arg_names: List[IdentifierNode] = [list(parama.items())[0] for parama in node.parameters]
         arg_names = [name[0].id for name in arg_names]
         print(arg_names)
-        arg_types = []
         
+        arg_types = []
         aux = [list(parama.items())[0] for parama in node.parameters]
-        aux = [name for name in aux]
         print(aux)
         for parama in aux:
             try:
                 arg_types.append(self.context.get_type(parama[1].type))
             except:
-                self.errors.append(f'El tipo del parametro {parama[0].id} que se le pasa a la funcion {node.id.id} no esta definido')
+                self.errors.append(SemanticError(f'El tipo del parametro {parama[0].id} que se le pasa a la funcion {node.id.id} no esta definido'))
                 arg_types.append(self.context.get_type('object'))
         
-        #node_id: IdentifierNode = node.id
         if self.currentType:
             try:
                 self.currentType.define_method(node.id.id, arg_names, arg_types, return_type)
             except:
                 self.errors.append(f'La funcion {node.id.id} ya existe en el contexto de {self.currentType.name}.')
         else:
-            exist = False
-            #Esto nnunca va a lanzar excepcion xq solo entraria a este nodo si es un metodo de un typo o si ya esta node.id en el scope
-            for func in self.scope.functions[node.id.id]:
-                if len(arg_names) == len(func.param_names):
-                    exist = True
-                    break
-            if exist:
+            if self.scope.method_is_define(node.id.id, len(arg_names)):
                 self.errors.append(f'La funcion {node.id.id} ya existe en este scope con {len(arg_names)} cantidad de parametros')
             else:
                 method = Method(node.id.id, arg_names, arg_types, return_type)

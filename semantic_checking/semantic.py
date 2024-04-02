@@ -193,6 +193,13 @@ class Scope:
     def is_local(self, vname):
         return any(True for x in self.local_variables if x.name == vname)
     
+    def method_is_define(self, vname, params_num):
+        try:
+            methods = [method for method in self.functions[vname] if len(method.param_names) == params_num]
+            return len(methods) != 0 if len(self.functions[vname]) != 0 else False
+        except:
+            raise SemanticError(f'La funcion {vname} no esta definida')
+    
 class Context:
     def __init__(self):
         self.types: dict[str, Type] = {}
