@@ -156,7 +156,7 @@ class TypeCheckerVisitor:
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode, scope: Scope):
         #node_id: IdentifierNode = node.id
-        
+        print(f"---------------{type(node.id)}----------------")
         self.current_type = self.context.get_type(node.id.id)
         
         inner_scope: Scope = scope.create_child()

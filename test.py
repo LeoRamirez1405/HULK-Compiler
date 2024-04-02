@@ -19,13 +19,7 @@ with open('./prueba.txt', "r") as archivo:
     # Reemplazar tabulaciones por espacios en blanco
     contenido = contenido.replace('"', '\"')
     text = contenido
-# type Nombre (first:string,last:string)
-# { 
-#     nombre = first @@ last; 
-#     getNombreInv():string => last @ first ; 
-# }
 
-#Nombre(Leo,Ramirez);
 print(text)
 tokens = []
 for line in lineas:
