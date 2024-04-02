@@ -158,7 +158,7 @@ def gramm_Hulk_LR1():
     arguments %= G.Epsilon, lambda h, s: []
     
     # Estructuras adicionales para tipos
-    type_definition %= Type + identifier + oPar + parameters + cPar + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[4], s[6], s[8],s[9])
+    type_definition %= Type + identifier + oPar + parameters + cPar + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[4],s[6], s[8],s[9])
 
     attribute_definition %= _self + Dot + kern_assignment + Semi + attribute_definition, lambda h, s: s[5] + [s[3]]
     attribute_definition %= G.Epsilon, lambda h, s: []
@@ -168,7 +168,7 @@ def gramm_Hulk_LR1():
     method_definition %= G.Epsilon , lambda h, s: []
 
     inheritance %= Inherits + identifier, lambda h, s: InheritanceNode(IdentifierNode(s[2]))
-    inheritance %= G.Epsilon, lambda h, s: InheritanceNode("object")
+    inheritance %= G.Epsilon, lambda h, s: InheritanceNode(IdentifierNode('object'))
     
     nonzero_digits = '|'.join(str(n) for n in range(1,10))
     zero_digits = '|'.join(str(n) for n in range(0,10))

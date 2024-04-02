@@ -2,9 +2,6 @@ from semantic_checking.semantic import *
 import semantic_checking.visitor as visitor
 from semantic_checking.AST import *
 # from AST import *
-
-#! Hay que ver que se hace con las funciones que no son metodos de alguna clase   OJO
-
 class TypeCheckerVisitor:
     def __init__(self, context: Context, scope: Scope, errors, default_functions) -> None:
         self.context: Context = context
@@ -77,6 +74,9 @@ class TypeCheckerVisitor:
             method = self.current_type.get_method(node.id.id)
         else:
             method = list(filter(lambda x: len(x.param_names) == len(node.parameters), self.scope.functions[node.id.id]))[0]  
+            # method = scope.find_functions(node.id)
+            # if method and len(method) != 0:
+            #     method = [method for met in method if len(met.param_names) == len(node.parameters)][0]
                    
         inner_scope: Scope = scope.create_child()            
         for i in range(len(method.param_names)):
@@ -160,6 +160,7 @@ class TypeCheckerVisitor:
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode, scope: Scope):
         self.current_type = self.context.get_type(node.id.id)
+        
         temp_scope: Scope = scope.create_child()
         
         #* Creando un temp_scope me aseguro de que los argumentos del 'constructor' solo sean utiles a la hora de inicializar los atributos
