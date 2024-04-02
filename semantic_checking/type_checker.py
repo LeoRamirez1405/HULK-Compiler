@@ -95,14 +95,23 @@ class TypeCheckerVisitor:
             self.errors.append(SemanticError(f'La condicion del if debe ser de tipo bool'))
             
         inner_scope = scope.create_child()
-        # Visitar el cuerpo de la instruccion
-        for statment in node.body: 
+        for statment in node.body[:-1]:
             self.visit(statment, inner_scope)
+        type = self.visit(node.body[-1], inner_scope)
         
-        for _elif in node._elif:        
-            self.visit(_elif, scope)
+        for _elif in node._elif:    
+            type_1 = self.visit(_elif, scope)
+            if not type_1.conforms_to(type):
+                self.errors.append(SemanticError(f'Los distintos bloques del if no retornan el mismo tipo.'))
+                return self.context.get_type('any')
+            type = type_1
         
-        self.visit(node._else, scope)
+        type_1 = self.visit(node._else, scope)
+        if not type_1.conforms_to(type):
+            self.errors.append(SemanticError(f'Los distintos bloques del if no retornan el mismo tipo.'))
+            return self.context.get_type('any')
+        
+        return type_1
         
         #* En los nodos que no son expresiones aritmeticas o booleanas o concatenacion dberia ponerle qu etiene typo any?
         return self.context.get_type('any')
@@ -113,18 +122,18 @@ class TypeCheckerVisitor:
             self.errors.append(SemanticError(f'La condicion del if debe ser de tipo bool'))
             
         inner_scope = scope.create_child()
-        for statment in node.body:
+        for statment in node.body[:-1]:
             self.visit(statment, inner_scope)
             
-        return self.context.get_type('any')
+        return self.visit(node.body[-1], inner_scope)
         
     @visitor.when(ElseStructureNode)
     def visit(self, node: ElseStructureNode, scope: Scope):
         inner_scope = scope.create_child()
-        for statment in node.body:
+        for statment in node.body[:-1]:
             self.visit(statment, inner_scope)
             
-        return self.context.get_type('any')
+        return self.visit(node.body[-1], inner_scope)
         
     @visitor.when(WhileStructureNode)
     def visit(self, node: WhileStructureNode, scope: Scope):
@@ -132,10 +141,10 @@ class TypeCheckerVisitor:
             self.errors.append(SemanticError(f'La condicion del while debe ser de tipo bool'))
             
         inner_scope = scope.create_child()
-        for statment in node.body:
+        for statment in node.body[:-1]:
             self.visit(statment, inner_scope)
             
-        return self.context.get_type('any')
+        return self.visit(node.body[-1], inner_scope)
             
     @visitor.when(ForStructureNode)
     def visit(self, node: ForStructureNode, scope: Scope):
@@ -147,15 +156,14 @@ class TypeCheckerVisitor:
                 self.errors.append(SemanticError(f'La variable {id} ya esta definida en este scope.'))
             else:
                 inner_scope.define_variable(id, self.visit(expr, inner_scope)) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
-            
-        # Visitar el cuerpo de la instruccion
-        for statment in node.body: 
-            self.visit(statment, inner_scope)
-        
+         
         for increment_assigment in node.increment_condition:
-            self.visit(increment_assigment, inner_scope)
-            
-        return self.context.get_type('any')
+            self.visit(increment_assigment, inner_scope) 
+         
+        for statment in node.body[:-1]:   
+            self.visit(statment, inner_scope)
+                
+        return self.visit(node.body[-1], inner_scope)
             
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode, scope: Scope):
@@ -268,10 +276,11 @@ class TypeCheckerVisitor:
         inner_scope = scope.create_child()
         for assign in node.assigments:
             self.visit(assign, inner_scope)
-            
-        self.visit(node.body, inner_scope)
+         
+        for statment in node.body[:-1]:    
+            self.visit(node.body, inner_scope)
         
-        return self.context.get_type('any')
+        return self.visit(node.body[-1], inner_scope)
             
     @visitor.when(FunctionCallNode)
     def visit(self, node: FunctionCallNode, scope: Scope):
