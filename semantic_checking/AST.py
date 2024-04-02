@@ -43,7 +43,7 @@ class ProgramNode(Node):
 class IdentifierNode(Node):
     def __init__(self, id) -> None:
         super().__init__()
-        self.id = id
+        self.id : str = id
              
 class PrintStatmentNode(Node):
     def __init__(self, expression) -> None:
@@ -121,14 +121,14 @@ class TypeDefinitionNode(Node):
         super().__init__()
         self.id = id
         self.parameters = parameters
-        self.inheritance = inheritance
+        self.inheritance: InheritanceNode = inheritance
         self.attributes: List[KernAssigmentNode] = attributes
         self.methods = methods
         
 class InheritanceNode(Node):
     def __init__(self, type) -> None:
         super().__init__()
-        self.type = type
+        self.type : IdentifierNode = type
 
 #? Verificar que son los parametros type y args
 #* En new type (args = [param_1, param_2, ...])

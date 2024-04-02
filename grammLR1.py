@@ -77,7 +77,7 @@ def gramm_Hulk_LR1():
     destructive_assignment %= identifier + Destroy + expression, lambda h, s: [DestroyNode(s[1], s[3])]
 
     function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4],s[8]) 
-    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + Arrow + non_create_statement,lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4],s[8])
+    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + Arrow + statement,lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4],[s[8]])
     
     parameters %= expression + type_annotation + Comma + parameters, lambda h, s: [{s[1]:s[2]}] + [s[4]]
     parameters %= expression + type_annotation, lambda h, s: {s[1]:s[2]}
@@ -158,17 +158,17 @@ def gramm_Hulk_LR1():
     arguments %= G.Epsilon, lambda h, s: []
     
     # Estructuras adicionales para tipos
-    type_definition %= Type + identifier + oPar + parameters + cPar + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[4], s[6], s[8],s[9])
+    type_definition %= Type + identifier + oPar + parameters + cPar + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[4],s[6], s[8],s[9])
 
     attribute_definition %= _self + Dot + kern_assignment + Semi + attribute_definition, lambda h, s: s[5] + [s[3]]
     attribute_definition %= G.Epsilon, lambda h, s: []
 
     method_definition %= identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],s[7])] + s[9]
-    method_definition %= identifier + oPar + parameters + cPar + type_annotation + Arrow + statement + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],s[7])] + s[8]
+    method_definition %= identifier + oPar + parameters + cPar + type_annotation + Arrow + statement + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],[s[7]])] + s[8]
     method_definition %= G.Epsilon , lambda h, s: []
 
     inheritance %= Inherits + identifier, lambda h, s: InheritanceNode(IdentifierNode(s[2]))
-    inheritance %= G.Epsilon, lambda h, s: InheritanceNode("object")
+    inheritance %= G.Epsilon, lambda h, s: InheritanceNode(IdentifierNode('object'))
     
     nonzero_digits = '|'.join(str(n) for n in range(1,10))
     zero_digits = '|'.join(str(n) for n in range(0,10))
