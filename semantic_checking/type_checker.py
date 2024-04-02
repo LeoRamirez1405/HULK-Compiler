@@ -81,14 +81,17 @@ class TypeCheckerVisitor:
         inner_scope: Scope = scope.create_child()            
         for i in range(len(method.param_names)):
             inner_scope.define_variable(method.param_names[i], method.param_types[i])
+            
+        for var in inner_scope.local_variables:
+            print('defined_vars: ', var)
            
-        print(node.id.id, node.body)
+        # print(node.id.id, node.body)
            
         # Visitar el cuerpo de la instruccion
         for statment in node.body[:-1]: 
             self.visit(statment, inner_scope)
             
-        print(node.id.id, type(node.body[-1]))    
+        # print(node.id.id, type(node.body[-1]))    
         return method.return_type if self.visit(node.body[-1], inner_scope).conforms_to(method.return_type) else self.context.get_type('any')
             
     @visitor.when(IfStructureNode)
@@ -251,14 +254,14 @@ class TypeCheckerVisitor:
         
     @visitor.when(AritmeticExpression)
     def visit(self, node: AritmeticExpression, scope: Scope):
-        print(type(node.expression_1))
-        type_1: Type = self.visit(node.expression_1, scope)
-        print(type(node.expression_1))
-        type_2: Type = self.visit(node.expression_2, scope)
         print('Operacion aritmetica')
+        print('exp_1: ', type(node.expression_1))
+        type_1: Type = self.visit(node.expression_1, scope)
+        print('exp_2: ', type(node.expression_2))
+        type_2: Type = self.visit(node.expression_2, scope)
         
         if not type_1.conforms_to('number') or not type_2.conforms_to('number'):
-            print("Alguno no es un numero")
+            # print("Alguno no es un numero")
             self.errors.append(SemanticError(f'Solo se pueden emplear aritmeticos entre expresiones aritmeticas.'))
             return self.context.get_type('any')
         
@@ -266,7 +269,7 @@ class TypeCheckerVisitor:
         
     @visitor.when(MathOperationNode)
     def visit(self, node: MathOperationNode, scope: Scope):
-        print('math operation: ', type(node.node))
+        # print('math operation: ', type(node.node))
         if not self.visit(node.node, scope).conforms_to('number'):
             self.errors.append(SemanticError(f'Esta funcion solo puede ser aplicada a numeros.'))
             return self.context.get_type('any')
@@ -341,7 +344,7 @@ class TypeCheckerVisitor:
     
     @visitor.when(NumberNode)
     def visit(self, node: NumberNode, scope):
-        print('Number Node')
+        # print('Number Node')
         try:
             a: float = float(node.value)
             return self.context.get_type('number')
@@ -379,8 +382,9 @@ class TypeCheckerVisitor:
         
     @visitor.when(IdentifierNode)
     def visit(self, node: IdentifierNode, scope: Scope):
-        if self.scope.is_defined(node.id):
-            return self.scope.find_variable(node.id).type
+        print('definde_vars: ', [var.name for var in scope.local_variables])
+        if scope.is_defined(node.id):
+            return scope.find_variable(node.id).type
             
         self.errors.append(SemanticError(f'La variable {node.id} no esta deifinida'))
         return self.context.get_type('any')

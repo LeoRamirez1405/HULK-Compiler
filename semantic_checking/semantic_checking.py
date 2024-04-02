@@ -18,9 +18,7 @@ class SemanticCheckingVisitor:
         self.scope = Scope(parent=None)
         
         #TODO Se puedo no poner estas funciones como definidas y desde la gramatica crear un SqrNode() y luego acceder a el
-        self.default_functions = ['sin', 'cos', 'sqrt', 'exp']
-            
-        self.default_functions.extend(['rand', 'log', 'print'])
+        self.default_functions = ['sin', 'cos', 'sqrt', 'exp', 'tan', 'rand', 'log', 'print']
     
     #----------------------------------------------------------------------------------------------------# 
         self.errors = []
