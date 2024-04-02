@@ -23,6 +23,7 @@ class TypeBuilderVisitor():
 
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode):
+        
         self.currentType: Type = self.context.get_type(node.id.id) 
         try:
             inheritance = self.context.get_type(inheritance.type)
@@ -32,9 +33,9 @@ class TypeBuilderVisitor():
         
         self.currentType.inhertance = inheritance
         
-        for arg in node.parameters:
-            name: IdentifierNode = arg.items[0].key 
-            type = arg.items[0].value
+        for arg in node.parameters: 
+            name: IdentifierNode = list(arg.items())[0][0]
+            type = list(arg.items())[0][1]
             
             try:
                 type =  self.context.get_type(type)

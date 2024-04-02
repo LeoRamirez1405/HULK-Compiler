@@ -14,8 +14,8 @@ def gramm_Hulk_LR1():
     cont_member, kern_instance_creation, concatStrings, concatStringsWithSpace, math_call, factorPow = G.NonTerminals('cont_member kern_instance_creation concatStrings concatStringsWithSpace math_call factorPow')
     Print, oPar, cPar, oBrace, cBrace, Semi, Equal, Plus, Minus, Mult, Div, Arrow, Mod, Destroy, Pow = G.Terminals('print ( ) { } ; = + - * / => % := ^')
     And, Or, Not, Less, Greater, CompEqual, LessEqual, GreaterEqual, NotEqual, Is, In, _True, _False = G.Terminals('and or not < > == <= >= != is in True False')
-    Comma, Dot, If, Else, While, For, Let, Function, Colon, PowStar = G.Terminals(', . if else while for let function : **')
-    identifier, number, string, Elif, Type, Inherits, New, In, arroba,PI   = G.Terminals('identifier number string elif type inherits new in @ PI') 
+    Comma, Dot, If, Else, While, For, Let, Function, Colon, PowStar, _self = G.Terminals(', . if else while for let function : ** self')
+    identifier, number, string, Elif, Type, Inherits, New, In, arroba, arroba2,PI   = G.Terminals('identifier number string elif type inherits new in @ @@ PI') 
     sComil, dComill, = G.Terminals('\' \"')
     sqrt, sin, cos, tan, exp, log, rand = G.Terminals('sqrt sin cos tan exp log rand')
     
@@ -25,13 +25,13 @@ def gramm_Hulk_LR1():
     statement_list %= G.Epsilon, lambda h, s: []
     
     statement %= non_create_statement, lambda h, s: s[1] 
-    statement %= assignment + Semi, lambda h, s: s[1] 
     statement %= create_statement, lambda h, s: s[1]
     
     non_create_statement %= control_structure, lambda h, s: s[1]
     non_create_statement %= expr_statement + Semi, lambda h, s: s[1]
     #non_create_statement %= expr_statementWithoutSemi, lambda h, s: s[1]
     
+    create_statement %= assignment + Semi, lambda h, s: s[1] 
     create_statement %= type_definition, lambda h, s: s[1]
     create_statement %= function_definition, lambda h, s: s[1]
     create_statement %= destructive_assignment+ Semi, lambda h, s: s[1]
@@ -45,7 +45,8 @@ def gramm_Hulk_LR1():
     
     print_statement %= Print + oPar + expression + cPar, lambda h, s: PrintStatmentNode(s[3])
     
-    kern_assignment %= identifier + Equal + kern_instance_creation, lambda h, s: KernAssigmentNode(s[1],s[3])
+    #kern_assignment %= identifier + Equal + kern_instance_creation, lambda h, s: KernAssigmentNode(s[1],s[3])
+    kern_assignment %= identifier + Equal + expr_statement, lambda h, s: KernAssigmentNode(s[1],s[3])
     control_structure %= if_structure , lambda h, s: s[1]
     control_structure %= while_structure , lambda h, s: s[1]
     control_structure %= for_structure , lambda h, s: s[1]
@@ -59,7 +60,12 @@ def gramm_Hulk_LR1():
     contElse %= G.Epsilon , lambda h, s:  ElseStructureNode([])
 
     while_structure %= While + oPar + condition + cPar + oBrace + statement_list + cBrace , lambda h, s:  WhileStructureNode(s[3], s[6])
-    for_structure %= For + oPar + assignment + Semi + condition + Semi + destructive_assignment + cPar + oBrace + statement_list + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10])
+    #for_structure %= For + oPar + assignment + Semi + condition + Semi + destructive_assignment + cPar + oBrace + statement_list + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10])
+    for_assignment = G.NonTerminal('for_assignment')
+    for_assignment %= G.Epsilon, lambda h, s:[]
+    for_assignment %= assignment, lambda h, s:s[1]
+    for_assignment %= destructive_assignment, lambda h, s:s[1]
+    for_structure %= For + oPar + for_assignment + Semi + condition + Semi + destructive_assignment + cPar + oBrace + statement_list + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10])
     
     assignment %= Let + multi_assignment, lambda h, s: s[2]
     multi_assignment %= kern_assignment + Comma + multi_assignment, lambda h, s: [s[1]] + s[3]
@@ -71,7 +77,7 @@ def gramm_Hulk_LR1():
     destructive_assignment %= identifier + Destroy + expression, lambda h, s: [DestroyNode(s[1], s[3])]
 
     function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4],s[8]) 
-    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + Arrow + non_create_statement,lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4],s[8])
+    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + Arrow + statement,lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4],[s[8]])
     
     parameters %= expression + type_annotation + Comma + parameters, lambda h, s: [{s[1]:s[2]}] + [s[4]]
     parameters %= expression + type_annotation, lambda h, s: {s[1]:s[2]}
@@ -83,8 +89,8 @@ def gramm_Hulk_LR1():
     ExprAnd, ExprNeg, ExprIsType, ExprComp, ExprNum, ExprOr= G.NonTerminals('ExprAnd ExprNeg ExprIsType ExprComp ExprNum ExprOr')
     
     expression %= ExprOr, lambda h, s: s[1] 
+    expression %= expression + arroba2 + ExprOr, lambda h, s:  StringConcatWithSpaceNode(s[1],s[3])
     expression %= expression + arroba + ExprOr, lambda h, s:  StringConcatNode(s[1],s[3])
-    expression %= expression + arroba + arroba + ExprOr, lambda h, s:  StringConcatWithSpaceNode(s[1],s[4])
     
 
     ExprOr %= ExprAnd, lambda h, s: s[1]
@@ -128,11 +134,12 @@ def gramm_Hulk_LR1():
     factor %= _True, lambda h, s:  BooleanNode(s[1])
     factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(IdentifierNode(s[1]),s[3])
     factor %= identifier, lambda h, s:  IdentifierNode(s[1])
-    factor %= function_call, lambda h, s: s[1]
+    #factor %= function_call, lambda h, s: s[1]
     #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
     #factor %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])  
     factor %= math_call, lambda h, s:  s[1]
-    factor %= member_access, lambda h, s:  s[1]    
+    factor %= member_access, lambda h, s:  s[1]  
+    factor %= kern_instance_creation, lambda h,s: s[1]  
     member_access %= factor + Dot + identifier + oPar + arguments + cPar , lambda h, s: MemberAccessNode(s[1], IdentifierNode(s[3]), s[5]) 
     #member_access %= factor + Dot + identifier , lambda h, s: MemberAccesNode(s[1], s[3], [])  #Todo member access Los parametros son privados de la clase #! NAOMI ARREGLA ESTO EN EL CHECKEO SEMANTICO ❤️
     kern_instance_creation %= New + identifier + oPar + arguments + cPar, lambda h, s: KernInstanceCreationNode(IdentifierNode(s[2]),s[4])
@@ -151,12 +158,13 @@ def gramm_Hulk_LR1():
     arguments %= G.Epsilon, lambda h, s: []
     
     # Estructuras adicionales para tipos
-    type_definition %= Type + identifier + oPar + parameters + cPar + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(s[2],IdentifierNode(s[4]), s[6], s[8],s[9])
+    type_definition %= Type + identifier + oPar + parameters + cPar + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[4], s[6], s[8],s[9])
 
-    attribute_definition %= attribute_definition + kern_assignment + Semi, lambda h, s: s[1] + [s[2]]
+    attribute_definition %= _self + Dot + kern_assignment + Semi + attribute_definition, lambda h, s: s[5] + [s[3]]
     attribute_definition %= G.Epsilon, lambda h, s: []
 
-    method_definition %= identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],s[7])] + s[8]
+    method_definition %= identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],s[7])] + s[9]
+    method_definition %= identifier + oPar + parameters + cPar + type_annotation + Arrow + statement + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],[s[7]])] + s[8]
     method_definition %= G.Epsilon , lambda h, s: []
 
     inheritance %= Inherits + identifier, lambda h, s: InheritanceNode(IdentifierNode(s[2]))
@@ -164,12 +172,12 @@ def gramm_Hulk_LR1():
     
     nonzero_digits = '|'.join(str(n) for n in range(1,10))
     zero_digits = '|'.join(str(n) for n in range(0,10))
-    minletters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1)) 
+    minletters = '|'.join(chr(n) for n in range(ord('a'),ord('z')+1))+"|_" 
     capletters = '|'.join(chr(n) for n in range(ord('A'),ord('Z')+1)) 
     all_characters = "0|1|2|3|4|5|6|7|8|9|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z|A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|!|#|$|%|&|\(|\)|\*|+|,|-|.|/|:|;|<|=|>|?|@|[|]|^|_|`|{|}|~| |\\||\'"
 
     lexer = Lexer([
-    (number, f'(({nonzero_digits})({zero_digits})*)|0'),
+    (number, f'(((({nonzero_digits})({zero_digits})*)|0)(.({zero_digits})*))|((({nonzero_digits})({zero_digits})*)|0)'),
     (string, f'\"(({all_characters})|(\\\\\"))*\"'),
     (Print, 'print'),
     (oPar, "\("),
@@ -181,6 +189,7 @@ def gramm_Hulk_LR1():
     (Plus, '+'),
     (Minus, '-'),
     (Pow, '^'),
+    (PowStar, '\*\*'),
     (Mult, "\*"),
     (Div, '/'),
     (Arrow, '=>'),
@@ -205,11 +214,13 @@ def gramm_Hulk_LR1():
     (While, 'while'),
     (For, 'for'),
     (Let, 'let'),
+    (_self, 'self'),
     ('space', '  *'),
     (Function, 'function'),
     (Colon, ':'),
     (Elif, 'elif'),
     (arroba, '@'),
+    (arroba2, '@@'),
     (Type, 'type'),
     (Inherits, 'inherits'),
     (New, 'new'),

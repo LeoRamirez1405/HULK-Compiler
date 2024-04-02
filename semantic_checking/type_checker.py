@@ -67,13 +67,12 @@ class TypeCheckerVisitor:
             
     @visitor.when(FunctionDefinitionNode)
     def visit(self, node: FunctionDefinitionNode, scope: Scope):
-        # if node.id in self.default_functions:
-        #     self.errors.append(SemanticError(f'Esta redefiniendo una funcion {node.id} que esta definida por defecto en el lenguaje y no se puede sobreescribir'))
+        if node.id.id in self.default_functions:
+            self.errors.append(SemanticError(f'Esta redefiniendo una funcion {node.id.id} que esta definida por defecto en el lenguaje y no se puede sobreescribir'))
             
-        #     #* En los nodos que no son expresiones aritmeticas o booleanas o concatenacion o llamados a funciones deberia ponerle que tiene typo any?
-        #     return self.context.get_type('any')
+            #* En los nodos que no son expresiones aritmeticas o booleanas o concatenacion o llamados a funciones deberia ponerle que tiene typo any?
+            return self.context.get_type('any')
         
-        # node_id: IdentifierNode = node.id
         if self.current_type:
             method = self.current_type.get_method(node.id.id)
         else:
@@ -165,7 +164,7 @@ class TypeCheckerVisitor:
         
         #* Creando un temp_scope me aseguro de que los argumentos del 'constructor' solo sean utiles a la hora de inicializar los atributos
         for param in node.parameters:
-            arg, type_att = param.items[0].key, param.items[0].value
+            arg, type_att = list(param.items())[0][0], list(param.items())[0][1]
             temp_scope.define_variable(arg, type_att)
             
         inner_scope = self.scope.create_child()
@@ -276,10 +275,10 @@ class TypeCheckerVisitor:
     @visitor.when(FunctionCallNode)
     def visit(self, node: FunctionCallNode, scope: Scope):
         try: 
-            args = [func for func in scope.functions[node.id.id] if len(func.param_names) != len(node.args)]
-            if args == 0:
+            args = [func for func in scope.functions[node.id.id] if len(func.param_names) == len(node.args)]
+            if len(args) == 0:
                 self.errors.append(f'La funcion {node.id.id} requiere otra cantidad de parametros pero {len(node.args)} fueron suministrados')
-                return self.context.get_type(args[0].name)
+                return args[0].return_type
         except:
             self.errors.append(f'La funcion {node.id.id} no esta definida.')
             return self.context.get_type('any')
