@@ -83,10 +83,10 @@ class TypeCheckerVisitor:
             inner_scope.define_variable(method.param_names[i], method.param_types[i])
            
         # Visitar el cuerpo de la instruccion
-        for statment in node.body: 
+        for statment in node.body[-1]: 
             self.visit(statment, inner_scope)
-    
-        return self.context.get_type('any')
+            
+        return method.return_type if self.visit(node.body[-1], inner_scope).conforms_to(method.return_type) else self.context.get_type('any')
             
     @visitor.when(IfStructureNode)
     def visit(self, node: IfStructureNode, scope: Scope):
@@ -213,7 +213,7 @@ class TypeCheckerVisitor:
         try:
             method = base_object_type.get_method(node.object_property_to_acces)
             #En caso de ser un metodo se verifica si la cantidad de parametros suministrados es correcta
-            if len(node.args) != len(method.param_names):
+            if method and len(node.args) != len(method.param_names):
                 #Si la cantidad de parametros no es correcta se lanza un error
                 self.errors.append(SemanticError(f'La funcion {method.name} requiere {len(method.param_names)} cantidad de parametros pero {len(node.args)} fueron dados'))
                 return self.context.get_type('any')
