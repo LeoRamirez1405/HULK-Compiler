@@ -82,8 +82,10 @@ class TypeCheckerVisitor:
         inner_scope: Scope = scope.create_child()            
         for i in range(len(method.param_names)):
             inner_scope.define_variable(method.param_names[i], method.param_types[i])
-            
-        self.visit(node.body, inner_scope)
+           
+        # Visitar el cuerpo de la instruccion
+        for statment in node.body: 
+            self.visit(statment, inner_scope)
     
         return self.context.get_type('object')
             
@@ -94,7 +96,8 @@ class TypeCheckerVisitor:
             self.errors.append(SemanticError(f'La condicion del if debe ser de tipo bool'))
             
         inner_scope = scope.create_child()
-        for statment in node.body:
+        # Visitar el cuerpo de la instruccion
+        for statment in node.body: 
             self.visit(statment, inner_scope)
         
         for _elif in node._elif:        
@@ -146,7 +149,9 @@ class TypeCheckerVisitor:
             else:
                 inner_scope.define_variable(id, self.visit(expr, inner_scope)) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
             
-        self.visit(node.body, inner_scope)
+        # Visitar el cuerpo de la instruccion
+        for statment in node.body: 
+            self.visit(statment, inner_scope)
         
         for increment_assigment in node.increment_condition:
             self.visit(increment_assigment, inner_scope)
@@ -176,9 +181,9 @@ class TypeCheckerVisitor:
             
     @visitor.when(KernInstanceCreationNode)
     def visit(self, node: KernInstanceCreationNode, scope: Scope):
+        correct = True
         try:
             class_type: Type = self.context.types[node.type.id]
-            correct = True
             if len[class_type.attributes] != len(node.args):
                 self.errors.append(SemanticError(f'La cantidad de argumentos no coincide con la cantidad de atributos de la clase {node.type}.'))
                 correct = False
@@ -224,9 +229,9 @@ class TypeCheckerVisitor:
         type_1: Type = self.visit(node.left, scope)
         type_2: Type = self.visit(node.right, scope)
         
-        if not type_1.name == type_2.name == 'bool':
+        if not type_1.conforms_to(self.context.get_type('bool')) or not type_2.conforms_to(self.context.get_type('bool')):
             self.errors.append(SemanticError(f'Solo se pueden emplear operadores booleanos entre expresiones booleanas.'))
-            return self.context.get_type('object')
+            return self.context.get_type('any')
 
         return type_1
         
@@ -236,7 +241,7 @@ class TypeCheckerVisitor:
         type_2: Type = self.visit(node.expression_2, scope)
         print('Operacion aritmetica')
         if not type_1.conforms_to('number') or not type_2.conforms_to('number'):
-            print("Alguno no es un nnumero")
+            print("Alguno no es un numero")
             self.errors.append(SemanticError(f'Solo se pueden emplear aritmeticos entre expresiones aritmeticas.'))
             return self.context.get_type('object')
         
@@ -271,11 +276,13 @@ class TypeCheckerVisitor:
     @visitor.when(FunctionCallNode)
     def visit(self, node: FunctionCallNode, scope: Scope):
         try: 
-            args_len = scope.functions[node.id.id]
-            if args_len != len(node.args):
-                self.errors.append(f'La funcion {id} requiere {args_len} cantidad de parametros pero solo {len(node.args)} fueron dados')
+            args = [func for func in scope.functions[node.id.id] if len(func.param_names) != len(node.args)]
+            if args == 0:
+                self.errors.append(f'La funcion {node.id.id} requiere otra cantidad de parametros pero {len(node.args)} fueron suministrados')
+                return self.context.get_type(args[0].name)
         except:
             self.errors.append(f'La funcion {node.id.id} no esta definida.')
+            return self.context.get_type('any')
             
     @visitor.when(StringConcatNode)
     def visit(self, node: StringConcatNode, scope: Scope):
