@@ -13,22 +13,15 @@ class SemanticCheckingVisitor:
         for type in default_types:
             self.context.create_type(type) 
             self.context.get_type(type).parent = self.context.get_type('object') 
-            
-        # print(f'Context: {[item for item in self.context.types.keys()]}') 
     
     #------------------Inicializando funciones por defecto-----------------------------------------------#
         self.scope = Scope(parent=None)
         
         #TODO Se puedo no poner estas funciones como definidas y desde la gramatica crear un SqrNode() y luego acceder a el
-        self.default_functions = ['sen', 'cos', 'sqrt', 'exp']
-        # for func in self.default_functions:
-        #     self.scope.functions[func] = Method(func, ['expression'], [self.context.get_type('number')], self.context.get_type('number'))
+        self.default_functions = ['sin', 'cos', 'sqrt', 'exp']
             
         self.default_functions.extend(['rand', 'log', 'print'])
-        # self.scope.functions['rand'] = [Method(func, [], [], self.context.get_type('number'))]
-        # self.scope.functions['log'] = [Method(func, ['base', 'expression'], [self.context.get_type('number'), self.context.get_type('number')], self.context.get_type('number'))]
-        # self.scope.functions['print'] = [Method(func, ['expression'], [self.context.get_type('object')], self.context.get_type('string'))]
-
+    
     #----------------------------------------------------------------------------------------------------# 
         self.errors = []
 
@@ -48,8 +41,9 @@ class SemanticCheckingVisitor:
         # print('Context')
         # for name, type in self.context.types.items():
         #     print(f'Type: {name}')
-        #     print(f'attributes: {type.attributes}')
-        #     print(f'attributes: {type.methods}')
+        #     if type.parent: print(f': {type.parent.name}')
+        #     print(f'attributes: {[attr.name for attr in type.attributes]}')
+        #     print(f'attributes: {[method.name for method in type.methods]}')
             
     
         return self.errors

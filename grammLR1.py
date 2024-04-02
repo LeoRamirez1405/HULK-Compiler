@@ -77,10 +77,15 @@ def gramm_Hulk_LR1():
     destructive_assignment %= identifier + Destroy + expression, lambda h, s: [DestroyNode(s[1], s[3])]
 
     function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4],s[8]) 
-    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + Arrow + statement,lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4],[s[8]])
+    #TODO aqui puse el statment entre corchetes en la creacion del nodo porque de lo contrario no lo puedo iterar
+    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + Arrow + statement,lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4], [s[8]] )
     
-    parameters %= expression + type_annotation + Comma + parameters, lambda h, s: [{s[1]:s[2]}] + [s[4]]
-    parameters %= expression + type_annotation, lambda h, s: {s[1]:s[2]}
+    #TODO Cambie expression por identifier porque el parametro de una funcion tiene que ser obligatoria mente un variable 
+    # parameters %= expression + type_annotation + Comma + parameters, lambda h, s: [{s[1]:s[2]}] + [s[4]]
+    # parameters %= expression + type_annotation, lambda h, s: {s[1]:s[2]}
+    parameters %= identifier + type_annotation + Comma + parameters, lambda h, s: [{IdentifierNode(s[1]):s[2]}] + [s[4]]
+    #* Puse el diccionario que se creaba solo entre corchetes para formar la lisat
+    parameters %= identifier + type_annotation, lambda h, s: [{IdentifierNode(s[1]):s[2]}]
     parameters %= G.Epsilon, lambda h, s:[]
     
     type_annotation %= Colon + identifier, lambda h, s: TypeNode(s[2]) 
@@ -149,8 +154,9 @@ def gramm_Hulk_LR1():
     math_call %= sin + oPar + ExprNum + cPar, lambda h, s: SinMathNode(s[3])
     math_call %= tan + oPar + ExprNum + cPar, lambda h, s: TanMathNode(s[3])
     math_call %= exp + oPar + ExprNum + cPar, lambda h, s: ExpMathNode(s[3])
-    math_call %= log + oPar + ExprNum + Comma + ExprNum + cPar, lambda h, s:  LogCallNode(s[3],s[5]) 
-    math_call %= rand + oPar + cPar,  lambda h, s: RandomCallNode()
+    #TODO Cambie la forma en la que se creaba el nodo 
+    math_call %= log + oPar + ExprNum + Comma + ExprNum + cPar, lambda h, s: LogFunctionCallNode(s[3],[s[5]]) 
+    math_call %= rand + oPar + cPar,  lambda h, s: RandomFunctionCallNode(IdentifierNode('random'), [])
     math_call %= PI, lambda h, s: PINode()
     
     arguments %= expr_statement + Comma + arguments, lambda h, s: [s[1]] + s[3]
@@ -164,7 +170,8 @@ def gramm_Hulk_LR1():
     attribute_definition %= G.Epsilon, lambda h, s: []
 
     method_definition %= identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],s[7])] + s[9]
-    method_definition %= identifier + oPar + parameters + cPar + type_annotation + Arrow + statement + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],[s[7]])] + s[8]
+     #TODO aqui puse el statment entre corchetes en la creacion del nodo porque de lo contrario no lo puedo iterar
+    method_definition %= identifier + oPar + parameters + cPar + type_annotation + Arrow + statement + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3], [s[7]] )] + s[8]
     method_definition %= G.Epsilon , lambda h, s: []
 
     inheritance %= Inherits + identifier, lambda h, s: InheritanceNode(IdentifierNode(s[2]))

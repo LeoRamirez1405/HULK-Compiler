@@ -16,7 +16,7 @@ class TypeBuilderVisitor():
     
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
-        #print('TypeBuilder')
+        print('TypeBuilder')
         # print(f'Context in Builder: {[item for item in self.context.types.keys()]}')
         for statment in node.statments:
             self.visit(statment)
@@ -79,6 +79,7 @@ class TypeBuilderVisitor():
             self.errors.append(f'El tipo de retorno {node.type_annotation.type} no esta definido')
             return_type = self.context.get_type('object')
         
+        print(node.parameters)
         arg_names: List[IdentifierNode] = [list(parama.items())[0] for parama in node.parameters]
         arg_names = [name[0].id for name in arg_names]
         print(arg_names)

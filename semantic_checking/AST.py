@@ -73,7 +73,7 @@ class TypeNode(Node):
         self.type = type
         
 class FunctionDefinitionNode(Node):
-    def __init__(self, id: IdentifierNode, type_annotation: TypeNode, parameters:list[dict], body) -> None:
+    def __init__(self, id: IdentifierNode, type_annotation: TypeNode, parameters:list[dict[IdentifierNode, TypeNode]], body) -> None:
         super().__init__()
         self.id: IdentifierNode = id
         self.type_annotation = type_annotation
@@ -213,7 +213,6 @@ class PINode(NumberNode):
 class MathOperationNode(UnaryNode):
     def __init__(self, expression) -> None:
         super().__init__(expression)
-        self.expression = expression
 
 class SqrtMathNode(MathOperationNode):
     def __init__(self, expression) -> None:
@@ -235,15 +234,6 @@ class TanMathNode(MathOperationNode):
 class ExpMathNode(MathOperationNode):
     def __init__(self, expression) -> None:
         super().__init__(expression)
-class RandomCallNode(Node):
-    def __init__(self) -> None:
-        super().__init__()
-        
-class LogCallNode(Node):
-    def __init__(self, base, expression) -> None:
-        super().__init__()
-        self.base = base
-        self.expression = expression
 
 #-----------------------------------Let-In--------------------------------------------------------------------------------------------------------------------#
 class LetInNode(Node):
@@ -329,3 +319,37 @@ class BoolCompNotEqualNode(BoolCompAritNode):
     def __init__(self, left, right):
         super().__init__(left, right)
         
+#------------------------------------------------Default-Functions-----------------------------------------------------------------------#
+# class DefaultFunctionCallNode(FunctionCallNode):
+#     def __init__(self, id, args) -> None:
+#         super().__init__(id, args)
+        
+# class SinFunctionCallNode(DefaultFunctionCallNode):
+#     def __init__(self, id, args) -> None:
+#         super().__init__(id, args)
+        
+# class CosFunctionCallNode(DefaultFunctionCallNode):
+#     def __init__(self, id, args) -> None:
+#         super().__init__(id, args)
+        
+# class TanFunctionCallNode(DefaultFunctionCallNode):
+#     def __init__(self, id, args) -> None:
+#         super().__init__(id, args)
+        
+# class RandomFunctionCallNode(DefaultFunctionCallNode):
+#     def __init__(self, id, args) -> None:
+#         super().__init__(id, args)
+        
+# class LogFunctionCallNode(DefaultFunctionCallNode):
+#     def __init__(self, id, args) -> None:
+#         super().__init__(id, args)
+
+class RandomFunctionCallNode(Node):
+    def __init__(self) -> None:
+        super().__init__()
+        
+class LogFunctionCallNode(Node):
+    def __init__(self, base, expression) -> None:
+        super().__init__()
+        self.base = base
+        self.expression = expression
