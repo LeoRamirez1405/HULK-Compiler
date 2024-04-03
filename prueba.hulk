@@ -1,0 +1,1 @@
+type A { self.a = 5; getA() => self.a * 5;} type B inherits A { self.b = 3; getB => getA() * b + a;}

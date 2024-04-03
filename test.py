@@ -9,7 +9,7 @@ from LR1 import LR1Parser,evaluate_reverse_parse
 gramatica, lexer = gramm_Hulk_LR1()
 
 
-with open('./prueba.txt', "r") as archivo:
+with open('./prueba.hulk', "r") as archivo:
     # Lee todas las líneas del archivo
     lineas = archivo.readlines()
     # Une todas las líneas en una sola cadena

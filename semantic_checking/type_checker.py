@@ -286,11 +286,14 @@ class TypeCheckerVisitor:
         # for assign in node.assigments:
         #     self.visit(assign, inner_scope)
         self.visit(node.assigments, inner_scope)
-         
-        for statment in node.body[:-1]:    
-            self.visit(statment, inner_scope)
         
-        return self.visit(node.body[-1], inner_scope)
+        if type(node.body) == list:
+            for statment in node.body[:-1]:    
+                self.visit(statment, inner_scope)
+
+            return self.visit(node.body[-1], inner_scope)
+        else:
+            return self.visit(node.body, inner_scope)
             
     @visitor.when(FunctionCallNode)
     def visit(self, node: FunctionCallNode, scope: Scope):
