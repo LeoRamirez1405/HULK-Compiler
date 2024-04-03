@@ -16,8 +16,6 @@ class TypeBuilderVisitor():
     
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
-        # print('TypeBuilder')
-        # print(f'Context in Builder: {[item for item in self.context.types.keys()]}')
         for statment in node.statments:
             self.visit(statment)
 
@@ -26,6 +24,9 @@ class TypeBuilderVisitor():
         self.currentType: Type = self.context.get_type(node.id.id) 
         try:
             inheritance = self.context.get_type(node.inheritance.type.id)
+            if inheritance.conforms_to(self.currentType):
+                self.errors.append(SemanticError(f'Dependencias circulares. {inheritance.node.name} hereda de {self.currentType.name}'))
+                inheritance = self.context.get_type('object')
         except:
             self.errors.append(SemanticError(f'El tipo {str(node.inheritance.type.id)} del que se hereda no esta definido'))
             inheritance = self.context.get_type('object')
@@ -62,12 +63,7 @@ class TypeBuilderVisitor():
             try:
                 self.currentType.define_attribute(node.id.id, self.context.get_type('object')) 
             except:
-                self.errors.append(SemanticError(f'El atributo {node.id.id} ya esta definido'))      
-        # else:
-        #     try:
-        #         self.scope.define_variable(node.id.id, self.context.get_type('object'))
-        #     except:
-        #         self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida'))      
+                self.errors.append(SemanticError(f'El atributo {node.id.id} ya esta definido'))            
 
         
     @visitor.when(FunctionDefinitionNode)

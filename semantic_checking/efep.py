@@ -9,3 +9,8 @@ lista_de_diccionarios = [
 valores_primer_objeto = [list(diccionario.values())[0] for diccionario in lista_de_diccionarios]
 
 print(valores_primer_objeto)
+
+print(not 6 > 9)
+
+a = float('-4.876')
+print(a - a)

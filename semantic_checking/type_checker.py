@@ -32,20 +32,22 @@ class TypeCheckerVisitor:
         
     @visitor.when(KernAssigmentNode)
     def visit(self, node: KernAssigmentNode, scope: Scope):
-        if scope.parent == None:
-            try:
-                var: VariableInfo = self.scope.find_variable(node.id.id)
-                var.type = self.visit(node.expression, scope)
-            except:
-                self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida.'))
-            return self.context.get_type('any')
+        # if scope.parent == None:
+        #     try:
+        #         var: VariableInfo = self.scope.find_variable(node.id.id)
+        #         var.type = self.visit(node.expression, scope)
+        #     except:
+        #         self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida.'))
+        #     return self.context.get_type('any')
     
         if scope.is_local(node.id.id) or scope.is_defined(node.id.id):
             self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida.'))
+            type = self.scope.find_variable(node.id.id).type
         else:
-            scope.define_variable(node.id.id, self.visit(node.expression, scope)) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
+            type = self.visit(node.expression, scope)
+            scope.define_variable(node.id.id, type) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
             
-        return self.context.get_type('any')
+        return type
     
     #* Esto se usa a la hora de definir los parametros de una funcion que se esta creando
     @visitor.when(TypeNode)
