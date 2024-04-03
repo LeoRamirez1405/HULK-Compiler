@@ -15,7 +15,6 @@ with open('prueba.txt', 'r') as archivo:
 
     contenido_modificado = contenido.replace('\n', '[LineJump]')
 
-    # Reemplazar tabulaciones por espacios en blanco
     contenido_modificado = contenido_modificado.replace('"', '\"')
     text = contenido_modificado
 
