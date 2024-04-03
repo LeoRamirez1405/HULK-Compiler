@@ -18,6 +18,7 @@ def gramm_Hulk_LR1():
     identifier, number, string, Elif, Type, Inherits, New, In, arroba, arroba2,PI   = G.Terminals('identifier number string elif type inherits new in @ @@ PI') 
     sComil, dComill, = G.Terminals('\' \"')
     sqrt, sin, cos, tan, exp, log, rand = G.Terminals('sqrt sin cos tan exp log rand')
+    collection, destroy_collection = G.NonTerminals('collection destroy_collection')
     
     
     Program %= statement_list, lambda h, s: ProgramNode(s[1])
@@ -36,16 +37,18 @@ def gramm_Hulk_LR1():
     create_statement %= assignment + Semi, lambda h, s: s[1] 
     create_statement %= type_definition, lambda h, s: s[1]
     create_statement %= function_definition, lambda h, s: s[1]
-    create_statement %= destructive_assignment+ Semi, lambda h, s: s[1]
+    create_statement %= destroy_collection + Semi, lambda h, s: s[1]
     
     expr_statement %= print_statement, lambda h, s: s[1]
+    #TODO aqui hay que ver como se maneja la cosa de las listas
     expr_statement %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
     expr_statement %= expression, lambda h, s: s[1]
     expr_statement %=  oBrace + statement_list + cBrace, lambda h, s:s[2]
     
     print_statement %= Print + oPar + expression + cPar, lambda h, s: PrintStatmentNode(s[3])
     
-    kern_assignment %= identifier + Equal + expr_statement, lambda h, s: KernAssigmentNode(s[1],s[3])
+    #kern_assignment %= identifier + Equal + kern_instance_creation, lambda h, s: KernAssigmentNode(s[1],s[3])
+    kern_assignment %= identifier + Equal + expr_statement, lambda h, s: KernAssigmentNode(IdentifierNode(s[1]),s[3])
     control_structure %= if_structure , lambda h, s: s[1]
     control_structure %= while_structure , lambda h, s: s[1]
     control_structure %= for_structure , lambda h, s: s[1]
@@ -65,19 +68,29 @@ def gramm_Hulk_LR1():
     for_assignment %= destructive_assignment, lambda h, s:s[1]
     for_structure %= For + oPar + for_assignment + Semi + expression + Semi + destructive_assignment + cPar + oBrace + statement_list + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10])
     
-    assignment %= Let + multi_assignment, lambda h, s: s[2]
+    #TODO Cambie la atributacion y le puse que creara un nodo collection para saber luego en los checkeos que hay que iterar en ese tipo de nodos
+    # assignment %= Let + multi_assignment, lambda h, s: s[2]
+    assignment %= Let + multi_assignment, lambda h, s: CollectionNode(s[2])
     multi_assignment %= kern_assignment + Comma + multi_assignment, lambda h, s: [s[1]] + s[3]
     multi_assignment %= kern_assignment, lambda h, s: [s[1]]
-    kern_assignment %= identifier + Equal + expr_statement, lambda h, s: KernAssigmentNode(s[1],s[3])  
+    kern_assignment %= identifier + Equal + expr_statement, lambda h, s: KernAssigmentNode(IdentifierNode(s[1]),s[3])  
+    #kern_assignment %= identifier + Equal + expr_statementWithoutSemi, lambda h, s: KernAssigmentNode(s[1],s[3])  
     
-    destructive_assignment %= identifier + Destroy + expression + Comma + destructive_assignment, lambda h, s : [DestroyNode(s[1], s[3])] + s[4]
-    destructive_assignment %= identifier + Destroy + expression, lambda h, s: [DestroyNode(s[1], s[3])]
+   
+    destroy_collection %= destructive_assignment, lambda h, s : CollectionNode(s[1])
+    destructive_assignment %= identifier + Destroy + expression + Comma + destructive_assignment, lambda h, s : [DestroyNode(IdentifierNode(s[1]) , s[3])] + s[4]
+    destructive_assignment %= identifier + Destroy + expression, lambda h, s: [DestroyNode(IdentifierNode(s[1]) , s[3])] 
 
     function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4],s[8]) 
-    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + Arrow + statement,lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4],[s[8]])
+    #TODO aqui puse el statment entre corchetes en la creacion del nodo porque de lo contrario no lo puedo iterar
+    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + Arrow + statement,lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4], CollectionNode([s[8]]))
     
-    parameters %= expression + type_annotation + Comma + parameters, lambda h, s: [{s[1]:s[2]}] + [s[4]]
-    parameters %= expression + type_annotation, lambda h, s: {s[1]:s[2]}
+    #TODO Cambie expression por identifier porque el parametro de una funcion tiene que ser obligatoria mente un variable 
+    # parameters %= expression + type_annotation + Comma + parameters, lambda h, s: [{s[1]:s[2]}] + [s[4]]
+    # parameters %= expression + type_annotation, lambda h, s: {s[1]:s[2]}
+    parameters %= identifier + type_annotation + Comma + parameters, lambda h, s: [{IdentifierNode(s[1]):s[2]}] + [s[4]]
+    #* Puse el diccionario que se creaba solo entre corchetes para formar la lisat
+    parameters %= identifier + type_annotation, lambda h, s: [{IdentifierNode(s[1]):s[2]}]
     parameters %= G.Epsilon, lambda h, s:[]
     
     type_annotation %= Colon + identifier, lambda h, s: TypeNode(s[2]) 
@@ -131,6 +144,12 @@ def gramm_Hulk_LR1():
     factor %= _True, lambda h, s:  BooleanNode(s[1])
     factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(IdentifierNode(s[1]),s[3])
     factor %= identifier, lambda h, s:  IdentifierNode(s[1])
+    #TODO Annadi el self a los factores
+    #factor %= _self + Dot + identifier, lambda h, s : SelfNode(IdentifierNode(s[3]))
+    
+    #factor %= function_call, lambda h, s: s[1]
+    #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
+    #factor %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])  
     factor %= math_call, lambda h, s:  s[1]
     factor %= member_access, lambda h, s:  s[1]  
     factor %= kern_instance_creation, lambda h,s: s[1]  
@@ -143,23 +162,30 @@ def gramm_Hulk_LR1():
     math_call %= sin + oPar + ExprNum + cPar, lambda h, s: SinMathNode(s[3])
     math_call %= tan + oPar + ExprNum + cPar, lambda h, s: TanMathNode(s[3])
     math_call %= exp + oPar + ExprNum + cPar, lambda h, s: ExpMathNode(s[3])
-    math_call %= log + oPar + ExprNum + Comma + ExprNum + cPar, lambda h, s:  LogCallNode(s[3],s[5]) 
-    math_call %= rand + oPar + cPar,  lambda h, s: RandomCallNode()
+    #TODO Cambie la forma en la que se creaba el nodo 
+    math_call %= log + oPar + ExprNum + Comma + ExprNum + cPar, lambda h, s: LogFunctionCallNode(s[3],[s[5]]) 
+    math_call %= rand + oPar + cPar,  lambda h, s: RandomFunctionCallNode(IdentifierNode('random'), [])
     math_call %= PI, lambda h, s: PINode()
     
     arguments %= expr_statement + Comma + arguments, lambda h, s: [s[1]] + s[3]
     arguments %= expr_statement , lambda h, s: [s[1]]
     arguments %= G.Epsilon, lambda h, s: []
     
+    #! OJO
+    #TODO Cambie lo de parametros xq no necesariamente hay que ponerle parametros a las clases
     # Estructuras adicionales para tipos
     type_definition %= Type + identifier + oPar + parameters + cPar + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[4], s[6], s[8],s[9])
     type_definition %= Type + identifier + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),[], s[6], s[8],s[9])
 
-    attribute_definition %= _self + Dot + kern_assignment + Semi + attribute_definition, lambda h, s: s[5] + [s[3]]
+    #! El siguiente comentario paso a ser lo que era antes
+    #TODO Quite el self porque cuando se inicializan los atributos no se pone self
+    #attribute_definition %= _self + Dot + kern_assignment + Semi + attribute_definition, lambda h, s: s[5] + [s[3]]
+    attribute_definition %= kern_assignment + Semi + attribute_definition, lambda h, s: [s[1]] + s[3]
     attribute_definition %= G.Epsilon, lambda h, s: []
 
     method_definition %= identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],s[7])] + s[9]
-    method_definition %= identifier + oPar + parameters + cPar + type_annotation + Arrow + statement + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],[s[7]])] + s[8]
+    #TODO aqui puse el statment entre corchetes en la creacion del nodo porque de lo contrario no lo puedo iterar
+    method_definition %= identifier + oPar + parameters + cPar + type_annotation + Arrow + statement + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3], [s[7]] )] + s[8]
     method_definition %= G.Epsilon , lambda h, s: []
 
     inheritance %= Inherits + identifier, lambda h, s: InheritanceNode(IdentifierNode(s[2]))

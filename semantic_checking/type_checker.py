@@ -16,21 +16,15 @@ class TypeCheckerVisitor:
     
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
-        #print('TypeChecker')
-        # print(f'Context in Checker: {[item for item in self.context.types.keys()]}')
         for statment in node.statments:
             self.visit(statment, self.scope) 
             
     @visitor.when(PrintStatmentNode)
     def visit(self, node: PrintStatmentNode, scope):
-        #print('visitor en PrintNode')
-        self.visit(node.expression, scope)
-        
-        return self.context.get_type('void')
+        return self.visit(node.expression, scope)
             
     @visitor.when(DestroyNode)
     def visit(self, node: DestroyNode, scope: Scope):
-        # node_id: IdentifierNode = node.id
         if not scope.is_defined(node.id.id):
             self.errors.append(SemanticError(f'La variable {node.id.id} no esta definida en este scope'))
             
@@ -74,19 +68,17 @@ class TypeCheckerVisitor:
             method = self.current_type.get_method(node.id.id)
         else:
             method = list(filter(lambda x: len(x.param_names) == len(node.parameters), self.scope.functions[node.id.id]))[0]  
-            # method = scope.find_functions(node.id)
-            # if method and len(method) != 0:
-            #     method = [method for met in method if len(met.param_names) == len(node.parameters)][0]
                    
         inner_scope: Scope = scope.create_child()            
         for i in range(len(method.param_names)):
             inner_scope.define_variable(method.param_names[i], method.param_types[i])
-           
+            
+        
         # Visitar el cuerpo de la instruccion
-        for statment in node.body: 
+        for statment in node.body[:-1]: 
             self.visit(statment, inner_scope)
-    
-        return self.context.get_type('any')
+          
+        return method.return_type if self.visit(node.body[-1], inner_scope).conforms_to(method.return_type) else self.context.get_type('any')
             
     @visitor.when(IfStructureNode)
     def visit(self, node: IfStructureNode, scope: Scope):
@@ -112,9 +104,6 @@ class TypeCheckerVisitor:
             return self.context.get_type('any')
         
         return type_1
-        
-        #* En los nodos que no son expresiones aritmeticas o booleanas o concatenacion dberia ponerle qu etiene typo any?
-        return self.context.get_type('any')
         
     @visitor.when(ElifStructureNode)
     def visit(self, node: ElifStructureNode, scope: Scope):
@@ -149,16 +138,20 @@ class TypeCheckerVisitor:
     @visitor.when(ForStructureNode)
     def visit(self, node: ForStructureNode, scope: Scope):
         inner_scope: Scope = scope.create_child()
-        for assin in node.init_assigments:
-            id, expr = assin.id.id, assin.expression
+        # for assin in node.init_assigments:
+        #     id, expr = assin.id.id, assin.expression
             
-            if scope.is_defined(id):
-                self.errors.append(SemanticError(f'La variable {id} ya esta definida en este scope.'))
-            else:
-                inner_scope.define_variable(id, self.visit(expr, inner_scope)) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
+        #     if scope.is_defined(id):
+        #         self.errors.append(SemanticError(f'La variable {id} ya esta definida en este scope.'))
+        #     else:
+        #         inner_scope.define_variable(id, self.visit(expr, inner_scope)) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
+        
+        self.visit(node.init_assigments, inner_scope) 
          
-        for increment_assigment in node.increment_condition:
-            self.visit(increment_assigment, inner_scope) 
+        # for increment_assigment in node.increment_condition:
+        #     self.visit(increment_assigment, inner_scope) 
+        
+        self.visit(node.increment_condition, inner_scope)
          
         for statment in node.body[:-1]:   
             self.visit(statment, inner_scope)
@@ -213,7 +206,7 @@ class TypeCheckerVisitor:
         try:
             method = base_object_type.get_method(node.object_property_to_acces)
             #En caso de ser un metodo se verifica si la cantidad de parametros suministrados es correcta
-            if len(node.args) != len(method.param_names):
+            if method and len(node.args) != len(method.param_names):
                 #Si la cantidad de parametros no es correcta se lanza un error
                 self.errors.append(SemanticError(f'La funcion {method.name} requiere {len(method.param_names)} cantidad de parametros pero {len(node.args)} fueron dados'))
                 return self.context.get_type('any')
@@ -246,10 +239,10 @@ class TypeCheckerVisitor:
     @visitor.when(AritmeticExpression)
     def visit(self, node: AritmeticExpression, scope: Scope):
         type_1: Type = self.visit(node.expression_1, scope)
+
         type_2: Type = self.visit(node.expression_2, scope)
-        print('Operacion aritmetica')
+        
         if not type_1.conforms_to('number') or not type_2.conforms_to('number'):
-            print("Alguno no es un numero")
             self.errors.append(SemanticError(f'Solo se pueden emplear aritmeticos entre expresiones aritmeticas.'))
             return self.context.get_type('any')
         
@@ -257,28 +250,45 @@ class TypeCheckerVisitor:
         
     @visitor.when(MathOperationNode)
     def visit(self, node: MathOperationNode, scope: Scope):
-        if not self.visit(node.expression, scope).conforms_to('number'):
+        if not self.visit(node.node, scope).conforms_to('number'):
             self.errors.append(SemanticError(f'Esta funcion solo puede ser aplicada a numeros.'))
             return self.context.get_type('any')
         
         return self.context.get_type('number')
         
-    @visitor.when(LogCallNode)
-    def visit(self, node: LogCallNode, scope: Scope):
+    @visitor.when(LogFunctionCallNode)
+    def visit(self, node: LogFunctionCallNode, scope: Scope):
         if not self.visit(node.base, scope).conforms_to('number') or not self.visit(node.expression, scope).conforms_to('number'):
             self.errors.append(SemanticError(f'Esta funcion solo puede ser aplicada a numeros.'))
             return self.context.get_type('any')
         
         return self.context.get_type('number')
+    
+    @visitor.when(RandomFunctionCallNode)
+    def visit(self, node: RandomFunctionCallNode, scope: Scope):
+        return self.context.get_type('number')
         
     @visitor.when(LetInNode)
     def visit(self, node: LetInNode, scope: Scope):
         inner_scope = scope.create_child()
-        for assign in node.assigments:
-            self.visit(assign, inner_scope)
+        # for assign in node.assigments:
+        #     self.visit(assign, inner_scope)
+        self.visit(node.assigments, inner_scope)
          
         for statment in node.body[:-1]:    
-            self.visit(node.body, inner_scope)
+            self.visit(statment, inner_scope)
+        
+        return self.visit(node.body[-1], inner_scope)
+    
+    @visitor.when(LetInExpressionNode)
+    def visit(self, node: LetInExpressionNode, scope: Scope):
+        inner_scope = scope.create_child()
+        # for assign in node.assigments:
+        #     self.visit(assign, inner_scope)
+        self.visit(node.assigments, inner_scope)
+         
+        for statment in node.body[:-1]:    
+            self.visit(statment, inner_scope)
         
         return self.visit(node.body[-1], inner_scope)
             
@@ -364,9 +374,27 @@ class TypeCheckerVisitor:
         
     @visitor.when(IdentifierNode)
     def visit(self, node: IdentifierNode, scope: Scope):
-        if self.scope.is_defined(node.id):
-            return self.scope.find_variable(node.id).type
+        if scope.is_defined(node.id):
+            return scope.find_variable(node.id).type
             
         self.errors.append(SemanticError(f'La variable {node.id} no esta deifinida'))
         return self.context.get_type('any')
+    
+    @visitor.when(CollectionNode)
+    def visit(self, node: CollectionNode, scope):
+        for item in node.collection:
+            self.visit(item, scope)
         
+    @visitor.when(SelfNode)
+    def visit(self, node: SelfNode, scope: Scope):
+        if not self.current_type:
+            self.errors.append(SemanticError(f'La palabra clase self solo se puede usar dentro de clases'))
+            return self.context.get_type('any')
+        
+        try: 
+            return self.current_type.get_attribute(node.identifier.id).type
+        except:
+            self.errors.append(SemanticError(f'No existe un atributo {node.identifier.id} en la clase {self.current_type.name}'))
+            return self.context.get_type('any')
+        
+    

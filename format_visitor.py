@@ -207,12 +207,12 @@ class FormatVisitor(object):
         expression = self.visit(node.expression, tabs + 1)
         return '\t' * tabs + f'\\__ExpMathNode\n{expression}'
 
-    @visitor.when(RandomCallNode)
-    def visit(self, node: RandomCallNode, tabs = 0):
+    @visitor.when(RandomFunctionCallNode)
+    def visit(self, node: RandomFunctionCallNode, tabs = 0):
         return '\t' * tabs + '\\__RandomCallNode'
 
-    @visitor.when(LogCallNode)
-    def visit(self, node: LogCallNode, tabs = 0):
+    @visitor.when(LogFunctionCallNode)
+    def visit(self, node: LogFunctionCallNode, tabs = 0):
         expression = self.visit(node.expression, tabs + 1)
         return '\t' * tabs + f'\\__LogCallNode\n{expression}'
     

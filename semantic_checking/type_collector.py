@@ -15,14 +15,16 @@ class TypeCollectorVisitor:
 
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
-        #print('TypeCollector')
-        # self.context.types['test'] = Type('test')
         for statment in node.statments:
+            print(statment)
             self.visit(statment)
-            
-        # print(f'Context in Collector: {[item for item in self.context.types.keys()]}')
-        # print(f'Scope in Collector: {[func for func in self.scope.functions.keys()]}')
-        # return self.context, self.scope, self.errors
+        
+        # print('Context')
+        # for name, type in self.context.types.items():
+        #     print(f'Type: {name} : ')
+        #     if type.parent: print(type.parent.name)
+        #     print(f'attributes: {[attr.name for attr in type.attributes]}')
+        #     print(f'attributes: {[method.name for method in type.methods]}')
             
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode):
@@ -43,8 +45,14 @@ class TypeCollectorVisitor:
     
     @visitor.when(KernAssigmentNode)
     def visit(self, node: KernAssigmentNode):
+        print('kern assigment: ', node)
         if not self.scope.is_defined(node.id.id):
             self.scope.define_variable(node.id.id, self.context.get_type('object')) 
         else:
             # print(node.id.id)
             self.errors.append(SemanticError(f'La variable {node.id.id} ya existe')) 
+            
+    @visitor.when(CollectionNode)
+    def visit(self, node: CollectionNode):
+        for item in node.collection:
+            self.visit(item)
