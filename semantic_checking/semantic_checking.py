@@ -8,9 +8,11 @@ class SemanticCheckingVisitor:
     def __init__(self) -> None:
     #------------------Inicializando tipos por defecto---------------------------------------------------#
         self.context = Context()
-        default_types = ['object', 'number', 'string', 'bool', 'void']
+        self.context.create_type('object')
+        default_types = ['number', 'string', 'bool', 'void', 'any']
         for type in default_types:
-            self.context.create_type(type)  
+            self.context.create_type(type) 
+            self.context.get_type(type).parent = self.context.get_type('object') 
             
         # print(f'Context: {[item for item in self.context.types.keys()]}') 
     

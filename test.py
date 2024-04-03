@@ -13,7 +13,7 @@ with open('./prueba.txt', "r") as archivo:
     # Lee todas las líneas del archivo
     lineas = archivo.readlines()
     # Une todas las líneas en una sola cadena
-    contenido = "".join(lineas)
+    contenido = "".join(lineas.strip)
     contenido = contenido.replace('\n', ' ')
 
     # Reemplazar tabulaciones por espacios en blanco
@@ -23,7 +23,7 @@ with open('./prueba.txt', "r") as archivo:
 print(text)
 tokens = []
 for line in lineas:
-    tokens.extend(lexer(line))
+    tokens.extend(lexer(line.strip()))
 #tokens = lexer(text)
 tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
 print(tokentypes)
@@ -36,11 +36,11 @@ ast = evaluate_reverse_parse(output,operations,tokensAST)
 checker = SemanticCheckingVisitor()
 print(checker.semantic_checking(ast))
 
-formatter = FormatVisitor()
-tree = formatter.visit(ast)
-print(tree)
+# formatter = FormatVisitor()
+# tree = formatter.visit(ast)
+# print(tree)
 
-checker = SemanticCheckingVisitor()
-print(checker.semantic_checking(ast))
+# checker = SemanticCheckingVisitor()
+# print(checker.semantic_checking(ast))
 
 
