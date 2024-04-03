@@ -40,7 +40,5 @@ print(checker.semantic_checking(ast))
 # tree = formatter.visit(ast)
 # print(tree)
 
-# checker = SemanticCheckingVisitor()
-# print(checker.semantic_checking(ast))
 
 

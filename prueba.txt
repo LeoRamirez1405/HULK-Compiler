@@ -1,1 +1,1 @@
-type Nombre (first:string,last:string, edad){ first = first; last = last; edad = edad; nombre = self.first @@ self.last ;  getNombreInv():string => self.last @ self.first ; getEdad(x) => (self.edad + x) % 2 == 0; } Nombre(Leo,Ramirez,22).getEdad(10);
+let a = 6 in let b = a * 7 in print(b);

@@ -181,7 +181,7 @@ class Scope:
         return info
 
     def find_variable(self, vname, index=None):
-        locals = self.local_variables if index is None else itt.islice(self.locals, index)
+        locals = self.local_variables if index is None else itt.islice(self.local_variables, index)
         try:
             return next(x for x in locals if x.name == vname)
         except StopIteration:
