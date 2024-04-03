@@ -9,36 +9,35 @@ from LR1 import LR1Parser,evaluate_reverse_parse
 gramatica, lexer = gramm_Hulk_LR1()
 
 
-with open('./prueba.hulk', "r") as archivo:
-    # Lee todas las líneas del archivo
-    lineas = archivo.readlines()
-    # Une todas las líneas en una sola cadena
-    contenido = "".join(lineas)
-    contenido = contenido.replace('\n', ' ')
+# Leer el contenido del archivo y reemplazar los saltos de línea
+with open('prueba.txt', 'r') as archivo:
+    contenido = archivo.read()
 
-    # Reemplazar tabulaciones por espacios en blanco
-    contenido = contenido.replace('"', '\"')
-    text = contenido
+    contenido_modificado = contenido.replace('\n', '[LineJump]')
+
+    contenido_modificado = contenido_modificado.replace('"', '\"')
+    text = contenido_modificado
 
 print(text)
-tokens = []
-for line in lineas:
-    tokens.extend(lexer(line))
-#tokens = lexer(text)
-tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
+tokens = lexer(text)
+tokentypes = [(token.token_type, token.location) for token in tokens]
 print(tokentypes)
-parser = LR1Parser(gramatica,False)
-output,operations = parser(tokentypes)
-tokensAST = [token for token in tokens if token.token_type != 'space']
+# parser = LR1Parser(gramatica,False)
+# output,operations = parser(tokentypes)
+# tokensAST = [token for token in tokens if token.token_type != 'space']
 
-ast = evaluate_reverse_parse(output,operations,tokensAST)
-# ast = ProgramNode([PlusExpressionNode(NumberNode(5), StringNode('casa'))])
-checker = SemanticCheckingVisitor()
-print(checker.semantic_checking(ast))
+# ast = evaluate_reverse_parse(output,operations,tokensAST)
+# # ast = ProgramNode([PlusExpressionNode(NumberNode(5), StringNode('casa'))])
+# checker = SemanticCheckingVisitor()
+# print(checker.semantic_checking(ast))
 
-# formatter = FormatVisitor()
-# tree = formatter.visit(ast)
-# print(tree)
+# # formatter = FormatVisitor()
+# # tree = formatter.visit(ast)
+# # print(tree)
+
+# # checker = SemanticCheckingVisitor()
+# # print(checker.semantic_checking(ast))
+
 
 
 
