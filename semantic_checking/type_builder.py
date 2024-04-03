@@ -16,7 +16,7 @@ class TypeBuilderVisitor():
     
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
-        print('TypeBuilder')
+        # print('TypeBuilder')
         # print(f'Context in Builder: {[item for item in self.context.types.keys()]}')
         for statment in node.statments:
             self.visit(statment)
@@ -63,11 +63,11 @@ class TypeBuilderVisitor():
                 self.currentType.define_attribute(node.id.id, self.context.get_type('object')) 
             except:
                 self.errors.append(SemanticError(f'El atributo {node.id.id} ya esta definido'))      
-        else:
-            try:
-                self.scope.define_variable(node.id.id, self.context.get_type('object'))
-            except:
-                self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida'))      
+        # else:
+        #     try:
+        #         self.scope.define_variable(node.id.id, self.context.get_type('object'))
+        #     except:
+        #         self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida'))      
 
         
     @visitor.when(FunctionDefinitionNode)
@@ -79,14 +79,14 @@ class TypeBuilderVisitor():
             self.errors.append(f'El tipo de retorno {node.type_annotation.type} no esta definido')
             return_type = self.context.get_type('object')
         
-        print(node.parameters)
+        # print(node.parameters)
         arg_names: List[IdentifierNode] = [list(parama.items())[0] for parama in node.parameters]
         arg_names = [name[0].id for name in arg_names]
-        print(arg_names)
+        # print(arg_names)
         
         arg_types = []
         aux = [list(parama.items())[0] for parama in node.parameters]
-        print(aux)
+        # print(aux)
         for parama in aux:
             try:
                 arg_types.append(self.context.get_type(parama[1].type))
@@ -106,5 +106,8 @@ class TypeBuilderVisitor():
                 method = Method(node.id.id, arg_names, arg_types, return_type)
                 self.scope.functions[node.id.id].append(method)
                 
-
-  
+    @visitor.when(CollectionNode)
+    def visit(self, node: CollectionNode):
+        for item in node.collection:
+            self.visit(item)
+                

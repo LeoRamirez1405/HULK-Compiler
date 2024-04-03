@@ -44,6 +44,11 @@ class IdentifierNode(Node):
     def __init__(self, id) -> None:
         super().__init__()
         self.id : str = id
+        
+class SelfNode(Node):
+    def __init__(self, id) -> None:
+        super().__init__()
+        self.identifier: IdentifierNode = id
              
 class PrintStatmentNode(Node):
     def __init__(self, expression) -> None:
@@ -54,12 +59,14 @@ class PrintStatmentNode(Node):
 class KernAssigmentNode(Node):
     def __init__(self, id, expression) -> None:
         super().__init__()
-        self.id = id
+        self.id : IdentifierNode = id
         self.expression = expression
         
-class DestroyNode(KernAssigmentNode):
+class DestroyNode(Node):
     def __init__(self, id, expression) -> None:
-        super().__init__(id, expression)
+        super().__init__()
+        self.id : IdentifierNode = id
+        self.expression = expression
         
 # class LetNode(KernAssigmentNode):
 #     def __init__(self, id, expression) -> None:
@@ -353,3 +360,8 @@ class LogFunctionCallNode(Node):
         super().__init__()
         self.base = base
         self.expression = expression
+        
+class CollectionNode(Node):
+    def __init__(self, collection) -> None:
+        super().__init__()
+        self.collection = collection
