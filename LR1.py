@@ -2,6 +2,8 @@ from cmp.pycompiler import Item
 from cmp.utils import ContainerSet
 from cmp.automata import multiline_formatter,State
 from FirstsAndFollows import compute_firsts,compute_local_first
+from cmp.pycompiler import EOF
+
 class ShiftReduceParser:
     SHIFT = 'SHIFT'
     REDUCE = 'REDUCE'
@@ -21,6 +23,7 @@ class ShiftReduceParser:
         stack = [ 0 ]
         cursor = 0
         output = []
+        operations = []
         
         while True:
             state = stack[-1]
@@ -34,22 +37,25 @@ class ShiftReduceParser:
                 if action == ShiftReduceParser.SHIFT:
                     print(f'Shift: Tag: {tag} State: {state} Lookahead: {lookahead}')
                     stack.append(tag)
+                    operations.append(ShiftReduceParser.SHIFT)
                     cursor += 1
                 # Reduce case
                 elif action == ShiftReduceParser.REDUCE:
                     print(f'Reduce: Tag: {tag} State: {state} Lookahead: {lookahead}')
                     for _ in range(len(tag.Right)): stack.pop()
                     stack.append(self.goto[stack[-1], tag.Left])
+                    operations.append(ShiftReduceParser.REDUCE)
+                    
                     output.append(tag)
                 # OK case
                 elif action == ShiftReduceParser.OK:
-                    return output
+                    return output,operations
                 # Invalid case
                 else:
                     assert False, 'Must be something wrong!'
             except KeyError:
                 raise Exception('Aborting parsing, item is not viable.')
-
+        
 class LR1Parser(ShiftReduceParser):
     def _build_parsing_table(self):
         G = self.G.AugmentedGrammar(True)
@@ -168,3 +174,36 @@ def build_LR1_automaton(G):
     
     automaton.set_formatter(multiline_formatter)
     return automaton
+
+def evaluate_reverse_parse(right_parse, operations, tokens):
+    if not right_parse or not operations or not tokens:
+        return
+
+    right_parse = iter(right_parse)
+    tokens = iter(tokens)
+    stack = []
+    for operation in operations:
+        if operation == ShiftReduceParser.SHIFT:
+            token = next(tokens)
+            stack.append(token.lex)
+        elif operation == ShiftReduceParser.REDUCE:
+            production = next(right_parse)
+            head, body = production
+            attributes = production.attributes
+            assert all(rule is None for rule in attributes[1:]), 'There must be only synteticed attributes.'
+            rule = attributes[0]
+
+            if len(body):
+                synteticed = [None] + stack[-len(body):]
+                value = rule(None, synteticed)
+                stack[-len(body):] = [value]
+            else:
+                stack.append(rule(None, None))
+        else:
+            raise Exception('Invalid action!!!')
+
+    last = next(tokens).token_type
+
+    assert len(stack) == 1
+    assert isinstance(last, EOF)
+    return stack[0]

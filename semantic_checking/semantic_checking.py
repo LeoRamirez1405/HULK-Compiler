@@ -1,216 +1,155 @@
-from AST import *
-import visitor
-from semantic import Context, Scope, SemanticError, Method, Type
-from type_collector import TypeCollectorVisitor
-from type_builder import TypeBuilderVisitor
+from semantic_checking.semantic import Context, Scope
+from semantic_checking.type_collector import TypeCollectorVisitor
+from semantic_checking.type_builder import TypeBuilderVisitor
+from semantic_checking.type_checker import TypeCheckerVisitor
+from semantic_checking.AST import *
 
 class SemanticCheckingVisitor:
     def __init__(self) -> None:
-        #------------------Inicializando tipos por defecto---------------------------------------------------#
-        self.context = Context(parent=None)
-        default_types = ['object', 'number', 'string', 'bool']
+    #------------------Inicializando tipos por defecto---------------------------------------------------#
+        self.context = Context()
+        self.context.create_type('object')
+        default_types = ['number', 'string', 'bool', 'void', 'any']
         for type in default_types:
-            self.context.create_type(type)
+            self.context.create_type(type) 
+            self.context.get_type(type).parent = self.context.get_type('object') 
             
-        #------------------Inicializando funciones por defecto-----------------------------------------------#
-        self.scope = Scope()
-        self.default_functions = ['print', 'sen', 'cos', 'sqrt', 'exp']
-        for func in self.default_functions:
-            self.scope.functions[func] = [1]
+        # print(f'Context: {[item for item in self.context.types.keys()]}') 
+    
+    #------------------Inicializando funciones por defecto-----------------------------------------------#
+        self.scope = Scope(parent=None)
+        
+        #TODO Se puedo no poner estas funciones como definidas y desde la gramatica crear un SqrNode() y luego acceder a el
+        self.default_functions = ['sen', 'cos', 'sqrt', 'exp']
+        # for func in self.default_functions:
+        #     self.scope.functions[func] = Method(func, ['expression'], [self.context.get_type('number')], self.context.get_type('number'))
             
-        self.default_functions.extend(['rand', 'log'])
-        self.scope.functions['rand'] = [0]
-        self.scope.functions['log'] = [2]
-        
-        #----------------------------------------------------------------------------------------------------#
-        
+        self.default_functions.extend(['rand', 'log', 'print'])
+        # self.scope.functions['rand'] = [Method(func, [], [], self.context.get_type('number'))]
+        # self.scope.functions['log'] = [Method(func, ['base', 'expression'], [self.context.get_type('number'), self.context.get_type('number')], self.context.get_type('number'))]
+        # self.scope.functions['print'] = [Method(func, ['expression'], [self.context.get_type('object')], self.context.get_type('string'))]
+
+    #----------------------------------------------------------------------------------------------------# 
         self.errors = []
-        print('inicializando checker visitor') #* ✔ 
+
+        
+    #TODO Pasar a los collectors copias de context scope y errors
+    def semantic_checking(self, ast):
+        print()
+        type_collector = TypeCollectorVisitor(self.context, self.scope, self.errors)
+        type_collector.visit(ast)
+        
+        type_builder = TypeBuilderVisitor(self.context, self.scope, self.errors)
+        type_builder.visit(ast)
+        
+        type_checker = TypeCheckerVisitor(self.context, self.scope, self.errors, self.default_functions)
+        type_checker.visit(ast)
+        
+        # print('Context')
+        # for name, type in self.context.types.items():
+        #     print(f'Type: {name}')
+        #     print(f'attributes: {type.attributes}')
+        #     print(f'attributes: {type.methods}')
+            
     
-    @visitor.on('node')
-    def visit(self, node, scope):
-        pass
-    
-    @visitor.when(ProgramNode)
-    def visit(self, node: ProgramNode, scope=None):
-        
-        type_collector = TypeCollectorVisitor(self.context, self.errors)
-        type_collector.visit(node)
-        
-        type_builder = TypeBuilderVisitor
-        type_builder.visit(node)
-        
-        for statment in node.statments:
-            self.visit(statment, self.scope)  
+        return self.errors
                       
-    @visitor.when(PrintStatmentNode)
-    def visit(self, node: PrintStatmentNode, scope):
-        self.visit(node.expression, scope)
+# ast0 = ProgramNode([NumberNode(42)])
+# ast1 = ProgramNode([PrintStatmentNode(NumberNode(42))])
+# ast2 = ProgramNode([PrintStatmentNode(DivExpressionNode(MultExpressionNode(PowExpressionNode(PlusExpressionNode(NumberNode(1), NumberNode(2)), NumberNode(3)), NumberNode(4)), NumberNode(5)))])
+# ast3 = ProgramNode([PrintStatmentNode(StringNode('Hello World'))])
+# ast4 = ProgramNode([PrintStatmentNode(StringNode(StringConcatWithSpaceNode(StringNode('The meaning of life is'), NumberNode(42))))])
+# ast5 = ProgramNode([
+#             PrintStatmentNode(
+#                 PlusExpressionNode(
+#                     PowExpressionNode(
+#                         SinMathNode(
+#                             MultExpressionNode(
+#                                 NumberNode(2), 
+#                                 PINode()
+#                                 )
+#                             ), 
+#                         NumberNode(2)
+#                         ), 
+#                     CosMathNode(
+#                         DivExpressionNode(
+#                             MultExpressionNode(
+#                                 NumberNode(3), 
+#                                 PINode()
+#                                 ), 
+#                             LogCallNode(
+#                                 NumberNode(4), 
+#                                 NumberNode(64)
+#                                 )
+#                             )
+#                         )
+#                     )
+#                 )
+#             ])
+# ast6 = ProgramNode([
+#     PrintStatmentNode(NumberNode(45)),
+#     TypeDefinitionNode(
+#         id=IdentifierNode('Point'), 
+#         parameters=[],
+#         inheritance=TypeNode('object'),
+#         attributes=[
+#             KernAssigmentNode(IdentifierNode('x'), TypeNode('number')),
+#             ],
+#         methods=[
+#             FunctionDefinitionNode(
+#                 IdentifierNode('setX'),
+#                 TypeNode('number'),
+#                 [],
+#                 PlusExpressionNode(NumberNode(4), NumberNode(5))
+#             )]
+#         ),
+#     FunctionDefinitionNode(
+#                 id=IdentifierNode('global_func'),
+#                 type_annotation=TypeNode('Point'),
+#                 parameters=[],
+#                 body=PlusExpressionNode(NumberNode(4), NumberNode(5))
+#             ),
+#     SqrtMathNode(StringNode('arbol'))
+#     ])
+# ast7 = ProgramNode([
+#     KernAssigmentNode(IdentifierNode('x'), NumberNode(5)),
+#     KernAssigmentNode(IdentifierNode('y'), PlusExpressionNode(NumberNode(9), IdentifierNode('x'))),
+# ])
+# ast8 = ProgramNode([
     
-    @visitor.when(DestroyNode)
-    def visit(self, node: DestroyNode, scope: Scope):
-        if not scope.is_defined(node.id):
-            self.errors.append(SemanticError(f'La variable {node.id} no esta definida en este scope'))
-            
-        self.visit(node.expression, scope)
-        
-    @visitor.when(LetNode)
-    def visit(self, node: LetNode, scope: Scope):
-        if scope.is_local(node.id) or scope.is_defined(node.id):
-            self.errors.append(SemanticError(f'La variable {node.id} ya esta definida.'))
-        else:
-            scope.define_variable(node.id, self.context.get_type('object'))
-            self.visit(node.expression, scope)
-        
-    # #TODO Revisar esto y ver si se modifica la gramatica y donde quiera que se cree un TypeNode podemos crear un Type(type_anotation)
-    # @visitor.when(TypeNode)
-    # def visit(self, node: TypeNode, scope):
-    #     try:
-    #         self.context.types[node.type]
-    #     except:
-    #         self.errors.append(SemanticError(f'Tipo no definido'))
-            
-    @visitor.when(FunctionDefinitionNode)
-    def visit(self, node: FunctionCallNode, scope: Scope):
-        if node.id in self.default_functions:
-            self.errors.append(SemanticError(f'Esta redefiniendo una funcion {node.id} que esta definida por defecto en el lenguaje y no se puede sobreescribir'))
-            return
-        try:
-            args_len_list = scope.functions[id]
-            if  len(node.args) in args_len_list:
-                self.errors.append(SemanticError(f'La funcion {node.id} ya esta definida con {len(node.args)} cantidad de parametros.'))
-        except:
-            #TODO Se puede instanciar la clase Method de semantic~seria algo similar a scope.functions[node.id] = nodmethod(node. ...)
-            #* Por el momento en el diccionario tengo el id de la funcion con su cantidad de parametros
-            scope.functions[node.id].append(len(node.args))
-            
-    @visitor.when(IfStructureNode)
-    def visit(self, node: IfStructureNode, scope: Scope):
-        self.visit(node.condition)
-        inner_scope = scope.create_child(scope)
-        for statment in node.body:
-            self.visit(statment, inner_scope)
-        
-        for _elif in node._elif:        
-            self.visit(_elif, scope)
-        
-        self.visit(node._else, scope)
-        
-    @visitor.when(ElifStructureNode)
-    def visit(self, node: ElifStructureNode, scope: Scope):
-        self.visit(node.condition)
-        inner_scope = scope.create_child(scope)
-        for statment in node.body:
-            self.visit(statment, inner_scope)
-        
-    @visitor.when(ElseStructureNode)
-    def visit(self, node: ElseStructureNode, scope: Scope):
-        inner_scope = scope.create_child(scope)
-        for statment in node.body:
-            self.visit(statment, inner_scope)
-        
-    @visitor.when(WhileStructureNode)
-    def visit(self, node: WhileStructureNode, scope: Scope):
-        self.visit(node.condition, scope)
-        inner_scope = scope.create_child(scope)
-        for statment in node.body:
-            self.visit(statment, inner_scope)
-            
-    @visitor.when(ForStructureNode)
-    def visit(self, node: ForStructureNode, scope: Scope):
-        inners_scope: Scope = scope.create_child(scope)
-        for id, expr in node.init_assigments:
-            if scope.is_defined(node.id):
-                self.errors.append(SemanticError(f'La variable {id} ya esta definida en este scope.'))
-            inners_scope.define_variable(id, Type('object'))
-            
-        self.visit(node.body, inners_scope)
-        
-        for increment_assigment in node.increment_condition:
-            self.visit(increment_assigment, inners_scope)
-            
-    @visitor.when(TypeDefinitionNode)
-    def visit(self, node: TypeDefinitionNode, scope: Scope):
-        inner_scope: Scope = scope.create_child(scope)
-        for arg, type_att in node.parameters:
-            inner_scope.define_variable(arg, type_att)
-            
-        for att in node.attribute:
-            inner_scope.define_variable(att, Type('object'))
-            
-        for method in node.methods:
-            self.visit(method, inner_scope)
-            
-    @visitor.when(InstanceCreationNode)
-    def visit(self, node: InstanceCreationNode, scope: Scope):
-        if scope.is_local(node.id) or scope.is_defined(node.id):
-            self.errors.append(SemanticError(f'El nombre de varible {node.id} ya ha sido tomado.'))
-        
-        #TODO Verificar la correctitud 
-        for arg in node.arguments:
-            self.visit(arg, scope)
-            
-    @visitor.when(KernInstanceCreationNode)
-    def visit(self, node: KernInstanceCreationNode, scope: Scope):
-        for arg in node.args:
-            self.visit(arg, scope)
-            
-    @visitor.when(MemberAccesNode)
-    def visit(self, node: MemberAccesNode, scope: Scope):
-        self.visit(node.base_object)
-        for args in node.args:
-            self.visit(args)
-            
-    @visitor.when(BooleanExpression)
-    def visit(self, node: BooleanExpression, scope: Scope):
-        self.visit(node.expression_1)
-        self.visit(node.expressiin_2)
-        
-    @visitor.when(AritmeticExpression)
-    def visit(self, node: AritmeticExpression, scope: Scope):
-        self.visit(node.expression_1)
-        self.visit(node.expression_2)
-        
-    @visitor.when(MathOperationNode)
-    def visit(self, node: SqrtMathNode, scope: Scope):
-        self.visit(node.expression)
-        
-    @visitor.when(LogCallNode)
-    def visit(self, node: LogCallNode, scope: Scope):
-        self.visit(node.base, scope)
-        self.visit(node.expression, scope)
-        
-    @visitor.when(LetInNode)
-    def visit(self, node: LetInNode, scope: Scope):
-        inner_scope = scope.create_child(scope)
-        for assign in node.assigments:
-            self.visit(assign, inner_scope)
-            
-        self.visit(node.body, inner_scope)
-            
-    @visitor.when(FunctionCallNode)
-    def visit(self, node: FunctionCallNode, scope: Scope):
-        try: 
-            args_len = scope.functions[id]
-            if args_len != len(node.args):
-                self.errors.append(f'La funcion {id} requiere {args_len} cantidad de parametros pero solo {len(node.args)} fueron dados')
-        except:
-            self.errors.append(f'La funcion {node.id} no esta definida.')
-            
-    @visitor.when(StringConcatWithSpaceNode)
-    def visit(self, node: StringConcatWithSpaceNode, scope: Scope):
-        self.visit(node.left, scope)
-        self.visit(node.right, scope)
-        
-    @visitor.when(BoolCompAritNode)
-    def visit(self, node: BoolCompAritNode, scope: Scope):
-        self.visit(node.left, scope)
-        self.visit(node.right, scope)
-        
-    @visitor.when(BoolNotNode)
-    def visit(self, node: BoolNotNode, scope: Scope):
-        self.visit(node.node)
-    
-    
-            
-    
+# ])
+# # Trata de definir una variable ya definifa
+# ast9 = ProgramNode([
+#     KernAssigmentNode(IdentifierNode('x'), NumberNode(5)),
+#     KernAssigmentNode(IdentifierNode('x'), PlusExpressionNode(NumberNode(9), IdentifierNode('x'))),
+# ])
+# # Trata de utilizar una variable que no esta definida
+# ast10 = ProgramNode([
+#     KernAssigmentNode(IdentifierNode('x'), NumberNode(5)),
+#     KernAssigmentNode(IdentifierNode('y'), PlusExpressionNode(NumberNode(9), IdentifierNode('z'))),
+# ])
+# ast11 = ProgramNode([
+#     KernAssigmentNode(IdentifierNode('x'), NumberNode(5)),
+#     KernAssigmentNode(IdentifierNode('y'), PlusExpressionNode(NumberNode(9), IdentifierNode('x'))),
+#     FunctionDefinitionNode(
+#         IdentifierNode('method'), 
+#         TypeNode('number'), 
+#         [{IdentifierNode('a'): TypeNode('number')}, {IdentifierNode('b'): TypeNode('number')}],
+#         [PlusExpressionNode(IdentifierNode('x'), IdentifierNode('y'))]
+#     )
+# ])
+
+# print_aritmetic_tests = [ast0, ast1, ast2, ast3, ast4, ast5, ast6]
+# for index_test in range(len(print_aritmetic_tests)):
+#     print(f'Test - {index_test}')
+#     checker = SemanticCheckingVisitor()
+#     if index_test != 7:
+#         continue
+#     errors = checker.semantic_checking(print_aritmetic_tests[index_test])
+#     print(len(errors))
+#     print(errors)
+
+
+# checker = SemanticCheckingVisitor()  
+# errors = checker.semantic_checking(ast)
+# print(errors)
