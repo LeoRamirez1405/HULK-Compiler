@@ -271,11 +271,24 @@ class TypeCheckerVisitor:
     @visitor.when(LetInNode)
     def visit(self, node: LetInNode, scope: Scope):
         inner_scope = scope.create_child()
-        for assign in node.assigments:
-            self.visit(assign, inner_scope)
+        # for assign in node.assigments:
+        #     self.visit(assign, inner_scope)
+        self.visit(node.assigments, inner_scope)
          
         for statment in node.body[:-1]:    
-            self.visit(node.body, inner_scope)
+            self.visit(statment, inner_scope)
+        
+        return self.visit(node.body[-1], inner_scope)
+    
+    @visitor.when(LetInExpressionNode)
+    def visit(self, node: LetInExpressionNode, scope: Scope):
+        inner_scope = scope.create_child()
+        # for assign in node.assigments:
+        #     self.visit(assign, inner_scope)
+        self.visit(node.assigments, inner_scope)
+         
+        for statment in node.body[:-1]:    
+            self.visit(statment, inner_scope)
         
         return self.visit(node.body[-1], inner_scope)
             

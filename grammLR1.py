@@ -38,6 +38,7 @@ def gramm_Hulk_LR1():
     create_statement %= destroy_collection + Semi, lambda h, s: s[1]
     
     expr_statement %= print_statement, lambda h, s: s[1]
+    #TODO aqui hay que ver como se maneja la cosa de las listas
     expr_statement %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
     expr_statement %= expression, lambda h, s: s[1]
     expr_statement %=  oBrace + statement_list + cBrace, lambda h, s:s[2]
