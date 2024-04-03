@@ -1,2 +1,6 @@
-type Nombre (first:string,last:string){ getNombreInv():string => last @ first ; }
-
+type Nombre (first:string,last:string, edad){ first = first; last = last; edad = edad; nombre = self.first @@ self.last ;  getNombreInv():string => self.last @ self.first ; getEdad(x) => (self.edad + x) % 2 == 0; } Nombre(Leo,Ramirez,22).getEdad(10);
+a@4*3
+for (){
+    3+4;
+    
+}
