@@ -1,1 +1,0 @@
-let a = 6 in let b = a * 7 in print(b);
