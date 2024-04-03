@@ -13,7 +13,7 @@ with open('./prueba.txt', "r") as archivo:
     # Lee todas las líneas del archivo
     lineas = archivo.readlines()
     # Une todas las líneas en una sola cadena
-    contenido = "".join(lineas)
+    contenido = "".join(lineas.strip)
     contenido = contenido.replace('\n', ' ')
 
     # Reemplazar tabulaciones por espacios en blanco
@@ -23,7 +23,7 @@ with open('./prueba.txt', "r") as archivo:
 print(text)
 tokens = []
 for line in lineas:
-    tokens.extend(lexer(line))
+    tokens.extend(lexer(line.strip()))
 #tokens = lexer(text)
 tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
 print(tokentypes)
