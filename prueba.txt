@@ -1,4 +1,6 @@
-a
-        a
-                a 
-                        a
+function operate(x, y) {
+        print(x + y);
+        print(x - y);
+        print(x * y);
+        print(x / y);
+}
