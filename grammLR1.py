@@ -57,10 +57,10 @@ def gramm_Hulk_LR1():
     if_structure %= If + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif + contElse , lambda h, s: IfStructureNode(s[3], s[6], s[8], s[9])
 
     #TODO Ponerle que sea un coleccion
-    contElif_2 = G.NonTerminal('contElif_2')
-    contElif %= contElif_2, lambda h,s: CollectionNode(s[1])
-    contElif_2 %= Elif + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif_2 , lambda h, s: [ElifStructureNode(s[3],s[6])] + s[8]
-    contElif_2 %= G.Epsilon , lambda h, s: []
+    # contElif_2 = G.NonTerminal('contElif_2')
+    # contElif %= contElif_2, lambda h,s: CollectionNode(s[1])
+    contElif %= Elif + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif , lambda h, s: [ElifStructureNode(s[3],s[6])] + s[8]
+    contElif %= G.Epsilon , lambda h, s: []
 
     contElse %= Else + oBrace + statement_list + cBrace , lambda h, s: ElseStructureNode(s[3])
     contElse %= G.Epsilon , lambda h, s:  ElseStructureNode([])
@@ -94,7 +94,7 @@ def gramm_Hulk_LR1():
     #TODO Cambie expression por identifier porque el parametro de una funcion tiene que ser obligatoria mente un variable 
     # parameters %= expression + type_annotation + Comma + parameters, lambda h, s: [{s[1]:s[2]}] + [s[4]]
     # parameters %= expression + type_annotation, lambda h, s: {s[1]:s[2]}
-    parameters %= identifier + type_annotation + Comma + parameters, lambda h, s: [{IdentifierNode(s[1]):s[2]}] + [s[4]]
+    parameters %= identifier + type_annotation + Comma + parameters, lambda h, s: [{IdentifierNode(s[1]):s[2]}] + s[4]
     #* Puse el diccionario que se creaba solo entre corchetes para formar la lisat
     parameters %= identifier + type_annotation, lambda h, s: [{IdentifierNode(s[1]):s[2]}]
     parameters %= G.Epsilon, lambda h, s:[]
@@ -179,8 +179,8 @@ def gramm_Hulk_LR1():
     
     # Estructuras adicionales para tipos
     #type_definition %= Type + identifier + oPar + parameters + cPar + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[4],s[6], s[8],s[9])
-    type_definition %= Type + identifier + oPar + parameters + cPar+ inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[3],s[4], s[6],s[7])
-    type_definition %= Type + identifier + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[3],s[4], s[6],s[7])
+    type_definition %= Type + identifier + oPar + parameters + cPar+ inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[4],s[6], s[8],s[9])
+    type_definition %= Type + identifier + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[4],s[6], s[8],s[9])
 
     #! El siguiente comentario paso a ser lo que era antes
     #TODO Quite el self porque cuando se inicializan los atributos no se pone self
@@ -190,10 +190,11 @@ def gramm_Hulk_LR1():
 
     method_definition %= identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],s[7])] + s[9]
     #TODO aqui puse el statment entre corchetes en la creacion del nodo porque de lo contrario no lo puedo iterar
-    method_definition %= identifier + oPar + parameters + cPar + type_annotation + Arrow + statement + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3], [s[7]] )] + s[8]
+    method_definition %= identifier + oPar + parameters + cPar + type_annotation + Arrow + statement + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3], [s[7]])] + s[8]
     method_definition %= G.Epsilon , lambda h, s: []
 
     inheritance %= Inherits + identifier, lambda h, s: InheritanceNode(IdentifierNode(s[2]))
+    inheritance %= Inherits + identifier + oPar + arguments + cPar, lambda h, s: InheritanceNode(IdentifierNode(s[2]))
     inheritance %= G.Epsilon, lambda h, s: InheritanceNode(IdentifierNode('object'))
     
     nonzero_digits = '|'.join(str(n) for n in range(1,10))

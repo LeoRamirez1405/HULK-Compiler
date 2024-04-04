@@ -35,13 +35,13 @@ class TypeBuilderVisitor():
         
         for arg in node.parameters: 
             name: IdentifierNode = list(arg.items())[0][0]
-            type = list(arg.items())[0][1]
+            type: TypeNode = list(arg.items())[0][1]
             
             try:
-                type =  self.context.get_type(type)
+                type = self.context.get_type(type.type)
             except:
                 type = self.context.get_type('object')
-                self.errors.append(f'El tipo del argumento {name.id} no esta definido.')
+                self.errors.append(f'El tipo del argumento {name.id} no esta definido.') 
                 
             try:
                 self.currentType.define_arg(name.id, type)      

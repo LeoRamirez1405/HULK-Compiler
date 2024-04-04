@@ -108,6 +108,7 @@ class ElifStructureNode(Node):
         super().__init__()
         self.condition = condition
         self.body = body
+        
     def __len__(self):
         return len(self.body)
     

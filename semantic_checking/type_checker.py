@@ -121,32 +121,30 @@ class TypeCheckerVisitor:
         if not self.visit(node.condition, scope).conforms_to('bool'):
             self.errors.append(SemanticError(f'La condicion del if debe ser de tipo bool'))
             
+        type = self.context.get_type('object')    
+            
         inner_scope = scope.create_child()
-        for statment in node.body[:-1]:
-            self.visit(statment, inner_scope)
-        type = self.visit(node.body[-1], inner_scope)
+        aux_type = self.context.get_type('object')
+        if len(node._elif) != 0:
+            for statment in node.body:
+                aux_type = self.visit(statment, inner_scope)
+            type = aux_type
         
-        # for _elif in node._elif:    
-        #     type_1 = self.visit(_elif, scope)
-        #     if not type_1.conforms_to(type):
-        #         self.errors.append(SemanticError(f'Los distintos bloques del if no retornan el mismo tipo.'))
-        #         return self.context.get_type('any')
-        #     type = type_1
         inner_scope = scope.create_child()
-        if len(node._elif.collection) != 0:
-            type_1 = self.visit(node._elif, inner_scope)
-            if not type_1.conforms_to(type.name):
-                self.errors.append(SemanticError(f'Los distintos bloques del if no retornan el mismo tipo.'))
-                type_1 = self.context.get_type('any')
-            else: type = type_1
+        if len(node._elif) != 0:
+            aux_type = self.context.get_type('object')
+            for item in node._elif:
+                aux_type = self.visit(item, inner_scope)
+                if not aux_type.conforms_to(type.name):
+                    self.errors.append(SemanticError(f'Los distintos bloques del if no retornan el mismo tipo.'))
+                    type = self.context.get_type('any')
+                    break
         
         inner_scope = scope.create_child()
         if len(node._else) != 0:
-            type_1 = self.visit(node._else, inner_scope)
-            if not type_1.conforms_to(type):
+            if not self.visit(node._else, inner_scope).conforms_to(type.name):
                 self.errors.append(SemanticError(f'Los distintos bloques del if no retornan el mismo tipo.'))
-                type_1 = self.context.get_type('any')
-            else: type = type_1
+                type = self.context.get_type('any')
         
         return type
         
@@ -213,12 +211,17 @@ class TypeCheckerVisitor:
         
         #* Creando un temp_scope me aseguro de que los argumentos del 'constructor' solo sean utiles a la hora de inicializar los atributos
         for param in node.parameters:
-            arg, type_att = list(param.items())[0][0], list(param.items())[0][1]
-            temp_scope.define_variable(arg, type_att)
+            try:
+                arg, type_att = list(param.items())[0][0], self.context.get_type(list(param.items())[0][1].type)
+            except:
+                arg, type_att = list(param.items())[0][0], self.context.get_type('object')
+                self.errors.append(SemanticError(f"El tipo {list(param.items())[0][1].type} del argumento {arg.id} no esta definido"))
+            temp_scope.define_variable(arg.id, type_att)
             
         inner_scope = self.scope.create_child()
         for att in node.attributes:
-            inner_scope.define_variable(att.id.id, self.visit(att.expression, temp_scope)) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
+            typ = self.visit(att.expression, temp_scope)
+            inner_scope.define_variable(att.id.id, typ) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
             
         for method in node.methods:
             self.visit(method, inner_scope)
@@ -277,7 +280,7 @@ class TypeCheckerVisitor:
         type_1: Type = self.visit(node.left, scope)
         type_2: Type = self.visit(node.right, scope)
         
-        if not type_1.conforms_to(self.context.get_type('bool')) or not type_2.conforms_to(self.context.get_type('bool')):
+        if not type_1.conforms_to('bool') or not type_2.conforms_to('bool'):
             self.errors.append(SemanticError(f'Solo se pueden emplear operadores booleanos entre expresiones booleanas.'))
             return self.context.get_type('any')
 
@@ -381,7 +384,12 @@ class TypeCheckerVisitor:
             
     @visitor.when(StringConcatNode)
     def visit(self, node: StringConcatNode, scope: Scope):
-        if (not self.visit(node.left, scope).conforms_to('string') and not self.visit(node.left, scope).conforms_to('number')) or ( not self.visit(node.right, scope).conforms_to('string') and not self.visit(node.right, scope).conforms_to('number')):
+        typeLeft = self.visit(node.left, scope)
+        typeRight = self.visit(node.right, scope)
+        
+        cfLeft = typeLeft.conforms_to('string')
+        cfRight = typeLeft.conforms_to('string')
+        if (not cfLeft and not typeLeft.conforms_to('number')) or (not cfRight and not typeRight.conforms_to('number')):
             self.errors.append(SemanticError(f'Esta operacion solo puede ser aplicada a strings o entre una combinacion de string con number.'))
             return self.context.get_type('any')
         
@@ -389,7 +397,12 @@ class TypeCheckerVisitor:
             
     @visitor.when(StringConcatWithSpaceNode)
     def visit(self, node: StringConcatWithSpaceNode, scope: Scope):
-        if (not self.visit(node.left, scope).conforms_to('string') and not self.visit(node.left, scope).conforms_to('number')) or (not self.visit(node.right, scope).conforms_to('string') and not self.visit(node.right, scope).conforms_to('number')):
+        typeLeft = self.visit(node.left, scope)
+        typeRight = self.visit(node.right, scope)
+        
+        cfLeft = typeLeft.conforms_to('string')
+        cfRight = typeLeft.conforms_to('string')
+        if (not cfLeft and not typeLeft.conforms_to('number')) or (not cfRight and not typeRight.conforms_to('number')):
             self.errors.append(SemanticError(f'Esta operacion solo puede ser aplicada a strings o entre una combinacion de string con number.'))
             return self.context.get_type('any')
         
@@ -440,7 +453,7 @@ class TypeCheckerVisitor:
     def visit(self, node: BooleanNode, scope):
         try:
             boolean = bool(node.value)
-            return self.context.create_type('bool')
+            return self.context.get_type('bool')
         except:
             return self.context.get_type('any')
         
@@ -453,7 +466,7 @@ class TypeCheckerVisitor:
         if scope.is_defined(node.id):
             return scope.find_variable(node.id).type
             
-        self.errors.append(SemanticError(f'La variable {node.id} no esta deifinida'))
+        self.errors.append(SemanticError(f'La variable {node.id} no esta definida'))
         return self.context.get_type('any')
     
     @visitor.when(CollectionNode)

@@ -20,12 +20,12 @@ with open('prueba.hulk', 'r') as archivo:
 
 print(text)
 tokens = lexer(text)
-# tokentypes = [token.token_type for token in tokens]
-print(tokens)
+tokens = [token for token in tokens if token.token_type != 'space']
 
 parser = LR1Parser(gramatica,False)
 output,operations = parser(tokens)
 tokensAST = [token for token in tokens if token.token_type != 'space']
+print(tokensAST)
 ast = evaluate_reverse_parse(output,operations,tokensAST)
 # ast = ProgramNode([PlusExpressionNode(NumberNode(5), StringNode('casa'))])
 checker = SemanticCheckingVisitor()

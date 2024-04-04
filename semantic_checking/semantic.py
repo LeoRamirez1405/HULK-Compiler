@@ -85,7 +85,7 @@ class Type:
             self.get_arg(name)
         except SemanticError:
             arg = Argument(name, typex)
-            self.attributes.append(arg)
+            self.args.append(arg)
             return arg
         else:
             raise SemanticError(f'Attribute "{name}" is already defined in {self.name}.')
