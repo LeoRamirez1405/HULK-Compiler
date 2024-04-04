@@ -91,7 +91,6 @@ class Lexer:
 
             elif token_type:
                 col += len(lex)
-                continue
 
             yield lex, token_type, row, col
             
