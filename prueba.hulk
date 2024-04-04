@@ -1,34 +1,10 @@
-type Persona(first:string, last:string) {
-    self.first = first;
-    self.last = last;
-    get_full() => first@@last;
-    calculaEdad(edad:number) {
-        if(edad<18)
-        {
-            print("Menor de edad");
-        }
-        elif(edad >18 and edad < 21)
-        {
-            print("No es nada");
-        }
-        else
-        {
-            let residuo = 0;
-            while(edad%10 > 0){
-                residuo := edad%10;
-            }
-            print("Tu residuo es"@residuo);
-        }
-    }
+type Point {
+    x = 0;
+    y = 0;
+
+    getX():number => self.x;
+    getY():number => self.y;
+
+    setX(x:number) => self.x := x;
+    setY(y:number) => self.y := y;
 }
-
-
-type Estudiante(first, last) inherits Persona (first,last) {
-    
-    get_promedio(n1,n2){
-        let return = 5 in print(
-            return
-        );
-    }
-}
-
