@@ -10,7 +10,7 @@ gramatica, lexer = gramm_Hulk_LR1()
 
 
 # Leer el contenido del archivo y reemplazar los saltos de línea
-with open('prueba.txt', 'r') as archivo:
+with open('prueba.hulk', 'r') as archivo:
     contenido = archivo.read()
 
     contenido_modificado = contenido.replace('\n', '[LineJump]')
@@ -20,13 +20,12 @@ with open('prueba.txt', 'r') as archivo:
 
 print(text)
 tokens = lexer(text)
-tokentypes = [(token.token_type, token.location) for token in tokens]
-print(tokentypes)
+# tokentypes = [token.token_type for token in tokens]
+print(tokens)
 
 parser = LR1Parser(gramatica,False)
-output,operations = parser(tokentypes)
+output,operations = parser(tokens)
 tokensAST = [token for token in tokens if token.token_type != 'space']
-
 ast = evaluate_reverse_parse(output,operations,tokensAST)
 # ast = ProgramNode([PlusExpressionNode(NumberNode(5), StringNode('casa'))])
 checker = SemanticCheckingVisitor()

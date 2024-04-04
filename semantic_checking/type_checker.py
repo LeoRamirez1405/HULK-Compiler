@@ -93,19 +93,29 @@ class TypeCheckerVisitor:
             self.visit(statment, inner_scope)
         type = self.visit(node.body[-1], inner_scope)
         
-        for _elif in node._elif:    
-            type_1 = self.visit(_elif, scope)
+        # for _elif in node._elif:    
+        #     type_1 = self.visit(_elif, scope)
+        #     if not type_1.conforms_to(type):
+        #         self.errors.append(SemanticError(f'Los distintos bloques del if no retornan el mismo tipo.'))
+        #         return self.context.get_type('any')
+        #     type = type_1
+        inner_scope = scope.create_child()
+        if len(node._elif.collection) != 0:
+            type_1 = self.visit(node._elif, inner_scope)
+            if not type_1.conforms_to(type.name):
+                self.errors.append(SemanticError(f'Los distintos bloques del if no retornan el mismo tipo.'))
+                type_1 = self.context.get_type('any')
+            else: type = type_1
+        
+        inner_scope = scope.create_child()
+        if len(node._else) != 0:
+            type_1 = self.visit(node._else, inner_scope)
             if not type_1.conforms_to(type):
                 self.errors.append(SemanticError(f'Los distintos bloques del if no retornan el mismo tipo.'))
-                return self.context.get_type('any')
-            type = type_1
+                type_1 = self.context.get_type('any')
+            else: type = type_1
         
-        type_1 = self.visit(node._else, scope)
-        if not type_1.conforms_to(type):
-            self.errors.append(SemanticError(f'Los distintos bloques del if no retornan el mismo tipo.'))
-            return self.context.get_type('any')
-        
-        return type_1
+        return type
         
     @visitor.when(ElifStructureNode)
     def visit(self, node: ElifStructureNode, scope: Scope):
@@ -121,10 +131,11 @@ class TypeCheckerVisitor:
     @visitor.when(ElseStructureNode)
     def visit(self, node: ElseStructureNode, scope: Scope):
         inner_scope = scope.create_child()
-        for statment in node.body[:-1]:
-            self.visit(statment, inner_scope)
+        type = self.context.get_type('any')
+        for statment in node.body:
+            type = self.visit(statment, inner_scope)
             
-        return self.visit(node.body[-1], inner_scope)
+        return type
         
     @visitor.when(WhileStructureNode)
     def visit(self, node: WhileStructureNode, scope: Scope):
@@ -155,10 +166,11 @@ class TypeCheckerVisitor:
         
         self.visit(node.increment_condition, inner_scope)
          
-        for statment in node.body[:-1]:   
-            self.visit(statment, inner_scope)
+        # for statment in node.body[:-1]:   
+        #     self.visit(statment, inner_scope)
                 
-        return self.visit(node.body[-1], inner_scope)
+        # return self.visit(node.body[-1], inner_scope)
+        return self.visit(node.body, inner_scope)
             
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode, scope: Scope):
@@ -413,8 +425,11 @@ class TypeCheckerVisitor:
     
     @visitor.when(CollectionNode)
     def visit(self, node: CollectionNode, scope):
+        value = self.context.get_type('any')
         for item in node.collection:
-            self.visit(item, scope)
+            value = self.visit(item, scope)
+            
+        return value
         
     @visitor.when(SelfNode)
     def visit(self, node: SelfNode, scope: Scope):

@@ -27,7 +27,7 @@ class SemanticCheckingVisitor:
     #TODO Pasar a los collectors copias de context scope y errors
     def semantic_checking(self, ast):
         print()
-        type_collector = TypeCollectorVisitor(self.context, self.scope, self.errors)
+        type_collector = TypeCollectorVisitor(self.context, self.errors)
         type_collector.visit(ast)
         
         type_builder = TypeBuilderVisitor(self.context, self.scope, self.errors)

@@ -1,6 +1,11 @@
-function operate(x, y) {
-    print(x + y);
-    print(x - y);
-    print(x * y);
-    print(x / y);
-}
+let edad = 10;
+        if(edad<18)
+        {
+            print("Menor de edad");
+        }
+        else
+        {
+            let k = (edad - 5) in print(k);
+        }
+       
+    

@@ -57,8 +57,10 @@ def gramm_Hulk_LR1():
     if_structure %= If + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif + contElse , lambda h, s: IfStructureNode(s[3], s[6], s[8], s[9])
 
     #TODO Ponerle que sea un coleccion
-    contElif %= Elif + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif , lambda h, s: [ElifStructureNode(s[3],s[6])] + s[8]
-    contElif %= G.Epsilon , lambda h, s: []
+    contElif_2 = G.NonTerminal('contElif_2')
+    contElif %= contElif_2, lambda h,s: CollectionNode(s[1])
+    contElif_2 %= Elif + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif_2 , lambda h, s: [ElifStructureNode(s[3],s[6])] + s[8]
+    contElif_2 %= G.Epsilon , lambda h, s: []
 
     contElse %= Else + oBrace + statement_list + cBrace , lambda h, s: ElseStructureNode(s[3])
     contElse %= G.Epsilon , lambda h, s:  ElseStructureNode([])
