@@ -3,7 +3,7 @@ from semantic_checking.semantic_checking import SemanticCheckingVisitor
 from format_visitor import FormatVisitor
 #from semantic_checking.semantic_checking import SemanticCheckingVisitor
 #from semantic_checking.evaluation import evaluate_reverse_parse
-from grammNew import gramm_Hulk_LR1
+from grammLR1 import gramm_Hulk_LR1
 from LR1 import LR1Parser,evaluate_reverse_parse
 
 gramatica, lexer = gramm_Hulk_LR1()
@@ -13,7 +13,7 @@ with open('./prueba.hulk', "r") as archivo:
     # Lee todas las líneas del archivo
     lineas = archivo.readlines()
     # Une todas las líneas en una sola cadena
-    contenido = "".join(lineas.strip)
+    contenido = "".join(lineas)
     contenido = contenido.replace('\n', ' ')
 
     # Reemplazar tabulaciones por espacios en blanco
@@ -21,10 +21,10 @@ with open('./prueba.hulk', "r") as archivo:
     text = contenido
 
 print(text)
-tokens = []
-for line in lineas:
-    tokens.extend(lexer(line.strip()))
-#tokens = lexer(text)
+#tokens = []
+#for line in lineas:
+#    tokens.extend(lexer(line.strip()))
+tokens = lexer(text)
 tokentypes = [token.token_type for token in tokens if token.token_type != 'space']
 print(tokentypes)
 parser = LR1Parser(gramatica,True)
