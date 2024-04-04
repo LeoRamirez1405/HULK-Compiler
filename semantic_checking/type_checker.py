@@ -300,10 +300,36 @@ class TypeCheckerVisitor:
     @visitor.when(FunctionCallNode)
     def visit(self, node: FunctionCallNode, scope: Scope):
         try: 
-            args = [func for func in scope.functions[node.id.id] if len(func.param_names) == len(node.args)]
-            if len(args) == 0:
-                self.errors.append(f'La funcion {node.id.id} requiere otra cantidad de parametros pero {len(node.args)} fueron suministrados')
-                return args[0].return_type
+            method = self.current_type.get_method(node.id.id)
+            if method:
+                #En caso de ser un metodo se verifica si la cantidad de parametros suministrados es correcta
+                if method and len(node.args) != len(method.param_names):
+                    #Si la cantidad de parametros no es correcta se lanza un error
+                    self.errors.append(SemanticError(f'La funcion {method.name} requiere {len(method.param_names)} cantidad de parametros pero {len(node.args)} fueron dados'))
+                    return self.context.get_type('any')
+
+                #Si la cantidad de parametros es correcta se verifica si los tipos de los parametros suministrados son correctos
+                #Luego por cada parametro suministrado se verifica si el tipo del parametro suministrado es igual al tipo del parametro de la funcion
+                for i in range(len(node.args)):
+                    correct = True
+                    if not self.visit(node.args[i], scope).conforms_to(method.param_types[i]):
+                        self.errors.append(SemanticError(f'El tipo del parametro {i} no coincide con el tipo del parametro {i} de la funcion {node.object_property_to_acces}.'))
+                        correct = False
+                #Si coinciden los tipos de los parametros entonces se retorna el tipo de retorno de la funcion en otro caso se retorna el tipo object
+                return method.return_type if correct else self.context.get_type('any')
+            else:
+                args = [func for func in scope.functions[node.id.id] if len(func.param_names) == len(node.args)]
+                if len(args) == 0:
+                    self.errors.append(f'La funcion {node.id.id} requiere otra cantidad de parametros pero {len(node.args)} fueron suministrados')
+                    return args[0].return_type
+                
+                for i in range(len(node.args)):
+                    correct = True
+                    if not self.visit(node.args[i], scope).conforms_to(args[0].param_types[i]):
+                        self.errors.append(SemanticError(f'El tipo del parametro {i} no coincide con el tipo del parametro {i} de la funcion {node.object_property_to_acces}.'))
+                        correct = False
+                #Si coinciden los tipos de los parametros entonces se retorna el tipo de retorno de la funcion en otro caso se retorna el tipo object
+                return method.return_type if correct else self.context.get_type('any')
         except:
             self.errors.append(f'La funcion {node.id.id} no esta definida.')
             return self.context.get_type('any')

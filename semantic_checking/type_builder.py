@@ -24,7 +24,7 @@ class TypeBuilderVisitor():
         self.currentType: Type = self.context.get_type(node.id.id) 
         try:
             inheritance = self.context.get_type(node.inheritance.type.id)
-            if inheritance.conforms_to(self.currentType):
+            if inheritance.conforms_to(self.currentType.name):
                 self.errors.append(SemanticError(f'Dependencias circulares. {inheritance.node.name} hereda de {self.currentType.name}'))
                 inheritance = self.context.get_type('object')
         except:

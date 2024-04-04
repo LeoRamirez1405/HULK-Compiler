@@ -14,3 +14,9 @@ print(not 6 > 9)
 
 a = float('-4.876')
 print(a - a)
+
+
+class B(A):
+    pass
+class A:
+    pass
