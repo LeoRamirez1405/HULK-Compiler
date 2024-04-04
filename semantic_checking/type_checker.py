@@ -187,7 +187,7 @@ class TypeCheckerVisitor:
         correct = True
         try:
             class_type: Type = self.context.types[node.type.id]
-            if len[class_type.attributes] != len(node.args):
+            if len(class_type.attributes) != len(node.args):
                 self.errors.append(SemanticError(f'La cantidad de argumentos no coincide con la cantidad de atributos de la clase {node.type}.'))
                 correct = False
             else:
