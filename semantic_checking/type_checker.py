@@ -69,7 +69,41 @@ class TypeCheckerVisitor:
         if self.current_type:
             method = self.current_type.get_method(node.id.id)
         else:
-            method = list(filter(lambda x: len(x.param_names) == len(node.parameters), self.scope.functions[node.id.id]))[0]  
+            try:
+                self.scope.functions[node.id.id]
+                self.errors.append(SemanticError(f'Esta redefiniendo una funcion {node.id.id} que esta definida por defecto en el lenguaje y no se puede sobreescribir'))
+            
+                #* En los nodos que no son expresiones aritmeticas o booleanas o concatenacion o llamados a funciones deberia ponerle que tiene typo any?
+                return self.context.get_type('any')
+            except:
+                try: 
+                    type_annotation: TypeNode = node.type_annotation
+                    return_type = self.context.get_type(type_annotation.type)
+                except:
+                    self.errors.append(f'El tipo de retorno {node.type_annotation.type} no esta definido')
+                    return_type = self.context.get_type('object')
+                    
+                # print(node.parameters)
+                arg_names: List[IdentifierNode] = [list(parama.items())[0] for parama in node.parameters]
+                arg_names = [name[0].id for name in arg_names]
+                # print(arg_names)
+
+                arg_types = []
+                aux = [list(parama.items())[0] for parama in node.parameters]
+                # print(aux)
+                for parama in aux:
+                    try:
+                        arg_types.append(self.context.get_type(parama[1].type))
+                    except:
+                        self.errors.append(SemanticError(f'El tipo del parametro {parama[0].id} que se le pasa a la funcion {node.id.id} no esta definido'))
+                        arg_types.append(self.context.get_type('object'))
+                
+                if self.scope.method_is_define(node.id.id, len(arg_names)):
+                    self.errors.append(f'La funcion {node.id.id} ya existe en este scope con {len(arg_names)} cantidad de parametros')
+                else:
+                    method = Method(node.id.id, arg_names, arg_types, return_type)
+                    self.scope.functions[node.id.id].append(method)
+                    method = Method()  
                    
         inner_scope: Scope = scope.create_child()            
         for i in range(len(method.param_names)):
@@ -206,7 +240,7 @@ class TypeCheckerVisitor:
     def visit(self, node: MemberAccessNode, scope: Scope):
         base_object_type: Type = self.visit(node.base_object, scope)
         try:
-            method = base_object_type.get_method(node.object_property_to_acces)
+            method = base_object_type.get_method(node.object_property_to_acces.name)
             #En caso de ser un metodo se verifica si la cantidad de parametros suministrados es correcta
             if method and len(node.args) != len(method.param_names):
                 #Si la cantidad de parametros no es correcta se lanza un error

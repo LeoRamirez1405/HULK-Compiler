@@ -95,12 +95,6 @@ class TypeBuilderVisitor():
                 self.currentType.define_method(node.id.id, arg_names, arg_types, return_type)
             except:
                 self.errors.append(f'La funcion {node.id.id} ya existe en el contexto de {self.currentType.name}.')
-        else:
-            if self.scope.method_is_define(node.id.id, len(arg_names)):
-                self.errors.append(f'La funcion {node.id.id} ya existe en este scope con {len(arg_names)} cantidad de parametros')
-            else:
-                method = Method(node.id.id, arg_names, arg_types, return_type)
-                self.scope.functions[node.id.id].append(method)
                 
     @visitor.when(CollectionNode)
     def visit(self, node: CollectionNode):
