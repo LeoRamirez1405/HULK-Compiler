@@ -84,13 +84,13 @@ class Lexer:
 
             text = text[len(lex):]
             
-            if token_type == 'space':
-                col += len(lex)
-                continue
-
-            elif token_type == '[LineJump]':
+            if token_type == '[LineJump]':
                 row += 1
                 col = 0
+                continue
+
+            elif token_type:
+                col += len(lex)
                 continue
 
             yield lex, token_type, row, col
