@@ -103,7 +103,6 @@ class TypeCheckerVisitor:
                 else:
                     method = Method(node.id.id, arg_names, arg_types, return_type)
                     self.scope.functions[node.id.id].append(method)
-                    method = Method()  
                    
         inner_scope: Scope = scope.create_child()            
         for i in range(len(method.param_names)):
@@ -240,7 +239,7 @@ class TypeCheckerVisitor:
     def visit(self, node: MemberAccessNode, scope: Scope):
         base_object_type: Type = self.visit(node.base_object, scope)
         try:
-            method = base_object_type.get_method(node.object_property_to_acces.name)
+            method = base_object_type.get_method(node.object_property_to_acces.id)
             #En caso de ser un metodo se verifica si la cantidad de parametros suministrados es correcta
             if method and len(node.args) != len(method.param_names):
                 #Si la cantidad de parametros no es correcta se lanza un error
@@ -251,7 +250,7 @@ class TypeCheckerVisitor:
             #Luego por cada parametro suministrado se verifica si el tipo del parametro suministrado es igual al tipo del parametro de la funcion
             for i in range(len(node.args)):
                 correct = True
-                if not self.visit(node.args[i], scope).conforms_to(method.param_types[i]):
+                if not self.visit(node.args[i], scope).conforms_to(method.param_types[i].name):
                     self.errors.append(SemanticError(f'El tipo del parametro {i} no coincide con el tipo del parametro {i} de la funcion {node.object_property_to_acces}.'))
                     correct = False
             #Si coinciden los tipos de los parametros entonces se retorna el tipo de retorno de la funcion en otro caso se retorna el tipo object

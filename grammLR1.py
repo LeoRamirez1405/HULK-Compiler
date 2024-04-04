@@ -6,7 +6,7 @@ import string as stringMod
 def gramm_Hulk_LR1():
     G = Grammar()
     Program = G.NonTerminal('Program', True)
-    statement_list, statement, condition, expression, term, factor, function_call, arguments, parameters = G.NonTerminals('statement_list statement condition expression term factor function_call arguments parameters')
+    statement_list, statement, expression, expression, term, factor, function_call, arguments, parameters = G.NonTerminals('statement_list statement expression expression term factor function_call arguments parameters')
     type_definition, attribute_definition, method_definition, inheritance, instance_creation, member_access, type_annotation = G.NonTerminals('type_definition attribute_definition method_definition inheritance instance_creation member_access type_annotation')
     print_statement, assignment, function_definition, control_structure, contElif, contElse= G.NonTerminals('print_statement assignment function_definition control_structure contElif contElse')
     if_structure, while_structure, for_structure, create_statement, non_create_statement, expr_statementWithoutSemi = G.NonTerminals('if_structure while_structure for_structure create_statement non_create_statement expr_statementWithoutSemi')
@@ -39,9 +39,10 @@ def gramm_Hulk_LR1():
     
     expr_statement %= print_statement, lambda h, s: s[1]
     #TODO aqui hay que ver como se maneja la cosa de las listas
+    #! Pendiente
     expr_statement %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
     expr_statement %= expression, lambda h, s: s[1]
-    expr_statement %=  oBrace + statement_list + cBrace, lambda h, s:s[2]
+    expr_statement %=  oBrace + statement_list + cBrace, lambda h, s: CollectionNode(s[2])
     #expr_statement %= expr_statementWithoutSemi, lambda h, s: s[1]    
     #expr_statementWithoutSemi %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])    
     
@@ -53,22 +54,23 @@ def gramm_Hulk_LR1():
     control_structure %= while_structure , lambda h, s: s[1]
     control_structure %= for_structure , lambda h, s: s[1]
     
-    if_structure %= If + oPar + condition + cPar + oBrace + statement_list + cBrace + contElif + contElse , lambda h, s: IfStructureNode(s[3], s[6], s[8], s[9])
+    if_structure %= If + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif + contElse , lambda h, s: IfStructureNode(s[3], s[6], s[8], s[9])
 
-    contElif %= Elif + oPar + condition + cPar + oBrace + statement_list + cBrace + contElif , lambda h, s: [ElifStructureNode(s[3],s[6])] + s[8]
+    #TODO Ponerle que sea un coleccion
+    contElif %= Elif + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif , lambda h, s: [ElifStructureNode(s[3],s[6])] + s[8]
     contElif %= G.Epsilon , lambda h, s: []
 
     contElse %= Else + oBrace + statement_list + cBrace , lambda h, s: ElseStructureNode(s[3])
     contElse %= G.Epsilon , lambda h, s:  ElseStructureNode([])
 
-    while_structure %= While + oPar + condition + cPar + oBrace + statement_list + cBrace , lambda h, s:  WhileStructureNode(s[3], s[6])
-    #for_structure %= For + oPar + assignment + Semi + condition + Semi + destructive_assignment + cPar + oBrace + statement_list + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10])
-    # for_assignment = G.NonTerminal('for_assignment')
-    # for_assignment %= G.Epsilon, lambda h, s: CollectionNode([])
-    # for_assignment %= assignment, lambda h, s: s[1]
-    # # Aui lo cambie y cree un no terminal para representar la coleccion esto esta mal xq al inicio no se crean destructores sino asignaciones
-    # for_assignment %= destructive_assignment, lambda h, s: CollectionNode(s[1])
-    for_structure %= For + oPar + assignment + Semi + condition + Semi + destroy_collection + cPar + oBrace + statement_list + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10])
+    while_structure %= While + oPar + expression + cPar + oBrace + statement_list + cBrace , lambda h, s:  WhileStructureNode(s[3], s[6])
+    #for_structure %= For + oPar + assignment + Semi + expression + Semi + destructive_assignment + cPar + oBrace + statement_list + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10])
+    for_assignment = G.NonTerminal('for_assignment')
+    for_assignment %= G.Epsilon, lambda h, s: CollectionNode([])
+    for_assignment %= assignment, lambda h, s: s[1]
+
+    for_assignment %= destroy_collection, lambda h, s: s[1]
+    for_structure %= For + oPar + for_assignment + Semi + expression + Semi + destroy_collection + cPar + oBrace + statement_list + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10])
     
     #TODO Cambie la atributacion y le puse que creara un nodo collection para saber luego en los checkeos que hay que iterar en ese tipo de nodos
     # assignment %= Let + multi_assignment, lambda h, s: s[2]
@@ -147,7 +149,7 @@ def gramm_Hulk_LR1():
     factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(IdentifierNode(s[1]),s[3])
     factor %= identifier, lambda h, s:  IdentifierNode(s[1])
     #TODO Annadi el self a los factores
-    factor %= _self + Dot + identifier, lambda h, s : SelfNode(IdentifierNode(s[3]))
+    #factor %= _self + Dot + identifier, lambda h, s : SelfNode(IdentifierNode(s[3]))
     
     #factor %= function_call, lambda h, s: s[1]
     #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
@@ -165,22 +167,18 @@ def gramm_Hulk_LR1():
     math_call %= tan + oPar + ExprNum + cPar, lambda h, s: TanMathNode(s[3])
     math_call %= exp + oPar + ExprNum + cPar, lambda h, s: ExpMathNode(s[3])
     #TODO Cambie la forma en la que se creaba el nodo 
-    math_call %= log + oPar + ExprNum + Comma + ExprNum + cPar, lambda h, s: LogFunctionCallNode(s[3],[s[5]]) 
-    math_call %= rand + oPar + cPar,  lambda h, s: RandomFunctionCallNode(IdentifierNode('random'), [])
+    math_call %= log + oPar + ExprNum + Comma + ExprNum + cPar, lambda h, s: LogFunctionCallNode(s[3],s[5]) 
+    math_call %= rand + oPar + cPar,  lambda h, s: RandomFunctionCallNode()
     math_call %= PI, lambda h, s: PINode()
     
     arguments %= expr_statement + Comma + arguments, lambda h, s: [s[1]] + s[3]
     arguments %= expr_statement , lambda h, s: [s[1]]
     arguments %= G.Epsilon, lambda h, s: []
     
-    #! OJO
-    #TODO Cambie lo de parametros xq no necesariamente hay que ponerle parametros a las clases
     # Estructuras adicionales para tipos
     #type_definition %= Type + identifier + oPar + parameters + cPar + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[4],s[6], s[8],s[9])
-    par = G.NonTerminal('par')
-    type_definition %= Type + identifier + par + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[3],s[4], s[6],s[7])
-    par %= oPar + parameters + cPar, lambda h, s: s[2]
-    par %= G.Epsilon, lambda h, s: []
+    type_definition %= Type + identifier + oPar + parameters + cPar+ inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[3],s[4], s[6],s[7])
+    type_definition %= Type + identifier + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[3],s[4], s[6],s[7])
 
     #! El siguiente comentario paso a ser lo que era antes
     #TODO Quite el self porque cuando se inicializan los atributos no se pone self
@@ -205,6 +203,7 @@ def gramm_Hulk_LR1():
     lexer = Lexer([
     (number, f'(((({nonzero_digits})({zero_digits})*)|0)(.({zero_digits})*))|((({nonzero_digits})({zero_digits})*)|0)'),
     (string, f'\"(({all_characters})|(\\\\\"))*\"'),
+    ("[LineJump]", "[LineJump]"),
     (Print, 'print'),
     (oPar, "\("),
     (cPar, "\)"),

@@ -27,7 +27,7 @@ class ShiftReduceParser:
         
         while True:
             state = stack[-1]
-            lookahead = w[cursor]
+            lookahead = w[cursor].token_type
             if self.verbose: print(stack, w[cursor:])
                 
             # Detect error
