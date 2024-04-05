@@ -39,10 +39,9 @@ class TypeCheckerVisitor:
         #     except:
         #         self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida.'))
         #     return self.context.get_type('any')
-    
-        if scope.is_local(node.id.id) or scope.is_defined(node.id.id):
+        if scope.is_local(node.id.id):
             self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida.'))
-            type = self.scope.find_variable(node.id.id).type
+            return scope.find_variable(node.id.id).type
         else:
             type = self.visit(node.expression, scope)
             scope.define_variable(node.id.id, type) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
@@ -232,16 +231,16 @@ class TypeCheckerVisitor:
         correct = True
         try:
             class_type: Type = self.context.types[node.type.id]
-            if len(class_type.attributes) != len(node.args):
-                self.errors.append(SemanticError(f'La cantidad de argumentos no coincide con la cantidad de atributos de la clase {node.type}.'))
+            if len(class_type.args) != len(node.args):
+                self.errors.append(SemanticError(f'La cantidad de argumentos no coincide con la cantidad de atributos de la clase {node.type.name}.'))
                 correct = False
             else:
                 for i in range(len(node.args)):
-                    if not self.visit(node.args[i], scope).conforms_to(class_type.attributes[i].type):
+                    if not self.visit(node.args[i], scope).conforms_to(class_type.attributes[i].type.name):
                         self.errors.append(SemanticError(f'El tipo del argumento {i} no coincide con el tipo del atributo {class_type.attributes[i].name} de la clase {node.type.id}.'))
                         correct = False
                 
-                return self.context.get_type(node.type.id) if correct else self.context.get_type('any')
+            return self.context.get_type(node.type.id) if correct else self.context.get_type('any')
         except:
             self.errors.append(SemanticError(f'El tipo {node.type.id} no esta definido.')) 
             
@@ -253,23 +252,26 @@ class TypeCheckerVisitor:
         try:
             method = base_object_type.get_method(node.object_property_to_acces.id)
             #En caso de ser un metodo se verifica si la cantidad de parametros suministrados es correcta
-            if method and len(node.args) != len(method.param_names):
-                #Si la cantidad de parametros no es correcta se lanza un error
-                self.errors.append(SemanticError(f'La funcion {method.name} requiere {len(method.param_names)} cantidad de parametros pero {len(node.args)} fueron dados'))
+            if method :
+                if len(node.args) != len(method.param_names):
+                    #Si la cantidad de parametros no es correcta se lanza un error
+                    self.errors.append(SemanticError(f'La funcion {method.name.id} requiere {len(method.param_names)} cantidad de parametros pero {len(node.args)} fueron dados'))
+                    return self.context.get_type('any')
+            else:
                 return self.context.get_type('any')
             
+            correct = True
             #Si la cantidad de parametros es correcta se verifica si los tipos de los parametros suministrados son correctos
             #Luego por cada parametro suministrado se verifica si el tipo del parametro suministrado es igual al tipo del parametro de la funcion
             for i in range(len(node.args)):
-                correct = True
                 if not self.visit(node.args[i], scope).conforms_to(method.param_types[i].name):
-                    self.errors.append(SemanticError(f'El tipo del parametro {i} no coincide con el tipo del parametro {i} de la funcion {node.object_property_to_acces}.'))
+                    self.errors.append(SemanticError(f'El tipo del parametro {i} no coincide con el tipo del parametro {i} de la funcion {node.object_property_to_acces.id}.'))
                     correct = False
             #Si coinciden los tipos de los parametros entonces se retorna el tipo de retorno de la funcion en otro caso se retorna el tipo object
             return method.return_type if correct else self.context.get_type('any')
         except: 
             #Si el id suministrado no es ni un atributo ni un metodo entonces se lanza un error y se retorna el tipo object
-            self.errors.append(SemanticError(f'El objeto no tiene el metod llamado {node.object_property_to_acces}.'))
+            self.errors.append(SemanticError(f'El objeto no tiene el metod llamado {node.object_property_to_acces.id}.'))
             return self.context.get_type('any')
             
     @visitor.when(BooleanExpression)

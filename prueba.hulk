@@ -1,10 +1,12 @@
-function nao(name: string){
-    print(name);
+type Point {
+    self.x = 0;
+    self.y = 0;
+
+    getX():number{
+    let x = 10;
+      x;  
+    } 
 }
 
-function nao(){
-    print("This shit works");
-}
-
-nao("You are the best!");
-nao();
+let a = new Point();
+print(a.getX());
