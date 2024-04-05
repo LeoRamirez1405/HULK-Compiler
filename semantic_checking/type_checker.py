@@ -115,11 +115,14 @@ class TypeCheckerVisitor:
             
         
         # Visitar el cuerpo de la instruccion
-        type = self.context.get_type('object')
-        for statment in node.body: 
-            type = self.visit(statment, inner_scope)
+        final_type = self.context.get_type('object')
+        if type(node.body) == list:
+            for statment in node.body: 
+                final_type = self.visit(statment, inner_scope)
+        else:
+            final_type = self.visit(node.body, inner_scope)
           
-        return method.return_type if type.conforms_to(method.return_type) else self.context.get_type('any')
+        return method.return_type if final_type.conforms_to(method.return_type.name) else self.context.get_type('any')
             
     @visitor.when(IfStructureNode)
     def visit(self, node: IfStructureNode, scope: Scope):
@@ -131,7 +134,7 @@ class TypeCheckerVisitor:
             
         inner_scope = scope.create_child()
         aux_type = self.context.get_type('object')
-        if len(node._elif) != 0:
+        if node.body:
             for statment in node.body:
                 aux_type = self.visit(statment, inner_scope)
             type = aux_type
@@ -160,10 +163,11 @@ class TypeCheckerVisitor:
             self.errors.append(SemanticError(f'La condicion del if debe ser de tipo bool'))
             
         inner_scope = scope.create_child()
-        for statment in node.body[:-1]:
-            self.visit(statment, inner_scope)
+        final_type = self.context.get_type('object')
+        for statment in node.body:
+            final_type = self.visit(statment, inner_scope)
             
-        return self.visit(node.body[-1], inner_scope)
+        return final_type
         
     @visitor.when(ElseStructureNode)
     def visit(self, node: ElseStructureNode, scope: Scope):
@@ -193,11 +197,14 @@ class TypeCheckerVisitor:
         self.visit(node.init_assigments, inner_scope) 
          
         self.visit(node.increment_condition, inner_scope)
-        type = self.context.get_type('object') 
-        for statment in node.body:   
-            type = self.visit(statment, inner_scope)
+        final_type = self.context.get_type('object') 
+        if type(node.body) == list:
+            for statment in node.body:   
+                final_type = self.visit(statment, inner_scope)
+        else:
+            final_type = self.visit(node.body, inner_scope)
           
-        return type
+        return final_type
             
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode, scope: Scope):
@@ -217,7 +224,9 @@ class TypeCheckerVisitor:
         inner_scope = self.scope.create_child()
         for att in node.attributes:
             typ = self.visit(att.expression, temp_scope)
-            inner_scope.define_variable(att.id.id, typ) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
+            type_att = self.current_type.get_attribute(att.id.id)
+            type_att.type = typ
+            # inner_scope.define_variable(att.id.id, typ) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
             
         for method in node.methods:
             self.visit(method, inner_scope)
@@ -480,7 +489,7 @@ class TypeCheckerVisitor:
     @visitor.when(SelfNode)
     def visit(self, node: SelfNode, scope: Scope):
         if not self.current_type:
-            self.errors.append(SemanticError(f'La palabra clase self solo se puede usar dentro de clases'))
+            self.errors.append(SemanticError(f'La palabra self solo se puede usar dentro de clases'))
             return self.context.get_type('any')
         
         try: 
