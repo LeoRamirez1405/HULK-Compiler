@@ -202,7 +202,14 @@ class Scope:
     def method_is_define(self, vname, params_num):
         try:
             methods = [method for method in self.functions[vname] if len(method.param_names) == params_num]
-            return len(methods) != 0 if len(self.functions[vname]) != 0 else False
+            return len(methods) != 0
+        except:
+            raise SemanticError(f'La funcion {vname} no esta definida')
+        
+    def get_method(self, vname, params_num):
+        try:
+            methods = [method for method in self.functions[vname] if len(method.param_names) == params_num]
+            return methods[0]
         except:
             raise SemanticError(f'La funcion {vname} no esta definida')
     
