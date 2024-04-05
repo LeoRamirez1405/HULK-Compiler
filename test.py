@@ -20,7 +20,7 @@ with open('prueba.txt', 'r') as archivo:
 
 print(text)
 tokens = lexer(text)
-tokentypes = [(token.token_type, token.location) for token in tokens]
+tokentypes = [token.token_type for token in tokens]
 print(tokentypes)
 
 parser = LR1Parser(gramatica,False)
