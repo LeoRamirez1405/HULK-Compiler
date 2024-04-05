@@ -9,4 +9,4 @@ type Point {
 }
 
 let a = new Point();
-print(a.getX());
+print(a.getX("casa"));

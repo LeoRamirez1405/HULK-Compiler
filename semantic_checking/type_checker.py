@@ -255,9 +255,10 @@ class TypeCheckerVisitor:
             if method :
                 if len(node.args) != len(method.param_names):
                     #Si la cantidad de parametros no es correcta se lanza un error
-                    self.errors.append(SemanticError(f'La funcion {method.name.id} requiere {len(method.param_names)} cantidad de parametros pero {len(node.args)} fueron dados'))
+                    self.errors.append(SemanticError(f'La funcion {node.object_property_to_acces.id} de la clase {base_object_type.name} recibe {len(method.param_names)} parametros y {len(node.args)} fueron suministrados'))
                     return self.context.get_type('any')
             else:
+                self.errors.append(SemanticError(f'El metodo {node.object_property_to_acces.id} no existe en la clase {base_object_type.name}'))
                 return self.context.get_type('any')
             
             correct = True
@@ -271,7 +272,7 @@ class TypeCheckerVisitor:
             return method.return_type if correct else self.context.get_type('any')
         except: 
             #Si el id suministrado no es ni un atributo ni un metodo entonces se lanza un error y se retorna el tipo object
-            self.errors.append(SemanticError(f'El objeto no tiene el metod llamado {node.object_property_to_acces.id}.'))
+            self.errors.append(SemanticError(f'El objeto de tipo {base_object_type.name} no tiene el metod llamado {node.object_property_to_acces.id}.'))
             return self.context.get_type('any')
             
     @visitor.when(BooleanExpression)
