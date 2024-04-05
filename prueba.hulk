@@ -1,6 +1,5 @@
 let a = 6 in
-    let b = a * 7 in {
-        print(b);
-        print(b);
-        print(b);
+    let b = a * 7 in while(b > 0){
+        b := b - 10;
+        let b = b - 10;
     };
