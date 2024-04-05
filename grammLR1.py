@@ -18,7 +18,7 @@ def gramm_Hulk_LR1():
     identifier, number, string, Elif, Type, Inherits, New, In, arroba, arroba2,PI   = G.Terminals('identifier number string elif type inherits new in @ @@ PI') 
     sComil, dComill, = G.Terminals('\' \"')
     sqrt, sin, cos, tan, exp, log, rand = G.Terminals('sqrt sin cos tan exp log rand')
-    collection, destroy_collection, selfExpr = G.NonTerminals('collection destroy_collection selfExpr')
+    collection, destroy_collection = G.NonTerminals('collection destroy_collection')
     
     Program %= statement_list, lambda h, s: ProgramNode(s[1])
     statement_list %= statement + statement_list, lambda h, s: [s[1]] + s[2] 
@@ -30,23 +30,19 @@ def gramm_Hulk_LR1():
     
     non_create_statement %= control_structure, lambda h, s: s[1]
     non_create_statement %= expr_statement + Semi, lambda h, s: s[1]
+    #non_create_statement %= expr_statementWithoutSemi, lambda h, s: s[1]
     
     create_statement %= assignment + Semi, lambda h, s: s[1] 
     create_statement %= type_definition, lambda h, s: s[1]
-    create_statement %= destroy_collection + Semi, lambda h, s: s[1]
     create_statement %= function_definition, lambda h, s: s[1]
-    
+    create_statement %= destroy_collection + Semi, lambda h, s: s[1]
     
     expr_statement %= print_statement, lambda h, s: s[1]
     #TODO aqui hay que ver como se maneja la cosa de las listas
+    #! Pendiente
     expr_statement %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
     expr_statement %= expression, lambda h, s: s[1]
     expr_statement %=  oBrace + statement_list + cBrace, lambda h, s: CollectionNode(s[2])
-    
-    
-    #! Pendiente
-    #expr_statement %= _self + Dot + identifier, lambda h, s : SelfNode(IdentifierNode(s[3]))
-    
     #expr_statement %= expr_statementWithoutSemi, lambda h, s: s[1]    
     #expr_statementWithoutSemi %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])    
     
@@ -74,8 +70,8 @@ def gramm_Hulk_LR1():
     for_assignment = G.NonTerminal('for_assignment')
     for_assignment %= G.Epsilon, lambda h, s: CollectionNode([])
     for_assignment %= assignment, lambda h, s: s[1]
+
     for_assignment %= destroy_collection, lambda h, s: s[1]
-    
     for_structure %= For + oPar + for_assignment + Semi + expression + Semi + destroy_collection + cPar + oBrace + statement_list + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10])
     
     #TODO Cambie la atributacion y le puse que creara un nodo collection para saber luego en los checkeos que hay que iterar en ese tipo de nodos
@@ -107,7 +103,7 @@ def gramm_Hulk_LR1():
     type_annotation %= G.Epsilon, lambda h, s: TypeNode('object')
     
     ExprAnd, ExprNeg, ExprIsType, ExprComp, ExprNum, ExprOr= G.NonTerminals('ExprAnd ExprNeg ExprIsType ExprComp ExprNum ExprOr')
-        
+    
     expression %= ExprOr, lambda h, s: s[1] 
     expression %= expression + arroba2 + ExprOr, lambda h, s:  StringConcatWithSpaceNode(s[1],s[3])
     expression %= expression + arroba + ExprOr, lambda h, s:  StringConcatNode(s[1],s[3])
@@ -146,7 +142,7 @@ def gramm_Hulk_LR1():
     factorPow %= factor, lambda h, s:s[1]
     factorPow %= factor + Pow + factorPow , lambda h, s:  PowExpressionNode(s[1],s[3])
     factorPow %= factor + PowStar + factorPow , lambda h, s:  PowExpressionNode(s[1],s[3])
-        
+    
     factor %= oPar + expr_statement + cPar , lambda h, s:  s[2]
     factor %= number, lambda h, s:  NumberNode(s[1])
     factor %= string, lambda h, s:  StringNode(s[1])
@@ -154,10 +150,8 @@ def gramm_Hulk_LR1():
     factor %= _True, lambda h, s:  BooleanNode(s[1])
     factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(IdentifierNode(s[1]),s[3])
     factor %= identifier, lambda h, s:  IdentifierNode(s[1])
-    factor %= control_structure, lambda h, s: s[1]
-    factor %= oPar + assignment + cPar, lambda h, s: s[2] 
-    factor %= oPar+ destroy_collection + cPar, lambda h, s: s[2]
     #TODO Annadi el self a los factores
+    #factor %= _self + Dot + identifier, lambda h, s : SelfNode(IdentifierNode(s[3]))
     
     #factor %= function_call, lambda h, s: s[1]
     #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
@@ -190,8 +184,8 @@ def gramm_Hulk_LR1():
 
     #! El siguiente comentario paso a ser lo que era antes
     #TODO Quite el self porque cuando se inicializan los atributos no se pone self
-    #attribute_definition %= _self + Dot + kern_assignment + Semi + attribute_definition, lambda h, s: s[5] + [s[3]]
-    attribute_definition %= kern_assignment + Semi + attribute_definition, lambda h, s: [s[1]] + s[3]
+    attribute_definition %= _self + Dot + kern_assignment + Semi + attribute_definition, lambda h, s: s[5] + [s[3]]
+    # attribute_definition %= kern_assignment + Semi + attribute_definition, lambda h, s: [s[1]] + s[3]
     attribute_definition %= G.Epsilon, lambda h, s: []
 
     method_definition %= identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],s[7])] + s[9]

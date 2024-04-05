@@ -1,10 +1,10 @@
-type Point {
-    x = 0;
-    y = 0;
-
-    getX():number => self.x;
-    getY():number => self.y;
-
-    setX(x:number) => self.x := x;
-    setY(y:number) => self.y := y;
+function nao(name: string){
+    print(name);
 }
+
+function nao(){
+    print("This shit works");
+}
+
+nao("You are the best!");
+nao();

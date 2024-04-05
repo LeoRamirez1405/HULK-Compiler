@@ -98,11 +98,17 @@ class TypeCheckerVisitor:
                     arg_types.append(self.context.get_type('object'))
             
             try:
-                scope.method_is_define(node.id.id, len(node.parameters))
-                self.errors.append(f'La funcion {node.id.id} ya existe en este scope con {len(arg_names)} cantidad de parametros')
+                if scope.method_is_define(node.id.id, len(node.parameters)):
+                    method = scope.get_method(node.id.id, len(node.parameters))
+                    self.errors.append(f'La funcion {node.id.id} ya existe en este scope con {len(arg_names)} cantidad de parametros')
+                    # return method.return_type
+                else:
+                    method = Method(node.id.id, arg_names, arg_types, return_type)
+                    scope.functions[node.id.id].append(method)
+                    
             except:
                 method = Method(node.id.id, arg_names, arg_types, return_type)
-                self.scope.functions[node.id.id] = [method]
+                scope.functions[node.id.id] = [method]
                
         inner_scope: Scope = scope.create_child()            
         for i in range(len(method.param_names)):
@@ -361,10 +367,11 @@ class TypeCheckerVisitor:
                 args = [func for func in scope.functions[node.id.id] if len(func.param_names) == len(node.args)]
                 if len(args) == 0:
                     self.errors.append(f'La funcion {node.id.id} requiere otra cantidad de parametros pero {len(node.args)} fueron suministrados')
-                    return args[0].return_type
+                    return self.context.get_type('any')
+                    #return args[0].return_type
                 
+                correct = True
                 for i in range(len(node.args)):
-                    correct = True
                     if not self.visit(node.args[i], scope).conforms_to(args[0].param_types[i].name):
                         self.errors.append(SemanticError(f'El tipo del parametro {args[0].param_names[i]} no coincide con el tipo del parametro numero {i} de la funcion {node.id.id}.'))
                         correct = False
