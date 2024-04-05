@@ -38,11 +38,11 @@ def gramm_Hulk_LR1():
     create_statement %= function_definition, lambda h, s: s[1]
     
     
-    expr_statement %= print_statement, lambda h, s: s[1]
+    #expr_statement %= print_statement, lambda h, s: s[1]
     #TODO aqui hay que ver como se maneja la cosa de las listas
     expr_statement %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
     expr_statement %= expression, lambda h, s: s[1]
-    expr_statement %=  oBrace + statement_list + cBrace, lambda h, s: CollectionNode(s[2])
+    #expr_statement %=  oBrace + statement_list + cBrace, lambda h, s: CollectionNode(s[2])
     
     
     print_statement %= Print + oPar + expression + cPar, lambda h, s: PrintStatmentNode(s[3])
@@ -147,8 +147,8 @@ def gramm_Hulk_LR1():
     factor %= control_structure, lambda h, s: s[1]
     factor %= oPar + assignment + cPar, lambda h, s: s[2] 
     factor %= oPar+ destroy_collection + cPar, lambda h, s: s[2]
-    #factor %=  oBrace + statement_list + cBrace, lambda h, s: CollectionNode(s[2])
-    #factor %= print_statement, lambda h, s: s[1]
+    factor %=  oBrace + statement_list + cBrace, lambda h, s: CollectionNode(s[2])
+    factor %= print_statement, lambda h, s: s[1]
     #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
     #TODO Annadi el self a los factores
     #factor %= function_call, lambda h, s: s[1]
