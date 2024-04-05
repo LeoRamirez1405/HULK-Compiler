@@ -23,3 +23,6 @@ type Persona(first:string, last:string) {
 }
 
 
+function suma(x) => x + 1;
+
+print(suma(5));

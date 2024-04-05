@@ -1,6 +1,6 @@
 from semantic_checking.AST import *
 from semantic_checking.semantic_checking import SemanticCheckingVisitor
-from format_visitor import FormatVisitor
+from format_visitor import TreeWalkInterpreter
 #from semantic_checking.semantic_checking import SemanticCheckingVisitor
 #from semantic_checking.evaluation import evaluate_reverse_parse
 from grammLR1 import gramm_Hulk_LR1
@@ -20,7 +20,8 @@ with open('prueba.hulk', 'r') as archivo:
 
 print(text)
 tokens = lexer(text)
-tokens = [token for token in tokens if token.token_type != 'space']
+tokentypes = [token.token_type for token in tokens]
+print(tokentypes)
 
 parser = LR1Parser(gramatica,False)
 output,operations = parser(tokens)
@@ -31,9 +32,9 @@ ast = evaluate_reverse_parse(output,operations,tokensAST)
 checker = SemanticCheckingVisitor()
 print(checker.semantic_checking(ast))
 
-# # formatter = FormatVisitor()
-# # tree = formatter.visit(ast)
-# # print(tree)
+formatter = TreeWalkInterpreter()
+tree = formatter.visit(ast)
+print(tree)
 
 # # checker = SemanticCheckingVisitor()
 # # print(checker.semantic_checking(ast))
