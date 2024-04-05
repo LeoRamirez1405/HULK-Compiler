@@ -1,560 +1,470 @@
-import cmp.visitor as visitor
+import random
+from cmp.semantic import Method
+import semantic_checking.visitor as visitor
 from semantic_checking.AST import *
+from semantic_checking.semantic import Scope, Context
 
-class FormatVisitor(object):
+class TreeWalkInterpreter:
+    def __init__(self, context, scope):
+        self.context = context
+        self.scope = scope
+        self.errors = []
+
     @visitor.on('node')
-    def visit(self, node, tabs = 0):
+    def visit(self, node, scope=None):
+        print(f"Pass {type(node)}")
         pass
-    
-    @visitor.when(ProgramNode)
-    def visit(self, node : ProgramNode, tabs=0):
-        ans = '\t' * tabs + f'\\__ProgramNode [<class> ... <class>]'
-        statements = '\n'.join(self.visit(child, tabs + 1) for child in node.statments)
-        return '\t' * tabs + f'{ans}\n{statements}'
-    
 
-    @visitor.when(PrintStatmentNode)
-    def visit(self, node : PrintStatmentNode, tabs=0):
-        ans = '\t' * tabs + f'\\__PrintStatmentNode'
-        expression = self.visit(node.expression, tabs + 1)
-        return '\t' * tabs + f'{ans}\n{expression}'
+    # Nodos de programa y declaraciones
+    @visitor.when(ProgramNode)
+    def visit(self, node: ProgramNode, scope=None):
+        print(f"Scope: {scope}")
+        result = None
+        for statement in node.statments:
+            result = self.visit(statement, scope)  # Utiliza el scope recibido
+
+        return result
     
     @visitor.when(KernAssigmentNode)
-    def visit(self, node : KernAssigmentNode, tabs=0):
-        ans = '\t' * tabs + f'\\__KernAssigmentNode'
-        id = self.visit(node.id, tabs + 1)
-        expression = self.visit(node.expression, tabs + 1)
-        return '\t' * tabs + f'{ans}\n{id}\n{expression}'
-    
-    @visitor.when(DestroyNode)
-    def visit(self, node : DestroyNode, tabs=0):
-        ans = '\t' * tabs + f'\\__DestroyNode'
-        id = self.visit(node.id, tabs + 1)
-        expression = self.visit(node.expression, tabs + 1)
-        return '\t' * tabs + f'{ans}\n{id}\n{expression}'
-    
-    @visitor.when(TypeNode)
-    def visit(self, node: TypeNode, tabs = 0 ):
-       return '\t' * tabs + f'\\__TypeNode [{node.type}]'
+    def visit(self, node: KernAssigmentNode, scope=None):
+        # Evalúa la expresión del lado derecho
+        value = self.visit(node.expression, scope)
 
-    @visitor.when(ProgramNode)
-    def visit(self, node: ProgramNode, tabs = 0):
-        ans = f'\\__ProgramNode [{len(node.statments)} statements]'
-        statements = '\n'.join(self.visit(child, tabs + 1) for child in node.statments)
-        return '\t' * tabs + f'{ans}\n{statements}'
+        # Asigna el valor a la variable en el ámbito actual
+        scope.define_variable(node.id.id, value)
+
+        # Devuelve el valor asignado
+        return value 
 
     @visitor.when(PrintStatmentNode)
-    def visit(self, node: PrintStatmentNode, tabs = 0):
-        expression = self.visit(node.expression, tabs + 1)
-        return '\t' * tabs + f'\\__PrintStatmentNode\n{expression}'
+    def visit(self, node: PrintStatmentNode, scope=None):
+        # Evalúa la expresión
+        value = self.visit(node.expression, scope)
 
-    @visitor.when(KernAssigmentNode)
-    def visit(self, node: KernAssigmentNode, tabs = 0):
-        print(type(node.id))
-        print(type(node.expression))
-        id = self.visit(node.id, tabs + 1)
-        expression = self.visit(node.expression, tabs + 1)
-        return '\t' * tabs + f'\\__KernAssigmentNode\n' '\t' * tabs + f'{id}\n' '\t' * tabs + f'{expression}'
-    
-    @visitor.when(StringNode)
-    def visit(self, node: StringNode, tabs = 0):
-        return '\t' * tabs + f'\\__StringNode [{node.value}]'
+        # Imprime el valor en la consola
+        print(value)
 
-    @visitor.when(DestroyNode)
-    def visit(self, node: DestroyNode, tabs = 0):
-        id = self.visit(node.id, tabs + 1)
-        expression = self.visit(node.expression, tabs + 1)
-        return '\t' * tabs + f'\\__DestroyNode\n{id}\n{expression}'
+        # Devuelve el valor impreso
+        return value
 
-    @visitor.when(FunctionDefinitionNode)
-    def visit(self, node: FunctionDefinitionNode, tabs = 0):
-        params = ', '.join(f'{self.visit(param, tabs + 1)}' for param in node.parameters)
-        body = self.visit(node.body, tabs + 1)
-        return '\t' * tabs + f'\\__FunctionDefinitionNode\n' '\t' * tabs + f'\\____ID: {node.id}\n' '\t' * tabs + f'\\____Parameters: {params}\n' '\t' * tabs + f'\\____Body:\n{body}'
-
-    @visitor.when(FunctionCallNode)
-    def visit(self, node: FunctionCallNode, tabs = 0):
-        id = node.id
-        return '\t' * tabs + f'\\__FunctionCallNode\n' + '\t' * tabs + f'\\____ID: {id}'
-    
     @visitor.when(IfStructureNode)
-    def visit(self, node: IfStructureNode, tabs = 0):
-        condition = self.visit(node.condition, tabs + 1)
-        body = self.visit(node.body, tabs + 1)
-        _elif = self.visit(node._elif, tabs + 1) if node._elif else ''
-        _else = self.visit(node._else, tabs + 1) if node._else else ''
-        return '\t' * tabs + f'\\__IfStructureNode\n\\____Condition:\n{condition}\n\\____Body:\n{body}\n\\____Elif:\n{_elif}\n\\____Else:\n{_else}'
+    def visit(self, node: IfStructureNode, scope=None):
+        # Evalúa la condición
+        condition_value = self.visit(node.condition, scope)
 
-    @visitor.when(ElifStructureNode)
-    def visit(self, node: ElifStructureNode, tabs = 0):
-        condition = self.visit(node.condition, tabs + 1)
-        body = self.visit(node.body, tabs + 1)
-        return '\t' * tabs + f'\\__ElifStructureNode\n\\____Condition:\n{condition}\n\\____Body:\n{body}'
+        # Crea un nuevo ámbito para el bloque if
+        if_scope = Scope(parent=scope)
 
-    @visitor.when(ElseStructureNode)
-    def visit(self, node: ElseStructureNode, tabs = 0):
-        body = self.visit(node.body, tabs + 1)
-        return '\t' * tabs + f'\\__ElseStructureNode\n\\____Body:\n{body}'
+        # Ejecuta el bloque if si la condición es verdadera
+        if condition_value:
+            result = None
+            for statement in node.body:
+                result = self.visit(statement, if_scope)
+            return result
+
+        # Si la condición es falsa, verifica las ramas elif
+        for elif_node in node._elif:
+            elif_condition_value = self.visit(elif_node.condition, scope)
+            if elif_condition_value:
+                # Crea un nuevo ámbito para el bloque elif
+                elif_scope = Scope(parent=scope)
+                result = None
+                for statement in elif_node.body:
+                    result = self.visit(statement, elif_scope)
+                return result
+
+        # Si ninguna condición es verdadera, ejecuta el bloque else (si existe)
+        if node._else:
+            # Crea un nuevo ámbito para el bloque else
+            else_scope = Scope(parent=scope)
+            result = None
+            for statement in node._else.body:
+                result = self.visit(statement, else_scope)
+            return result
+
+        # Si ninguna condición es verdadera y no hay bloque else, devuelve None
+        return None
 
     @visitor.when(WhileStructureNode)
-    def visit(self, node: WhileStructureNode, tabs = 0):
-        condition = self.visit(node.condition, tabs + 1)
-        body = self.visit(node.body, tabs + 1)
-        return '\t' * tabs + f'\\__WhileStructureNode\n\\____Condition:\n{condition}\n\\____Body:\n{body}'
+    def visit(self, node: WhileStructureNode, scope=None):
+        # Crea un nuevo ámbito para el bloque while
+        while_scope = Scope(parent=scope) 
+
+        # Ejecuta el bloque while mientras la condición sea verdadera
+        result = None
+        while self.visit(node.condition, while_scope):
+            for statement in node.body:
+                result = self.visit(statement, while_scope) 
+
+        # Devuelve el resultado de la última expresión ejecutada en el bloque while
+        return result
 
     @visitor.when(ForStructureNode)
-    def visit(self, node: ForStructureNode, tabs = 0):
-        init_assigments = '\n'.join(self.visit(assigment, tabs + 1)  for assigment in node.init_assigments)
-        condition = self.visit(node.condition, tabs + 1)
-        increment_assigment = '\n'.join(self.visit(assigment, tabs + 1) for assigment in node.increment_assigment)
-        body = self.visit(node.body, tabs + 1)
-        return '\t' * tabs + f'\\__ForStructureNode\n\\____Init Assigments:\n{init_assigments}\n\\____Condition:\n{condition}\n\\____Increment Assigment:\n{increment_assigment}\n\\____Body:\n{body}'
+    def visit(self, node: ForStructureNode, scope=None):
+        # Crea un nuevo ámbito para el bloque for
+        for_scope = Scope(parent=scope)
 
-    @visitor.when(TypeDefinitionNode)
-    def visit(self, node: TypeDefinitionNode, tabs = 0):
-        id = self.visit(node.id, tabs + 1)
-        parameters = ', '.join(f'{node.id} : {self.visit(node.type_annotation, tabs + 1)}' for param in node.parameters)
-        attributes = '\n'.join(self.visit(attr, tabs + 1) for attr in node.attributes)
-        methods = '\n'.join(self.visit(method, tabs + 1) for method in node.methods)
-        return '\t' * tabs + f'\\__TypeDefinitionNode\n\\____ID: {id}\n\\____Parameters: {parameters}\n\\____Attributes:\n{attributes}\n\\____Methods:\n{methods}'
+        # Ejecuta las asignaciones de inicialización
+        self.visit(node.init_assigments, for_scope)
 
-    @visitor.when(InheritanceNode)
-    def visit(self, node: InheritanceNode, tabs = 0):
-        parent = self.visit(node.type, tabs + 1)
-        return '\t' * tabs + f'\\__InheritanceNode\n\\____Parent: {parent}'
+        # Ejecuta el bloque for mientras la condición sea verdadera
+        result = None
+        while self.visit(node.condition, for_scope):
+            for statement in node.body:
+                result = self.visit(statement, for_scope)
+            # Ejecuta las asignaciones de incremento
+            self.visit(node.increment_condition, for_scope) 
 
-    @visitor.when(KernInstanceCreationNode)
-    def visit(self, node: KernInstanceCreationNode, tabs = 0):
-        id = self.visit(node.type, tabs + 1)
-        return '\t' * tabs + f'\\__KernInstanceCreationNode\n\\____ID: {id}'
+        # Devuelve el resultado de la última expresión ejecutada en el bloque for
+        return result
 
-    @visitor.when(MemberAccessNode)
-    def visit(self, node: MemberAccessNode, tabs = 0):
-        obj = self.visit(node.base_object, tabs + 1)
-        member = self.visit(node.args, tabs + 1)
-        return '\t' * tabs + f'\\__MemberAccessNode\n\\____Object:\n{obj}\n\\____Member:\n{member}'
+    @visitor.when(LetInNode)
+    def visit(self, node: LetInNode, scope=None):
+        # Crea un nuevo ámbito para el bloque let
+        let_scope = Scope(parent=scope)
 
-    @visitor.when(PlusExpressionNode)
-    def visit(self, node: PlusExpressionNode, tabs = 0):
-        expression_1 = self.visit(node.expression_1, tabs + 1)
-        expression_2 = self.visit(node.expression_2, tabs + 1)
-        return '\t' * tabs + f'\\__PlusExpressionNode\n' + '\t' * tabs + f'\\____expression_1:\n{expression_1}\n' + '\t' * tabs + f'\\____expression_2:\n{expression_2}'
+        # Ejecuta las asignaciones dentro del bloque let
+        for assignment in node.assigments:
+            self.visit(assignment, let_scope)
 
-    @visitor.when(SubsExpressionNode)
-    def visit(self, node: SubsExpressionNode, tabs = 0):
-        expression_1 = self.visit(node.expression_1, tabs + 1)
-        expression_2 = self.visit(node.expression_2, tabs + 1)
-        return '\t' * tabs + f'\\__SubsExpressionNode\n' + '\t' * tabs + f'\\____expression_1:\n{expression_1}\n' + '\t' * tabs + f'\\____expression_2:\n{expression_2}'
+        # Ejecuta el cuerpo del bloque in y devuelve el resultado de la última expresión
+        result = None
+        for statement in node.body:
+            result = self.visit(statement, let_scope)
+        return result 
 
-    @visitor.when(DivExpressionNode)
-    def visit(self, node: DivExpressionNode, tabs = 0):
-        expression_1 = self.visit(node.expression_1, tabs + 1)
-        expression_2 = self.visit(node.expression_2, tabs + 1)
-        return '\t' * tabs + f'\\__DivExpressionNode\n' + '\t' * tabs + f'\\____expression_1:\n{expression_1}\n' + '\t' * tabs + f'\\____expression_2:\n{expression_2}'
+    # Nodos de valores
+    @visitor.when(NumberNode)
+    def visit(self, node: NumberNode, scope=None):
+        # Devuelve el valor numérico del nodo
+        return float(node.value)
 
-    @visitor.when(MultExpressionNode)
-    def visit(self, node: MultExpressionNode, tabs = 0):
-        expression_1 = self.visit(node.expression_1, tabs + 1)
-        expression_2 = self.visit(node.expression_2, tabs + 1)
-        return '\t' * tabs + f'\\__MultExpressionNode\n' + '\t' * tabs + f'\\____expression_1:\n{expression_1}\n' + '\t' * tabs + f'\\____expression_2:\n{expression_2}'
+    @visitor.when(StringNode)
+    def visit(self, node: StringNode, scope=None):
+        # Devuelve el valor de la cadena (sin las comillas)
+        return node.value[1:-1]
+
+    @visitor.when(BooleanNode)
+    def visit(self, node: BooleanNode, scope=None):
+        # Devuelve el valor booleano del nodo
+        return node.value  
+
+    @visitor.when(DestroyNode)
+    def visit(self, node: DestroyNode, scope=None):
+        # Evalúa la expresión del lado derecho
+        value = self.visit(node.expression, scope)
+
+        # Asigna el nuevo valor a la variable en el ámbito actual
+        scope.define_variable(node.id.id, value)
+
+        # Devuelve el nuevo valor asignado
+        return value
 
     @visitor.when(IdentifierNode)
-    def visit(self, node: IdentifierNode, tabs = 0):
-        return '\t' * tabs + f'\\__IdentifierNode [{node.id}]'
+    def visit(self, node: IdentifierNode, scope=None):
+        # Busca la variable en el ámbito actual
+        variable = scope.find_variable(node.id) 
+
+        # Devuelve el valor de la variable
+        return variable.type
+
+    @visitor.when(KernInstanceCreationNode)
+    def visit(self, node: KernInstanceCreationNode, scope=None):
+        # Obtiene el tipo de la clase
+        class_type = self.context.get_type(node.type.id)
+
+        # Crea un nuevo ámbito para la instancia
+        instance_scope = Scope(parent=scope) 
+
+        # Asigna los argumentos a los atributos de la instancia
+        for arg_name, arg_value in zip(class_type.args, node.args):
+            value = self.visit(arg_value, scope) 
+            instance_scope.define_variable(arg_name.name, value)
+
+        # Devuelve el ámbito de la instancia
+        return instance_scope
+
+    @visitor.when(MemberAccessNode)
+    def visit(self, node: MemberAccessNode, scope=None):
+        # Evalúa el objeto base
+        base_object = self.visit(node.base_object, scope)
+
+        # Obtiene el atributo o método
+        if isinstance(base_object, Scope):  # Si el objeto base es un ámbito (instancia)
+            member = base_object.find_variable(node.object_property_to_acces.id)
+        else:  # Si el objeto base es un tipo
+            member = base_object.get_attribute(node.object_property_to_acces.id)
+
+        # Si es un método, evalúa los argumentos y llama al método
+        if isinstance(member, Method):
+            # Crea un nuevo ámbito para la llamada al método
+            method_scope = Scope(parent=scope) 
+
+            # Asigna los argumentos a los parámetros del método
+            for param_name, arg_value in zip(member.param_names, node.args):
+                value = self.visit(arg_value, scope)
+                method_scope.define_variable(param_name, value)
+
+            # Ejecuta el cuerpo del método y devuelve el resultado
+            result = None
+            for statement in member.return_type:
+                result = self.visit(statement, method_scope)
+            return result
+
+        # Si es un atributo, devuelve su valor
+        else:
+            return member.type
+
+    @visitor.when(FunctionCallNode)
+    def visit(self, node: FunctionCallNode, scope : Scope=None):
+        # Obtiene la función del ámbito
+        function = scope.find_functions(node.id.id)[0] 
+
+        # Crea un nuevo ámbito para la llamada a la función
+        function_scope = Scope(parent=scope) 
+
+        # Asigna los argumentos a los parámetros de la función 
+        for param_name, arg_value in zip(function.param_names, node.args):
+            value = self.visit(arg_value, scope)  
+            function_scope.define_variable(param_name, value) 
+
+        # Ejecuta el cuerpo de la función y devuelve el resultado
+        result = None 
+        for statement in function.return_type: #TODO
+            result = self.visit(statement, function_scope)  
+        return result
+
+    @visitor.when(BoolIsTypeNode)
+    def visit(self, node: BoolIsTypeNode, scope=None):
+        # Evalúa la expresión
+        value = self.visit(node.left, scope) 
+        # Obtiene el tipo
+        type_ = self.visit(node.right, scope)  
+
+        # Verifica si el valor es del tipo especificado
+        return type_.conforms_to(value.name)  
+
+    @visitor.when(BoolAndNode)
+    def visit(self, node: BoolAndNode, scope=None):
+        # Evalúa la expresión izquierda
+        left_value = self.visit(node.left, scope) 
+        # Evalúa la expresión derecha
+        right_value = self.visit(node.right, scope)  
+
+        # Realiza la operación AND y devuelve el resultado
+        return left_value and right_value
+
+    @visitor.when(BoolOrNode)
+    def visit(self, node: BoolOrNode, scope=None):
+        # Evalúa la expresión izquierda
+        left_value = self.visit(node.left, scope) 
+        # Evalúa la expresión derecha
+        right_value = self.visit(node.right, scope)  
+
+        # Realiza la operación OR y devuelve el resultado
+        return left_value or right_value
+
+    @visitor.when(BoolNotNode)
+    def visit(self, node: BoolNotNode, scope=None):
+        # Evalúa la expresión
+        value = self.visit(node.node, scope) 
+
+        # Realiza la operación NOT y devuelve el resultado
+        return not value  
+    
+    @visitor.when(BoolCompAritNode)
+    def visit(self, node: BoolCompAritNode, scope=None):
+        # Evalúa la expresión izquierda
+        left_value = self.visit(node.left, scope) 
+        # Evalúa la expresión derecha 
+        right_value = self.visit(node.right, scope) 
+
+        # Realiza la comparación y devuelve el resultado
+        return self.compare(node, left_value, right_value)  
+
+    def compare(self, node, left_value, right_value):
+        if isinstance(node, BoolCompLessNode):
+            return left_value < right_value
+        elif isinstance(node, BoolCompGreaterNode):
+            return left_value > right_value
+        elif isinstance(node, BoolCompEqualNode):
+            return left_value == right_value
+        elif isinstance(node, BoolCompLessEqualNode):
+            return left_value <= right_value
+        elif isinstance(node, BoolCompGreaterEqualNode):
+            return left_value >= right_value
+        elif isinstance(node, BoolCompNotEqualNode):
+            return left_value != right_value
+
+    @visitor.when(PlusExpressionNode)
+    def visit(self, node: PlusExpressionNode, scope=None):
+        # Evalúa la expresión izquierda
+        left_value = self.visit(node.expression_1, scope)
+        # Evalúa la expresión derecha 
+        right_value = self.visit(node.expression_2, scope) 
+
+        # Realiza la suma y devuelve el resultado
+        return left_value + right_value
+    
+    @visitor.when(SubsExpressionNode)
+    def visit(self, node: SubsExpressionNode, scope=None):
+        # Evalúa la expresión izquierda
+        left_value = self.visit(node.expression_1, scope)
+        # Evalúa la expresión derecha 
+        right_value = self.visit(node.expression_2, scope) 
+
+        # Realiza la suma y devuelve el resultado
+        return left_value - right_value
+
+    @visitor.when(DivExpressionNode)
+    def visit(self, node: DivExpressionNode, scope=None):
+        # Evalúa la expresión izquierda
+        left_value = self.visit(node.expression_1, scope)
+        # Evalúa la expresión derecha 
+        right_value = self.visit(node.expression_2, scope) 
+
+        # Realiza la suma y devuelve el resultado
+        return left_value / right_value
+
+    @visitor.when(MultExpressionNode)
+    def visit(self, node: MultExpressionNode, scope=None):
+        # Evalúa la expresión izquierda
+        left_value = self.visit(node.expression_1, scope)
+        # Evalúa la expresión derecha 
+        right_value = self.visit(node.expression_2, scope) 
+
+        # Realiza la suma y devuelve el resultado
+        return left_value * right_value
 
     @visitor.when(ModExpressionNode)
-    def visit(self, node: ModExpressionNode, tabs = 0):
-        expression_1 = self.visit(node.expression_1, tabs + 1)
-        expression_2 = self.visit(node.expression_2, tabs + 1)
-        return '\t' * tabs + f'\\__ModExpressionNode\n' + '\t' * tabs + f'\\____expression_1:\n{expression_1}\n' + '\t' * tabs + f'\\____expression_2:\n{expression_2}'
+    def visit(self, node: ModExpressionNode, scope=None):
+        # Evalúa la expresión izquierda
+        left_value = self.visit(node.expression_1, scope)
+        # Evalúa la expresión derecha 
+        right_value = self.visit(node.expression_2, scope) 
+
+        # Realiza la suma y devuelve el resultado
+        return left_value % right_value
 
     @visitor.when(PowExpressionNode)
-    def visit(self, node: PowExpressionNode, tabs = 0):
-        expression_1 = self.visit(node.expression_1, tabs + 1)
-        expression_2 = self.visit(node.expression_2, tabs + 1)
-        return '\t' * tabs + f'\\__PowExpressionNode\n' + '\t' * tabs + f'\\____expression_1:\n{expression_1}\n' + '\t' * tabs + f'\\____expression_2:\n{expression_2}'
+    def visit(self, node: PowExpressionNode, scope=None):
+        # Evalúa la expresión izquierda
+        left_value = self.visit(node.expression_1, scope)
+        # Evalúa la expresión derecha 
+        right_value = self.visit(node.expression_2, scope) 
 
-    @visitor.when(NumberNode)
-    def visit(self, node: NumberNode, tabs = 0):
-        return '\t' * tabs + f'\\__NumberNode [{node.value}]'
-
-    @visitor.when(PINode)
-    def visit(self, node: PINode , tabs = 0  ):
-        return '\t' * tabs + '\\__PINode'
+        # Realiza la suma y devuelve el resultado
+        return left_value ^ right_value
 
     @visitor.when(SqrtMathNode)
-    def visit(self, node: SqrtMathNode, tabs = 0):
-        expression = self.visit(node.expression, tabs + 1)
-        return '\t' * tabs + f'\\__SqrtMathNode\n{expression}'
+    def visit(self, node: SqrtMathNode, scope=None):
+        # Evalúa la expresión
+        value = self.visit(node.node, scope)
+
+        # Calcula la raíz cuadrada y devuelve el resultado
+        return math.sqrt(value) 
 
     @visitor.when(SinMathNode)
-    def visit(self, node: SinMathNode, tabs = 0):
-        expression = self.visit(node.expression, tabs + 1)
-        return '\t' * tabs + f'\\__SinMathNode\n{expression}'
+    def visit(self, node: SinMathNode, scope=None):
+        # Evalúa la expresión
+        value = self.visit(node.node, scope)
+
+        # Calcula el seno y devuelve el resultado 
+        return math.sin(value)
 
     @visitor.when(CosMathNode)
-    def visit(self, node: CosMathNode, tabs = 0):
-        expression = self.visit(node.expression, tabs + 1)
-        return '\t' * tabs + f'\\__CosMathNode\n{expression}'
+    def visit(self, node: CosMathNode, scope=None):
+        # Evalúa la expresión
+        value = self.visit(node.node, scope)
+
+        # Calcula el coseno y devuelve el resultado
+        return math.cos(value)
 
     @visitor.when(TanMathNode)
-    def visit(self, node: TanMathNode, tabs = 0):
-        expression = self.visit(node.expression, tabs + 1)
-        return '\t' * tabs + f'\\__TanMathNode\n{expression}'
+    def visit(self, node: TanMathNode, scope=None):
+        # Evalúa la expresión
+        value = self.visit(node.node, scope)
+
+        # Calcula la tangente y devuelve el resultado
+        return math.tan(value)
 
     @visitor.when(ExpMathNode)
-    def visit(self, node: ExpMathNode, tabs = 0):
-        expression = self.visit(node.expression, tabs + 1)
-        return '\t' * tabs + f'\\__ExpMathNode\n{expression}'
+    def visit(self, node: ExpMathNode, scope=None):
+        # Evalúa la expresión
+        value = self.visit(node.node, scope) 
 
-    @visitor.when(RandomCallNode)
-    def visit(self, node: RandomCallNode, tabs = 0):
-        return '\t' * tabs + '\\__RandomCallNode'
+        # Calcula la exponencial y devuelve el resultado
+        return math.exp(value)
 
-    @visitor.when(LogCallNode)
-    def visit(self, node: LogCallNode, tabs = 0):
-        expression = self.visit(node.expression, tabs + 1)
-        return '\t' * tabs + f'\\__LogCallNode\n{expression}'
-    
+    @visitor.when(RandomFunctionCallNode)
+    def visit(self, node: RandomFunctionCallNode, scope=None):
+        # Genera un número aleatorio entre 0 y 1
+        return random.random()
+
+    @visitor.when(LogFunctionCallNode)
+    def visit(self, node: LogFunctionCallNode, scope=None):
+        # Evalúa la base del logaritmo
+        base = self.visit(node.base, scope)
+        # Evalúa la expresión del logaritmo
+        value = self.visit(node.expression, scope)
+
+        # Calcula el logaritmo y devuelve el resultado 
+        return math.log(value, base)
+
+    @visitor.when(StringConcatNode)
+    def visit(self, node: StringConcatNode, scope=None):
+        # Evalúa la expresión izquierda
+        left_value = self.visit(node.left, scope) 
+        # Evalúa la expresión derecha
+        right_value = self.visit(node.right, scope) 
+
+        # Concatena las cadenas y devuelve el resultado
+        return str(left_value) + str(right_value)
+
+    @visitor.when(StringConcatWithSpaceNode)
+    def visit(self, node: StringConcatWithSpaceNode, scope=None):
+        # Evalúa la expresión izquierda
+        left_value = self.visit(node.left, scope)
+        # Evalúa la expresión derecha
+        right_value = self.visit(node.right, scope)
+
+        # Concatena las cadenas con un espacio en medio y devuelve el resultado 
+        return str(left_value) + " " + str(right_value)
+
+    @visitor.when(CollectionNode)
+    def visit(self, node: CollectionNode, scope=None):
+        # Crea un nuevo ámbito para la colección
+        collection_scope = Scope(parent=scope) 
+
+        # Evalúa cada elemento de la colección
+        result = None 
+        for element in node.collection:
+            result = self.visit(element, collection_scope) 
+
+        # Devuelve el resultado de la última expresión
+        return result  
+
+    @visitor.when(SelfNode)
+    def visit(self, node: SelfNode, scope=None):
+        # Obtiene el tipo actual del ámbito
+        current_type = scope.find_variable("self").type  
+
+        # Busca el atributo en el tipo actual
+        attribute = current_type.get_attribute(node.identifier.id) 
+
+        # Devuelve el valor del atributo
+        return attribute.type  
+
     @visitor.when(LetInExpressionNode)
-    def visit(self, node: LetInExpressionNode, tabs = 0):
-        assigments = '\n'.join(self.visit(assigment, tabs + 1) for assigment in node.assigments)
-        body = self.visit(node.body, tabs + 1)
-        return '\t' * tabs + f'\\__LetInExpressionNode\n\\____Assigments:\n''\t'  * tabs + f'{assigments}\n''\t'  * tabs + f'\\____Body:\n''\t'  * tabs + f'{body}'
+    def visit(self, node: LetInExpressionNode, scope=None):
+        # Crea un nuevo ámbito para el bloque let
+        let_scope = Scope(parent=scope) 
 
+        # Ejecuta las asignaciones dentro del bloque let
+        for assignment in node.assigments:
+            self.visit(assignment, let_scope) 
 
-    
-    
+        # Evalúa el cuerpo del bloque in y devuelve el resultado
+        return self.visit(node.body, let_scope)  
 
-
-# from typing import List
-# import math
-
-# class Node():
-#     pass
-        
-# class AtomicNode(Node):
-#     def __init__(self, lex):
-#         self.lex = lex
-
-# class UnaryNode(Node):
-#     def __init__(self, node):
-#         self.node = node
-
-#     def evaluate(self):
-#         value = self.node.evaluate()
-#         return self.operate(value)
-
-#     @staticmethod
-#     def operate(value):
-#         raise NotImplementedError()
-
-# class BinaryNode(Node):
-#     def __init__(self, expression_1, expression_2):
-#         self.expression_1 = expression_1
-#         self.expression_2 = right
-
-#     def evaluate(self):
-#         lvalue = self.expression_1.evaluate()
-#         rvalue = self.right.evaluate()
-#         return self.operate(lvalue, rvalue)
-
-#     @staticmethod
-#     def operate(lvalue, rvalue):
-#         raise NotImplementedError()
-    
-# #-------------------------------------------------------------------------------------------------------------------------------------------------#
-# class ProgramNode(Node):
-#     def __init__(self, statments) -> None:
-#         super().__init__()
-#         self.statments = statments
-             
-# class PrintStatmentNode(Node):
-#     def __init__(self, expression) -> None:
-#         super().__init__()
-#         self.expression = expression
-        
-# #TODO creo que se deberia poner el type_annotation en el kern_assigment
-# class KernAssigmentNode(Node):
-#     def __init__(self, id, expression) -> None:
-#         super().__init__()
-#         self.id = id
-#         self.expression = expression
-        
-# class DestroyNode(KernAssigmentNode):
-#     def __init__(self, id, expression) -> None:
-#         super().__init__(id, expression)
-        
-# # class LetNode(KernAssigmentNode):
-# #     def __init__(self, id, expression) -> None:
-# #         super().__init__(id, expression)
-        
-# #? Podriamos instanciar la clase Type
-# #* Eso se hace luego cuando se viita el nodo en el visitor
-# class TypeNode(Node):
-#     def __init__(self, type) -> None:
-#         super().__init__()
-#         self.type = type
-        
-# class FunctionDefinitionNode(Node):
-#     def __init__(self, id, type_annotation: TypeNode, parameters:list[dict], body) -> None:
-#         super().__init__()
-#         self.id = id
-#         self.type_annotation = type_annotation
-#         self.parameters = parameters
-#         self.body = body
-        
-# #--------------------------------Non_Create-Statment-----------------------------------------------------------------------------------------------------------------------#
-        
-# class IfStructureNode(Node):
-#     def __init__(self, condition, body, _elif, _else) -> None:
-#         super().__init__()
-#         self.condition = condition
-#         self.body = body
-#         self._elif = _elif
-#         self._else = _else
-        
-# class ElifStructureNode(Node):
-#     def __init__(self, condition, body) -> None:
-#         super().__init__()
-#         self.condition = condition
-#         self.body = body
-
-# class ElseStructureNode(Node):
-#     def __init__(self, body) -> None:
-#         super().__init__()
-#         self.body = body
-        
-# class WhileStructureNode(Node):
-#     def __init__(self, condition, body) -> None:
-#         super().__init__()
-#         self.condition = condition
-#         self.body = body
-
-# class ForStructureNode(Node):
-#     def __init__(self, init_assigments: List[KernAssigmentNode], condition, increment_assigment: List[KernAssigmentNode], body) -> None:
-#         super().__init__() 
-#         self.init_assigments = init_assigments
-#         self.condition = condition
-#         self.increment_condition = increment_assigment
-#         self.body = body
-        
-# #-----------------------------------Class----------------------------------------------------------------------------------------------#
-# class TypeDefinitionNode(Node):
-#     def __init__(self, id, parameters:list[dict],inheritance, attributes: List[KernAssigmentNode], methods) -> None:
-#         super().__init__()
-#         self.id = id
-#         self.parameters = parameters
-#         self.inheritance = inheritance
-#         self.attributes: List[KernAssigmentNode] = attributes
-#         self.methods = methods
-        
-# class InheritanceNode(Node):
-#     def __init__(self, type) -> None:
-#         super().__init__()
-#         self.type = type
-
-# #? Verificar que son los parametros type y args
-# #* En new type (args = [param_1, param_2, ...])
-# class KernInstanceCreationNode(BinaryNode):
-#     def __init__(self, type, args):
-#         super().__init__(type, args)
-#         self.type = type
-#         self.args = args
-        
-# #? Ver bien que en que consiste el member acces
-# #* x.method_name(parametro_1, parametro_2, ...)
-# class MemberAccessNode(Node):
-#     def __init__(self, base_object, object_property_to_acces, args) -> None:
-#         super().__init__()
-#         self.base_object = base_object
-#         self.object_property_to_acces = object_property_to_acces
-#         self.args = args
-        
-# #! No son necesarios los operadores
-# #------------------------------------Operators----------------------------------------------------------------------------------------------------#       
-# # class BooleanOperator(Node):
-# #     def __init__(self, operator) -> None:
-# #         super().__init__()
-# #         self.operator = operator
-        
-# # class AritmeticOperator(Node):
-# #     def __init__(self, operator) -> None:
-# #         super().__init__()
-# #         self.operator = operator
-        
-# # class ConcatOperator(Node):
-# #     def __init__(self, operator) -> None:
-# #         super().__init__()
-# #         self.operator = operator
-        
-# #-------------------------------------------Abstrct-Expressions------------------------------------------------------------------------------------------#
-# class BooleanExpression(BinaryNode):
-#     def __init__(self, expression_1, expression_2) -> None:
-#         super().__init__(expression_1, expression_2)
-#         # self.expression_1 = expression_1
-#         # self.expressiin_2 = expression_2
-        
-# class AritmeticExpression(Node):
-#     def __init__(self, expression_1, expression_2) -> None:
-#         super().__init__()
-#         self.expression_1 = expression_1
-#         self.expression_2 = expression_2
-        
-# #-------------------------------Aritmetic-Expressions-------------------------------------------------------------------------------------------------#
-# class PlusExpressionNode(AritmeticExpression):
-#     def __init__(self, expression_1, expresion_2) -> None:
-#         super().__init__(expression_1, expresion_2)
-        
-# class SubsExpressionNode(AritmeticExpression):
-#     def __init__(self, expression_1, expresion_2) -> None:
-#         super().__init__(expression_1, expresion_2)
-#         self.expression_1 = expression_1
-        
-# class DivExpressionNode(AritmeticExpression):
-#     def __init__(self, expression_1, expresion_2) -> None:
-#         super().__init__(expression_1, expresion_2)
-        
-# class MultExpressionNode(AritmeticExpression):
-#     def __init__(self, expression_1, expresion_2) -> None:
-#         super().__init__(expression_1, expresion_2)
-# class ModExpressionNode(AritmeticExpression):
-#     def __init__(self, expression_1, expresion_2) -> None:
-#         super().__init__(expression_1, expresion_2)
-# class PowExpressionNode(AritmeticExpression):
-#     def __init__(self, expression_1, expresion_2) -> None:
-#         super().__init__(expression_1, expresion_2)
-           
-# class NumberNode(Node):
-#     def __init__(self, value) -> None:
-#         super().__init__()
-#         self.value = value
-# class PINode(NumberNode):
-#     def __init__(self) -> None:
-#         super().__init__(math.pi)
-    
-# #------------------------------------------------------------Math-Operations-----------------------------------------------------------------------------------#
-# class MathOperationNode(UnaryNode):
-#     def __init__(self, expression) -> None:
-#         super().__init__(expression)
-#         self.expression = expression
-
-# class SqrtMathNode(MathOperationNode):
-#     def __init__(self, expression) -> None:
-#         super().__init__(expression)
-        
-# class SinMathNode(MathOperationNode):
-#     def __init__(self, expression) -> None:
-#         super().__init__(expression)
-        
-# class CosMathNode(MathOperationNode):
-#     def __init__(self, expression) -> None:
-#         super().__init__(expression)
-        
-# class TanMathNode(MathOperationNode):
-#     def __init__(self, expression) -> None:
-#         super().__init__(expression)
-#         self.expression = expression
-
-# class ExpMathNode(MathOperationNode):
-#     def __init__(self, expression) -> None:
-#         super().__init__(expression)
-# class RandomCallNode(Node):
-#     def __init__(self) -> None:
-#         super().__init__()
-        
-# class LogCallNode(Node):
-#     def __init__(self, base, expression) -> None:
-#         super().__init__()
-#         self.base = base
-#         self.expression = expression
-
-# #-----------------------------------Let-In--------------------------------------------------------------------------------------------------------------------#
-# class LetInNode(Node):
-#     def __init__(self, assigments, body) -> None:
-#         super().__init__()
-#         self.assigments = assigments
-#         self.body = body
-        
-# class LetInExpressionNode(Node):
-#     def __init__(self, assigments, body) -> None:
-#         super().__init__()
-#         self.assigments = assigments
-#         self.body = body 
-
-# #----------------------------------Factor-Nodes----------------------------------------------------------------------------------------------------------------#
-# class FunctionCallNode(Node):
-#     def __init__(self, id, args) -> None:
-#         super().__init__()
-#         self.id = id
-#         self.args = args
-
-# class BooleanNode(Node):
-#     def __init__(self, value) -> None:
-#         super().__init__()
-#         self.value = value
-        
-# class StringNode(Node):
-#     def __init__(self, value) -> None:
-#         super().__init__()
-#         self.value = value
-        
-# class IdentifierNode(Node):
-#     def __init__(self,id) -> None:
-#         super().__init__()
-#         self.id = id
-        
-# class StringConcatNode(BinaryNode):
-#     def __init__(self, expression_1, right):
-#         super().__init__(expression_1, right)
-        
-# class StringConcatWithSpaceNode(StringConcatNode):
-#     def __init__(self, expression_1, right):
-#         super().__init__(expression_1, right)
-        
-# #TODO Ver que es esto
-# class BoolIsTypeNode(BinaryNode):
-#     def __init__(self, expression, type):
-#         super().__init__(expression, type)
-#         self.expression = expression
-#         self.type = type
-        
-# class BoolAndNode(BooleanExpression):
-#     def __init__(self, expression_1, expression_2) -> None:
-#         super().__init__(expression_1, expression_2)
-        
-# class BoolOrNode(BooleanExpression):
-#     def __init__(self, expression_1, expression_2) -> None:
-#         super().__init__(expression_1, expression_2)
-
-# class BoolCompAritNode(BinaryNode):
-#     def __init__(self, expression_1, right):
-#         super().__init__(expression_1, right)
-        
-# class BoolNotNode(UnaryNode):
-#     def __init__(self, node):
-#         super().__init__(node)        
-# class BoolCompLessNode(BoolCompAritNode):
-#     def __init__(self, expression_1, right):
-#         super().__init__(expression_1, right)
-             
-# class BoolCompGreaterNode(BoolCompAritNode):
-#     def __init__(self, expression_1, right):
-#         super().__init__(expression_1, right)
-        
-# class BoolCompEqualNode(BoolCompAritNode):
-#     def __init__(self, expression_1, right):
-#         super().__init__(expression_1, right)
-        
-# class BoolCompLessEqualNode(BoolCompAritNode):
-#     def __init__(self, expression_1, right):
-#         super().__init__(expression_1, right)
-        
-# class BoolCompGreaterEqualNode(BoolCompAritNode):
-#     def __init__(self, expression_1, right):
-#         super().__init__(expression_1, right)
-        
-# class BoolCompNotEqualNode(BoolCompAritNode):
-#     def __init__(self, expression_1, right):
-#         super().__init__(expression_1, right)
         

@@ -16,8 +16,6 @@ class TypeBuilderVisitor():
     
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
-        #print('TypeBuilder')
-        # print(f'Context in Builder: {[item for item in self.context.types.keys()]}')
         for statment in node.statments:
             self.visit(statment)
 
@@ -26,6 +24,9 @@ class TypeBuilderVisitor():
         self.currentType: Type = self.context.get_type(node.id.id) 
         try:
             inheritance = self.context.get_type(node.inheritance.type.id)
+            if inheritance.conforms_to(self.currentType.name):
+                self.errors.append(SemanticError(f'Dependencias circulares. {inheritance.node.name} hereda de {self.currentType.name}'))
+                inheritance = self.context.get_type('object')
         except:
             self.errors.append(SemanticError(f'El tipo {str(node.inheritance.type.id)} del que se hereda no esta definido'))
             inheritance = self.context.get_type('object')
@@ -34,10 +35,10 @@ class TypeBuilderVisitor():
         
         for arg in node.parameters: 
             name: IdentifierNode = list(arg.items())[0][0]
-            type = list(arg.items())[0][1]
+            type: TypeNode = list(arg.items())[0][1]
             
             try:
-                type =  self.context.get_type(type)
+                type =  self.context.get_type(type.type)
             except:
                 type = self.context.get_type('object')
                 self.errors.append(f'El tipo del argumento {name.id} no esta definido.')
@@ -62,12 +63,7 @@ class TypeBuilderVisitor():
             try:
                 self.currentType.define_attribute(node.id.id, self.context.get_type('object')) 
             except:
-                self.errors.append(SemanticError(f'El atributo {node.id.id} ya esta definido'))      
-        else:
-            try:
-                self.scope.define_variable(node.id.id, self.context.get_type('object'))
-            except:
-                self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida'))      
+                self.errors.append(SemanticError(f'El atributo {node.id.id} ya esta definido'))            
 
         
     @visitor.when(FunctionDefinitionNode)
@@ -79,13 +75,14 @@ class TypeBuilderVisitor():
             self.errors.append(f'El tipo de retorno {node.type_annotation.type} no esta definido')
             return_type = self.context.get_type('object')
         
+        # print(node.parameters)
         arg_names: List[IdentifierNode] = [list(parama.items())[0] for parama in node.parameters]
         arg_names = [name[0].id for name in arg_names]
-        print(arg_names)
+        # print(arg_names)
         
         arg_types = []
         aux = [list(parama.items())[0] for parama in node.parameters]
-        print(aux)
+        # print(aux)
         for parama in aux:
             try:
                 arg_types.append(self.context.get_type(parama[1].type))
@@ -98,12 +95,9 @@ class TypeBuilderVisitor():
                 self.currentType.define_method(node.id.id, arg_names, arg_types, return_type)
             except:
                 self.errors.append(f'La funcion {node.id.id} ya existe en el contexto de {self.currentType.name}.')
-        else:
-            if self.scope.method_is_define(node.id.id, len(arg_names)):
-                self.errors.append(f'La funcion {node.id.id} ya existe en este scope con {len(arg_names)} cantidad de parametros')
-            else:
-                method = Method(node.id.id, arg_names, arg_types, return_type)
-                self.scope.functions[node.id.id].append(method)
                 
-
-  
+    @visitor.when(CollectionNode)
+    def visit(self, node: CollectionNode):
+        for item in node.collection:
+            self.visit(item)
+                

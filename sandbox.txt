@@ -1,54 +1,68 @@
-60 	 member_access -> .factor.identifier(arguments), {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 ExprNum -> .ExprNum+term, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 factor -> .string, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 print_statement -> .print(expression), {'/', '%', '*', '**', '-', '^', '+', '.', ')'}
-	 ExprNeg -> .ExprIsType, {'/', '%', '*', '**', '-', '^', '+', 'and', '.', 'or', '@', ')'}
-	 math_call -> .log(ExprNum,ExprNum), {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 ExprOr -> .ExprOrorExprAnd, {'/', '%', '*', '**', '-', '^', '+', '.', 'or', '@', ')'}
-	 math_call -> .tan(ExprNum), {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 factor -> .False, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 math_call -> .PI, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 math_call -> .sqrt(ExprNum), {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 ExprComp -> .ExprNum>ExprNum, {'/', '%', '*', '**', '-', '^', '+', 'and', 'is', '.', 'or', '@', ')'}
-	 ExprComp -> .ExprNum>=ExprNum, {'/', '%', '*', '**', '-', '^', '+', 'and', 'is', '.', 'or', '@', ')'}
-	 factorPow -> .factor^factorPow, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 factor -> .identifier, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 factorPow -> .factor**factorPow, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 term -> .term*factorPow, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 factor -> .math_call, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 math_call -> .exp(ExprNum), {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 expression -> .ExprOr, {'/', '%', '*', '**', '-', '^', '+', '.', '@', ')'}
-	 ExprNum -> .ExprNum-term, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 factor -> .member_access, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 factor -> .number, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 expression -> .expression@@ExprOr, {'/', '%', '*', '**', '-', '^', '+', '.', '@', ')'}
-	 math_call -> .rand(), {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 factorPow -> .factor, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 factor -> .assignmentin{statement_list}, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 ExprNeg -> .notExprIsType, {'/', '%', '*', '**', '-', '^', '+', 'and', '.', 'or', '@', ')'}
-	 expression -> .expression@ExprOr, {'/', '%', '*', '**', '-', '^', '+', '.', '@', ')'}
-	 factor -> .(expr_statement), {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 ExprComp -> .ExprNum<ExprNum, {'/', '%', '*', '**', '-', '^', '+', 'and', 'is', '.', 'or', '@', ')'}
-	 ExprNum -> .term, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 term -> .term%factorPow, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 ExprOr -> .ExprAnd, {'/', '%', '*', '**', '-', '^', '+', '.', 'or', '@', ')'}
-	 ExprComp -> .ExprNum<=ExprNum, {'/', '%', '*', '**', '-', '^', '+', 'and', 'is', '.', 'or', '@', ')'}
-	 factor -> .assignmentinexpr_statement, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 ExprAnd -> .ExprAndandExprNeg, {'/', '%', '*', '**', '-', '^', '+', 'and', '.', 'or', '@', ')'}
-	 term -> .factorPow, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 factor -> .True, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 term -> .term/factorPow, {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 expr_statement -> .print_statement, {'/', '%', '*', '**', '-', '^', '+', '.', ')'}
-	 assignment -> .letmulti_assignment, {'in'}
-	 factor -> assignmentin.{statement_list}, {'/', '%', '*', '**', '^', '-', '+', '.', ')'}
-	 ExprComp -> .ExprNum==ExprNum, {'/', '%', '*', '**', '-', '^', '+', 'and', 'is', '.', 'or', '@', ')'}
-	 ExprComp -> .ExprNum, {'/', '%', '*', '**', '-', '^', '+', 'and', 'is', '.', 'or', '@', ')'}
-	 ExprAnd -> .ExprNeg, {'/', '%', '*', '**', '-', '^', '+', 'and', '.', 'or', '@', ')'}
-	 expr_statement -> .expression, {'/', '%', '*', '**', '-', '^', '+', '.', ')'}
-	 ExprComp -> .ExprNum!=ExprNum, {'/', '%', '*', '**', '-', '^', '+', 'and', 'is', '.', 'or', '@', ')'}
-	 ExprIsType -> .ExprComp, {'/', '%', '*', '**', '-', '^', '+', 'and', '.', 'or', '@', ')'}
-	 factor -> assignmentin.expr_statement, {'/', '%', '*', '**', '^', '-', '+', '.', ')'}
-	 factor -> .identifier(arguments), {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 math_call -> .cos(ExprNum), {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'}
-	 ExprIsType -> .ExprCompisidentifier, {'/', '%', '*', '**', '-', '^', '+', 'and', '.', 'or', '@', ')'}
-	 math_call -> .sin(ExprNum), {'/', '.', '%', '**', '^', ')', '*', '-', '+', 'and', 'or', '<', '@', '>', '==', '<=', '>=', '!=', 'is'} 
+1767 	 for_structure -> .for(for_assignment;expression;destructive_assignment){list_expr_statement}, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'PI', 'if', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'not', 'sin', 'cos', 'print', 'exp'}
+	 term -> .term%factorPow, {'<=', 'log', '(', '>=', 'rand', '{', '!=', 'is', '}', '*', 'True', '/', 'False', 'number', '+', 'string', '-', 'tan', 'type', '%', '>', '@', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', '<', 'print', 'exp'}
+	 math_call -> .tan(ExprNum), {'(', 'log', '<=', '>=', 'rand', '!=', '{', '}', 'is', '*', 'True', '/', 'False', '+', 'number', 'string', '-', 'tan', 'type', '%', '^', '@', '>', '@@', 'PI', ';', 'if', '==', 'while', 'for', 'let', 'function', 'and', '**', 'self', 'sqrt', 'or', 'not', 'sin', '<', 'cos', 'print', 'exp'}
+	 ExprComp -> .ExprNum>ExprNum, {'(', 'log', 'rand', '{', '}', 'is', 'True', 'False', 'number', 'string', 'tan', 'type', 'exp', '@', '@@', 'PI', 'if', 'while', 'for', 'let', 'function', 'and', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', 'print', ';'}
+	 statement -> .type_definition, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'PI', 'if', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'not', 'sin', 'cos', 'print', 'exp'}
+	 ExprOr -> .ExprAnd, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'type', 'print', '@', '@@', 'PI', 'if', ';', 'while', 'for', 'let', 'function', 'or', 'self', 'sqrt', 'not', 'sin', 'cos', 'tan', 'exp'}
+	 ExprComp -> .ExprNum<ExprNum, {'(', 'log', 'rand', '{', 'is', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'exp', '@', '@@', 'PI', 'if', 'while', 'for', 'let', 'function', 'and', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', 'print', ';'}
+	 control_structure -> .if_structure, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'PI', 'if', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'not', 'sin', 'cos', 'print', 'exp'}
+	 math_call -> .log(ExprNum,ExprNum), {'<=', 'log', '(', '>=', 'rand', '!=', '{', 'is', '}', '*', 'True', '/', 'False', 'number', '+', 'string', '-', 'type', '%', '^', 'print', '@', '>', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', '**', 'or', 'self', 'sqrt', 'not', 'sin', '<', 'cos', 'tan', 'exp'}
+	 ExprNum -> .ExprNum-term, {'<=', 'log', '(', '>=', 'rand', '!=', '{', 'is', '}', 'True', 'False', 'number', '+', 'string', '-', 'type', 'print', '@', '>', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', 'or', 'self', 'sqrt', 'not', 'sin', '<', 'cos', 'tan', 'exp'}
+	 expression -> .expression@@ExprOr, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'type', 'print', '@', '@@', 'PI', 'if', ';', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'not', 'sin', 'cos', 'tan', 'exp'}
+	 statement_list -> .{statement_list}statement_list, {'}'}
+	 ExprNeg -> .notExprIsType, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'type', 'print', 'exp', '@', '@@', 'PI', 'if', 'while', 'for', 'let', 'function', 'and', 'or', 'self', 'sqrt', 'not', 'sin', 'cos', 'tan', ';'}
+	 statement_list -> ., {'}'}
+	 ExprOr -> .ExprOrorExprAnd, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'exp', '@', '@@', 'PI', 'if', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', 'print', ';'}
+	 ExprComp -> .ExprNum<=ExprNum, {'(', 'log', 'rand', '{', 'is', '}', 'True', 'False', 'number', 'string', 'type', 'print', 'exp', '@', '@@', 'PI', 'if', 'while', 'for', 'let', 'function', 'and', 'or', 'self', 'sqrt', 'not', 'sin', 'cos', 'tan', ';'}
+	 ExprAnd -> .ExprAndandExprNeg, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'exp', '@', '@@', 'PI', 'if', 'while', 'for', 'let', 'function', 'and', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', 'print', ';'}
+	 control_structure -> .for_structure, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'PI', 'if', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'not', 'sin', 'cos', 'print', 'exp'}
+	 factor -> .(assignment), {'<=', 'log', '(', '>=', 'rand', '!=', '{', 'is', '}', '*', '/', 'True', 'False', 'number', '+', '-', 'string', 'type', '%', '^', 'print', '@', '>', '@@', 'PI', ';', 'if', '==', 'while', 'for', 'let', 'function', 'and', '**', 'or', 'self', 'sqrt', 'not', 'sin', '<', 'cos', 'tan', 'exp'}
+	 ExprComp -> .ExprNum>=ExprNum, {'(', 'log', 'rand', '{', 'is', '}', 'True', 'False', 'number', 'string', 'type', 'print', 'exp', '@', '@@', 'PI', 'if', 'while', 'for', 'let', 'function', 'and', 'or', 'self', 'sqrt', 'not', 'sin', 'cos', 'tan', ';'}
+	 factor -> .False, {'<=', 'log', '(', '>=', 'rand', '!=', '{', 'is', '}', '*', 'True', '/', 'False', 'number', '+', 'string', '-', 'type', '%', '^', 'print', '@', '>', '@@', 'PI', ';', 'if', '==', 'while', 'for', 'let', 'function', 'and', '**', 'or', 'self', 'sqrt', 'not', 'sin', '<', 'cos', 'tan', 'exp'}
+	 factorPow -> .factor^factorPow, {'<=', 'log', '(', '>=', 'rand', '!=', '{', 'is', '}', '*', '/', 'True', 'False', 'number', '+', '-', 'string', 'type', '%', 'print', '@', '>', '@@', 'PI', ';', 'if', '==', 'while', 'for', 'let', 'function', 'and', 'or', 'self', 'sqrt', 'not', 'sin', '<', 'cos', 'tan', 'exp'}
+	 math_call -> .rand(), {'<=', 'log', '(', '>=', 'rand', '{', '!=', '}', 'is', '*', 'True', '/', 'False', 'number', '+', 'string', '-', 'tan', 'type', '%', '^', '>', '@', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', '**', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', '<', 'print', 'exp'}
+	 term -> .factorPow, {'<=', 'log', '(', '>=', 'rand', '!=', '{', 'is', '}', '*', 'True', '/', 'False', 'number', '+', 'string', '-', 'type', '%', 'print', '@', '>', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', 'self', 'sqrt', 'or', 'not', 'sin', '<', 'cos', 'tan', 'exp'}
+	 control_structure -> .while_structure, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'PI', 'if', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'not', 'sin', 'cos', 'print', 'exp'}
+	 term -> .term*factorPow, {'(', 'log', '<=', '>=', 'rand', '{', '!=', 'is', '}', '*', 'True', '/', 'False', 'number', '+', 'string', '-', 'type', '%', 'print', '@', '>', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', '<', 'tan', 'exp'}
+	 statement -> .function_definition, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'PI', 'if', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'not', 'sin', 'cos', 'print', 'exp'}
+	 statement -> .control_structure, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'PI', 'if', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'not', 'sin', 'cos', 'print', 'exp'}
+	 ExprComp -> .ExprNum==ExprNum, {'(', 'log', 'rand', '{', '}', 'is', 'True', 'False', 'number', 'string', 'tan', 'type', 'exp', '@', '@@', 'PI', 'if', 'while', 'for', 'let', 'function', 'and', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', 'print', ';'}
+	 math_call -> .exp(ExprNum), {'(', 'log', '<=', 'rand', '>=', '{', '!=', '}', 'is', '*', 'True', '/', 'False', 'number', '+', 'string', '-', 'type', '%', '^', 'print', '@', '>', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', '**', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', '<', 'tan', 'exp'}
+	 factor -> .selfDotidentifier, {'(', 'log', '<=', 'rand', '>=', '{', '!=', '}', 'is', '*', 'True', '/', 'False', '+', 'number', 'string', '-', 'type', '%', 'print', '^', 'exp', '@', '>', '@@', 'PI', 'if', '==', 'while', 'for', 'let', 'function', 'and', '**', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', '<', 'tan', ';'}
+	 math_call -> .cos(ExprNum), {'<=', 'log', '(', '>=', 'rand', '{', '!=', '}', 'is', '*', 'True', '/', 'False', 'number', '+', 'string', '-', 'tan', 'type', '%', '^', '>', '@', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', '**', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', '<', 'print', 'exp'}
+	 expression -> .ExprOr, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', '@', '@@', 'PI', 'if', ';', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'not', 'sin', 'cos', 'print', 'exp'}
+	 function_definition -> .functionidentifier(parameters)type_annotation=>expression, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'PI', 'if', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'not', 'sin', 'cos', 'print', 'exp'}
+	 factor -> .string, {'(', 'log', '<=', 'rand', '>=', '{', '!=', '}', 'is', '*', 'True', '/', 'False', 'number', '+', 'string', '-', 'type', '%', 'print', '^', '@', '>', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', '**', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', '<', 'tan', 'exp'}
+	 ExprNum -> .ExprNum+term, {'(', 'log', '<=', 'rand', '>=', '{', '!=', '}', 'is', 'True', 'False', '+', 'number', 'string', '-', 'type', 'print', '@', '>', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', '<', 'tan', 'exp'}
+	 list_expr_statement -> .list_expr_statement;, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'exp', 'PI', 'if', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'not', 'sin', 'cos', 'print', ';'}
+	 expression -> .expression@ExprOr, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', '@', '@@', 'PI', 'if', ';', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'not', 'sin', 'cos', 'print', 'exp'}
+	 math_call -> .sqrt(ExprNum), {'<=', 'log', '(', '>=', 'rand', '!=', '{', '}', 'is', '*', 'True', '/', 'False', 'number', '+', 'string', '-', 'type', '%', '^', 'print', '@', '>', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', '**', 'self', 'sqrt', 'or', 'not', 'sin', '<', 'cos', 'tan', 'exp'}
+	 statement -> .assignment;, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'PI', 'if', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'not', 'sin', 'cos', 'print', 'exp'}
+	 factor -> .True, {'<=', 'log', '(', '>=', 'rand', '!=', '{', 'is', '}', '*', 'True', '/', 'False', 'number', '+', 'string', '-', 'type', '%', '^', 'print', '@', '>', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', '**', 'or', 'self', 'sqrt', 'not', 'sin', '<', 'cos', 'tan', 'exp'}
+	 ExprIsType -> .ExprComp, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'type', 'print', 'exp', '@', '@@', 'PI', 'if', 'while', 'for', 'let', 'function', 'and', 'or', 'self', 'sqrt', 'not', 'sin', 'cos', 'tan', ';'}
+	 factorPow -> .factor, {'<=', 'log', '(', '>=', 'rand', '{', '!=', 'is', '}', '*', 'True', '/', 'False', 'number', '+', 'string', '-', 'tan', 'type', '%', '>', '@', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', 'or', 'self', 'sqrt', 'not', 'sin', 'cos', '<', 'print', 'exp'}
+	 statement_list -> .statementstatement_list, {'}'}
+	 ExprComp -> .ExprNum, {'(', 'log', 'rand', '{', 'is', '}', 'True', 'False', 'number', 'string', 'type', 'print', 'exp', '@', '@@', 'PI', 'if', 'while', 'for', 'let', 'function', 'and', 'or', 'self', 'sqrt', 'not', 'sin', 'cos', 'tan', ';'}
+	 ExprNum -> .term, {'(', 'log', '<=', '>=', 'rand', '!=', '{', 'is', '}', 'True', 'False', '+', 'number', 'string', '-', 'tan', 'type', '@', '>', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', 'self', 'sqrt', 'or', 'not', 'sin', '<', 'cos', 'print', 'exp'}
+	 ExprAnd -> .ExprNeg, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', '@', '@@', 'PI', 'if', ';', 'while', 'for', 'let', 'function', 'and', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', 'print', 'exp'}
+	 factor -> .math_call, {'<=', 'log', '(', '>=', 'rand', '{', '!=', 'is', '}', '*', 'True', '/', 'False', 'number', '+', '-', 'string', 'type', '%', '^', 'print', 'exp', '@', '>', '@@', 'PI', 'if', '==', 'while', 'for', 'let', 'function', 'and', '**', 'or', 'self', 'sqrt', 'not', 'sin', 'cos', '<', 'tan', ';'}
+	 factor -> .(destructive_assignment), {'<=', 'log', '(', '>=', 'rand', '!=', '{', 'is', '}', '*', 'True', '/', 'False', 'number', '+', 'string', '-', 'type', '%', '^', 'print', '@', '>', '@@', 'PI', ';', 'if', '==', 'while', 'for', 'let', 'function', 'and', '**', 'or', 'self', 'sqrt', 'not', 'sin', '<', 'cos', 'tan', 'exp'}
+	 list_expr_statement -> .expression, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'exp', 'PI', 'if', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'not', 'sin', 'cos', 'print', ';'}
+	 factorPow -> .factor**factorPow, {'<=', 'log', '(', '>=', 'rand', '!=', '{', 'is', '}', '*', 'True', '/', 'False', 'number', '+', 'string', '-', 'type', '%', 'print', '@', '>', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', 'or', 'self', 'sqrt', 'not', 'sin', '<', 'cos', 'tan', 'exp'}
+	 statement -> .list_expr_statement, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'PI', 'if', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'not', 'sin', 'cos', 'print', 'exp'}
+	 ExprIsType -> .ExprCompisidentifier, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'exp', '@', '@@', 'PI', 'if', 'while', 'for', 'let', 'function', 'and', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', 'print', ';'}
+	 term -> .term/factorPow, {'(', 'log', '<=', 'rand', '>=', '{', '!=', '}', 'is', '*', 'True', '/', 'False', 'number', '+', 'string', '-', 'type', '%', 'print', '@', '>', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', '<', 'tan', 'exp'}
+	 ExprComp -> .ExprNum!=ExprNum, {'(', 'log', 'rand', '{', 'is', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'exp', '@', '@@', 'PI', 'if', 'while', 'for', 'let', 'function', 'and', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', 'print', ';'}
+	 assignment -> .letmulti_assignment, {';'}
+	 factor -> .number, {'(', 'log', '<=', '>=', 'rand', '!=', '{', 'is', '}', '*', 'True', '/', 'False', 'number', '+', 'string', '-', 'tan', 'type', '%', '^', '@', '>', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', '**', 'self', 'sqrt', 'or', 'not', 'sin', '<', 'cos', 'print', 'exp'}
+	 factor -> .print(expression), {'<=', 'log', '(', '>=', 'rand', '!=', '{', 'is', '}', '*', '/', 'True', 'False', 'number', '+', '-', 'string', 'type', '%', '^', 'print', '@', '>', '@@', 'PI', ';', 'if', '==', 'while', 'for', 'let', 'function', 'and', '**', 'or', 'self', 'sqrt', 'not', 'sin', '<', 'cos', 'tan', 'exp'}
+	 math_call -> .PI, {'(', 'log', '<=', 'rand', '>=', '{', '!=', '}', 'is', '*', 'True', '/', 'False', 'number', '+', 'string', '-', 'type', '%', '^', 'print', '@', '>', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', '**', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', '<', 'tan', 'exp'}
+	 function_definition -> .functionidentifier(parameters)type_annotation{list_expr_statement}, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'PI', 'if', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'not', 'sin', 'cos', 'print', 'exp'}
+	 factor -> .(expression), {'(', 'log', '<=', 'rand', '>=', '{', '!=', '}', 'is', '*', 'True', '/', 'False', '+', 'number', 'string', '-', 'type', '%', 'print', '^', 'exp', '@', '>', '@@', 'PI', 'if', '==', 'while', 'for', 'let', 'function', 'and', '**', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', '<', 'tan', ';'}
+	 type_definition -> .typeidentifier(parameters)inheritance{attribute_definitionmethod_definition}, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'PI', 'if', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'not', 'sin', 'cos', 'print', 'exp'}
+	 math_call -> .sin(ExprNum), {'<=', 'log', '(', '>=', 'rand', '!=', '{', 'is', '}', '*', '/', 'True', 'False', 'number', '+', '-', 'string', 'type', '%', '^', 'print', '@', '>', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', '**', 'or', 'self', 'sqrt', 'not', 'sin', '<', 'cos', 'tan', 'exp'}
+	 while_structure -> .while(expression){list_expr_statement}, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'PI', 'if', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'not', 'sin', 'cos', 'print', 'exp'}
+	 statement_list -> statement.statement_list, {'}'}
+	 ExprNeg -> .ExprIsType, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'type', 'print', '@', '@@', 'PI', 'if', ';', 'while', 'for', 'let', 'function', 'and', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', 'tan', 'exp'}
+	 factor -> .{list_expr_statement}, {'(', 'log', '<=', '>=', 'rand', '{', '!=', 'is', '}', '*', 'True', '/', 'False', 'number', '+', 'string', '-', 'type', '%', '^', 'print', '@', '>', '@@', 'PI', 'if', ';', '==', 'while', 'for', 'let', 'function', 'and', '**', 'self', 'sqrt', 'or', 'not', 'sin', 'cos', '<', 'tan', 'exp'}
+	 if_structure -> .if(expression){list_expr_statement}contElifcontElse, {'(', 'log', 'rand', '{', '}', 'True', 'False', 'number', 'string', 'tan', 'type', 'PI', 'if', 'while', 'for', 'let', 'function', 'self', 'sqrt', 'not', 'sin', 'cos', 'print', 'exp'} 

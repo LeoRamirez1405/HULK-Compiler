@@ -63,29 +63,44 @@ class Lexer:
 
     def _tokenize(self, text):
         
+        row = 0
+        col = 0
         while text:
             final, lex = self._walk(text)
+
             
             if final is None:
                 yield '$', self.eof
                 return
-
-
+            
             priority = float('inf')
             for s in final.state:
                 if s.final:
                     ttype, p = s.tag
+
                     if p < priority:
                         priority = p
                         token_type = ttype
 
-                    
-            yield lex, token_type
-            
             text = text[len(lex):]
+            
+            if token_type == '[LineJump]':
+                row += 1
+                col = 0
+                continue
 
-        yield '$', self.eof
+            elif token_type == 'space':
+                col += len(lex)
+                continue
+
+            elif token_type:
+                col += len(lex)
+
+            yield lex, token_type, row, col
+            
+
+        yield '$', self.eof, row, col
 
     
     def __call__(self, text):
-        return [ Token(lex, ttype) for lex, ttype in self._tokenize(text) ]
+        return [ Token(lex, ttype, row, col) for lex, ttype, row, col in self._tokenize(text) ]
