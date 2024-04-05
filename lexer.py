@@ -89,6 +89,10 @@ class Lexer:
                 col = 0
                 continue
 
+            elif token_type == 'space':
+                col += len(lex)
+                continue
+
             elif token_type:
                 col += len(lex)
 

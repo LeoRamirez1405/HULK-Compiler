@@ -1,6 +1,3 @@
-let a = 6 in
-    let b = a * 7 in {
-        print(b);
-        print(b);
-        print(b);
-    };
+function suma(x) => x + 1;
+
+print(suma(5));
