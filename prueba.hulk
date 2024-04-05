@@ -1,12 +1,6 @@
-type Point {
-    self.x = 0;
-    self.y = 0;
-
-    getX():number{
-    let x = 10;
-      x;  
-    } 
-}
-
-let a = new Point();
-print(a.getX());
+let a = 6 in
+    let b = a * 7 in {
+        print(b);
+        print(b);
+        print(b);
+    };

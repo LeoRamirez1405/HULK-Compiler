@@ -38,11 +38,9 @@ def gramm_Hulk_LR1():
     create_statement %= function_definition, lambda h, s: s[1]
     
     
-    #expr_statement %= print_statement, lambda h, s: s[1]
     #TODO aqui hay que ver como se maneja la cosa de las listas
     expr_statement %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
     expr_statement %= expression, lambda h, s: s[1]
-    #expr_statement %=  oBrace + statement_list + cBrace, lambda h, s: CollectionNode(s[2])
     
     
     print_statement %= Print + oPar + expression + cPar, lambda h, s: PrintStatmentNode(s[3])
@@ -86,8 +84,6 @@ def gramm_Hulk_LR1():
     function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + Arrow + statement,lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4], [s[8]] )
     
     #TODO Cambie expression por identifier porque el parametro de una funcion tiene que ser obligatoria mente un variable 
-    # parameters %= expression + type_annotation + Comma + parameters, lambda h, s: [{s[1]:s[2]}] + [s[4]]
-    # parameters %= expression + type_annotation, lambda h, s: {s[1]:s[2]}
     parameters %= identifier + type_annotation + Comma + parameters, lambda h, s: [{IdentifierNode(s[1]):s[2]}] + s[4]
     #* Puse el diccionario que se creaba solo entre corchetes para formar la lisat
     parameters %= identifier + type_annotation, lambda h, s: [{IdentifierNode(s[1]):s[2]}]
@@ -149,11 +145,9 @@ def gramm_Hulk_LR1():
     factor %= oPar+ destroy_collection + cPar, lambda h, s: s[2]
     factor %=  oBrace + statement_list + cBrace, lambda h, s: CollectionNode(s[2])
     factor %= print_statement, lambda h, s: s[1]
+    
+    #TODO Dear future Leo: assignment In expr_statement NO ES UN FACTOR (acuerdate del ejemplo q lo parte, el del punto y coma necesario al final)
     #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
-    #TODO Annadi el self a los factores
-    #factor %= function_call, lambda h, s: s[1]
-    #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
-    #factor %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])  
     factor %= math_call, lambda h, s:  s[1]
     factor %= member_access, lambda h, s:  s[1]  
     factor %= kern_instance_creation, lambda h,s: s[1]  
