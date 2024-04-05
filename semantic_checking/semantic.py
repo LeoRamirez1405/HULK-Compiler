@@ -180,6 +180,13 @@ class Scope:
         self.local_variables.add(info)
         return info
 
+    def find_local_variable(self, vname, index=None):
+        locals = self.local_variables if index is None else itt.islice(self.local_variables, index)
+        try:
+            return next(x for x in locals if x.name == vname)
+        except StopIteration:
+            return None
+
     def find_variable(self, vname, index=None):
         locals = self.local_variables if index is None else itt.islice(self.local_variables, index)
         try:
@@ -191,7 +198,7 @@ class Scope:
         try:
             return self.functions[vname]
         except:
-            return self.parent.find_variable(vname, self.index) if not self.parent is None else None
+            return self.parent.find_functions(vname, self.index) if not self.parent is None else None
 
     def is_defined(self, vname):
         return self.find_variable(vname) is not None

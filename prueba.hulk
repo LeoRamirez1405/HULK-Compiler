@@ -1,28 +1,4 @@
-type Persona(first:string, last:string) {
-    self.first = first;
-    self.last = last;
-    get_full() => self.first@@self.last;
-    calculaEdad(edad:number) {
-        if(edad<18)
-        {
-            print("Menor de edad");
-        }
-        elif(edad >18 and edad < 21)
-        {
-            print("No es nada");
-        }
-        else
-        {
-            let residuo = 0;
-            while(edad%10 > 0){
-                residuo := edad%10;
-            }
-            print("Tu residuo es"@residuo);
-        }
-    }
-}
-
-
-function suma(x) => x + 1;
-
-print(suma(5));
+function fib(n:number):number => if (n == 0 or n == 1) 
+{1;} 
+else
+{ fib(n+1) + fib(n+2);}

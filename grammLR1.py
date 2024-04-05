@@ -190,9 +190,9 @@ def gramm_Hulk_LR1():
     method_definition %= identifier + oPar + parameters + cPar + type_annotation + Arrow + statement + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3], s[7])] + s[8]
     method_definition %= G.Epsilon , lambda h, s: []
 
-    inheritance %= Inherits + identifier, lambda h, s: InheritanceNode(IdentifierNode(s[2]))
-    inheritance %= Inherits + identifier + oPar + arguments + cPar, lambda h, s: InheritanceNode(IdentifierNode(s[2]))
-    inheritance %= G.Epsilon, lambda h, s: InheritanceNode(IdentifierNode('object'))
+    inheritance %= Inherits + identifier, lambda h, s: InheritanceNode(IdentifierNode(s[2]),[])
+    inheritance %= Inherits + identifier + oPar + parameters + cPar, lambda h, s: InheritanceNode(IdentifierNode(s[2]),s[4])
+    inheritance %= G.Epsilon, lambda h, s: InheritanceNode(IdentifierNode('object'),[])
     
     nonzero_digits = '|'.join(str(n) for n in range(1,10))
     zero_digits = '|'.join(str(n) for n in range(0,10))

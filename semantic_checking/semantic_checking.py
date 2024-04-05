@@ -37,10 +37,10 @@ class SemanticCheckingVisitor:
         type_checker = TypeCheckerVisitor(self.context, self.scope, self.errors, self.default_functions)
         type_checker.visit(ast)
         
-        scope = type_checker.scope
-        context = type_checker.context
-        treeInterpreter = TreeWalkInterpreter(context, scope)
-        treeInterpreter.visit(ast)
+        #scope = type_checker.scope
+        #context = type_checker.context
+        #treeInterpreter = TreeWalkInterpreter(context, scope)
+        #treeInterpreter.visit(ast)
         # print('Context')
         # for name, type in self.context.types.items():
         #     print(f'Type: {name}')
