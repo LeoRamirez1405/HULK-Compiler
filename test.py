@@ -10,11 +10,12 @@ gramatica, lexer = gramm_Hulk_LR1()
 
 
 # Leer el contenido del archivo y reemplazar los saltos de línea
-with open('prueba.hulk', 'r') as archivo:
+with open('prueba.txt', 'r') as archivo:
     contenido = archivo.read()
 
     contenido_modificado = contenido.replace('\n', '[LineJump]')
 
+    # Reemplazar tabulaciones por espacios en blanco
     contenido_modificado = contenido_modificado.replace('"', '\"')
     text = contenido_modificado
 
@@ -32,13 +33,20 @@ ast = evaluate_reverse_parse(output,operations,tokensAST)
 checker = SemanticCheckingVisitor()
 print(checker.semantic_checking(ast))
 
-# formatter = TreeWalkInterpreter()
-# tree = formatter.visit(ast)
-# print(tree)
+## formatter = TreeWalkInterpreter()
+## tree = formatter.visit(ast)
+## print(tree)
 
 # # checker = SemanticCheckingVisitor()
 # # print(checker.semantic_checking(ast))
 
 
+
+# # formatter = FormatVisitor()
+# # tree = formatter.visit(ast)
+# # print(tree)
+
+# # checker = SemanticCheckingVisitor()
+# # print(checker.semantic_checking(ast))
 
 

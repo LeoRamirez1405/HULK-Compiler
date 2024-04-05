@@ -62,8 +62,9 @@ class SelfNode(Node):
     def __init__(self, id : IdentifierNode) -> None:
         super().__init__()
         self.identifier: IdentifierNode = id
+        self.id : str = id
         self.location = id.location
-             
+
 class PrintStatmentNode(Node):
     def __init__(self, expression, tokenPrint : Token) -> None:
         super().__init__()
@@ -165,9 +166,10 @@ class TypeDefinitionNode(Node):
         self.methods = methods
         
 class InheritanceNode(Node):
-    def __init__(self, type) -> None:
+    def __init__(self, type, args) -> None:
         super().__init__()
         self.type : IdentifierNode = type
+        self.args: list[dict[IdentifierNode, TypeNode]] = args
 
 #? Verificar que son los parametros type y args
 #* En new type (args = [param_1, param_2, ...])

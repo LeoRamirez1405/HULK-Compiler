@@ -31,16 +31,16 @@ def gramm_Hulk_LR1():
     
     non_create_statement %= control_structure, lambda h, s: s[1]
     non_create_statement %= expr_statement + Semi, lambda h, s: s[1]
+    #non_create_statement %= expr_statementWithoutSemi, lambda h, s: s[1]
     
     create_statement %= assignment + Semi, lambda h, s: s[1] 
     create_statement %= type_definition, lambda h, s: s[1]
-    create_statement %= destroy_collection + Semi, lambda h, s: s[1]
     create_statement %= function_definition, lambda h, s: s[1]
-    
+    create_statement %= destroy_collection + Semi, lambda h, s: s[1]
     
     #TODO aqui hay que ver como se maneja la cosa de las listas
     #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
-    expr_statement %= assignment + In + expr_statement, lambda h, s: [LetInExpressionNode(s[1], s[3], s[2])] #Ya
+    expr_statement %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3], s[2]) #Ya
     expr_statement %= expression, lambda h, s: [s[1]]
     
     
@@ -63,6 +63,7 @@ def gramm_Hulk_LR1():
     for_assignment = G.NonTerminal('for_assignment')
     for_assignment %= G.Epsilon, lambda h, s: CollectionNode([])
     for_assignment %= assignment, lambda h, s: s[1]
+
     for_assignment %= destroy_collection, lambda h, s: s[1]
     
     for_structure %= For + oPar + for_assignment + Semi + expression + Semi + destroy_collection + cPar + oBrace + statement_list + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10], s[1]) #Ya
@@ -84,7 +85,7 @@ def gramm_Hulk_LR1():
 
     function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4],s[8]) #Ya
     #TODO aqui puse el statment entre corchetes en la creacion del nodo porque de lo contrario no lo puedo iterar
-    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + Arrow + statement,lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4], [s[8]] ) #Ya
+    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + Arrow + statement,lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4], s[8] )
     
     #TODO Cambie expression por identifier porque el parametro de una funcion tiene que ser obligatoria mente un variable 
     parameters %= identifier + type_annotation + Comma + parameters, lambda h, s: [{IdentifierNode(s[1]):s[2]}] + s[4] #Ya
@@ -96,7 +97,7 @@ def gramm_Hulk_LR1():
     type_annotation %= G.Epsilon, lambda h, s: TypeNode('object') #Ya
     
     ExprAnd, ExprNeg, ExprIsType, ExprComp, ExprNum, ExprOr= G.NonTerminals('ExprAnd ExprNeg ExprIsType ExprComp ExprNum ExprOr')
-        
+    
     expression %= ExprOr, lambda h, s: s[1] 
     expression %= expression + arroba2 + ExprOr, lambda h, s:  StringConcatWithSpaceNode(s[1],s[3], s[2]) #Ya
     expression %= expression + arroba + ExprOr, lambda h, s:  StringConcatNode(s[1],s[3], s[2]) #Ya
@@ -111,7 +112,7 @@ def gramm_Hulk_LR1():
     ExprNeg %= Not + ExprIsType, lambda h, s:  BoolNotNode(s[2], s[1])  #Ya
     
     ExprIsType %= ExprComp, lambda h, s: s[1]
-    ExprIsType %= ExprComp + Is + identifier, lambda h, s:  BoolIsTypeNode(s[1],s[3], s[2]) #Y
+    ExprIsType %= ExprComp + Is + identifier, lambda h, s:  BoolIsTypeNode(s[1],TypeNode(s[3]), s[2]) #Y
     
     ExprComp %= ExprNum, lambda h, s: s[1]
     ExprComp %= ExprNum + Less + ExprNum, lambda h, s:  BoolCompLessNode(s[1],s[3], s[2]) #Y
@@ -186,12 +187,12 @@ def gramm_Hulk_LR1():
 
     method_definition %= identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],s[7])] + s[9]
     #TODO aqui puse el statment entre corchetes en la creacion del nodo porque de lo contrario no lo puedo iterar
-    method_definition %= identifier + oPar + parameters + cPar + type_annotation + Arrow + statement + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3], [s[7]])] + s[8]
+    method_definition %= identifier + oPar + parameters + cPar + type_annotation + Arrow + statement + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3], s[7])] + s[8]
     method_definition %= G.Epsilon , lambda h, s: []
 
-    inheritance %= Inherits + identifier, lambda h, s: InheritanceNode(IdentifierNode(s[2])) #Ya
-    inheritance %= Inherits + identifier + oPar + arguments + cPar, lambda h, s: InheritanceNode(IdentifierNode(s[2])) #Ya
-    inheritance %= G.Epsilon, lambda h, s: InheritanceNode(IdentifierNode('object'))    #Ya
+    inheritance %= Inherits + identifier, lambda h, s: InheritanceNode(IdentifierNode(s[2]),[])
+    inheritance %= Inherits + identifier + oPar + parameters + cPar, lambda h, s: InheritanceNode(IdentifierNode(s[2]),s[4])
+    inheritance %= G.Epsilon, lambda h, s: InheritanceNode(IdentifierNode('object'),[])
     
     nonzero_digits = '|'.join(str(n) for n in range(1,10))
     zero_digits = '|'.join(str(n) for n in range(0,10))
