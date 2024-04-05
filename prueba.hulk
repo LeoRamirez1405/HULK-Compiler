@@ -1,6 +1,6 @@
-function operate(x, y) {
-    print(x + y);
-    print(x - y);
-    print(x * y);
-    print(x / y);
-}
+let a = 6 in
+    let b = a * 7 in {
+        print(b);
+        print(b);
+        print(b);
+    };
