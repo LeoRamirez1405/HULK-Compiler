@@ -19,6 +19,7 @@ def gramm_Hulk_LR1():
     sComil, dComill, = G.Terminals('\' \"')
     sqrt, sin, cos, tan, exp, log, rand = G.Terminals('sqrt sin cos tan exp log rand')
     collection, destroy_collection, selfExpr = G.NonTerminals('collection destroy_collection selfExpr')
+    member_access2 = G.NonTerminal('member_access2')
     
     Program %= statement_list, lambda h, s: ProgramNode(s[1])
     statement_list %= statement + statement_list, lambda h, s: [s[1]] + s[2] 
@@ -44,16 +45,8 @@ def gramm_Hulk_LR1():
     expr_statement %=  oBrace + statement_list + cBrace, lambda h, s: CollectionNode(s[2])
     
     
-    #! Pendiente
-    #expr_statement %= _self + Dot + identifier, lambda h, s : SelfNode(IdentifierNode(s[3]))
-    
-    #expr_statement %= expr_statementWithoutSemi, lambda h, s: s[1]    
-    #expr_statementWithoutSemi %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])    
-    
     print_statement %= Print + oPar + expression + cPar, lambda h, s: PrintStatmentNode(s[3])
     
-    #kern_assignment %= identifier + Equal + kern_instance_creation, lambda h, s: KernAssigmentNode(s[1],s[3])
-    kern_assignment %= identifier + Equal + expr_statement, lambda h, s: KernAssigmentNode(IdentifierNode(s[1]),s[3])
     control_structure %= if_structure , lambda h, s: s[1]
     control_structure %= while_structure , lambda h, s: s[1]
     control_structure %= for_structure , lambda h, s: s[1]
@@ -61,8 +54,6 @@ def gramm_Hulk_LR1():
     if_structure %= If + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif + contElse , lambda h, s: IfStructureNode(s[3], s[6], s[8], s[9])
 
     #TODO Ponerle que sea un coleccion
-    # contElif_2 = G.NonTerminal('contElif_2')
-    # contElif %= contElif_2, lambda h,s: CollectionNode(s[1])
     contElif %= Elif + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif , lambda h, s: [ElifStructureNode(s[3],s[6])] + s[8]
     contElif %= G.Epsilon , lambda h, s: []
 
@@ -70,7 +61,6 @@ def gramm_Hulk_LR1():
     contElse %= G.Epsilon , lambda h, s:  ElseStructureNode([])
 
     while_structure %= While + oPar + expression + cPar + oBrace + statement_list + cBrace , lambda h, s:  WhileStructureNode(s[3], s[6])
-    #for_structure %= For + oPar + assignment + Semi + expression + Semi + destructive_assignment + cPar + oBrace + statement_list + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10])
     for_assignment = G.NonTerminal('for_assignment')
     for_assignment %= G.Epsilon, lambda h, s: CollectionNode([])
     for_assignment %= assignment, lambda h, s: s[1]
@@ -84,7 +74,7 @@ def gramm_Hulk_LR1():
     multi_assignment %= kern_assignment + Comma + multi_assignment, lambda h, s: [s[1]] + s[3]
     multi_assignment %= kern_assignment, lambda h, s: [s[1]]
     kern_assignment %= identifier + Equal + expr_statement, lambda h, s: KernAssigmentNode(IdentifierNode(s[1]),s[3])  
-    #kern_assignment %= identifier + Equal + expr_statementWithoutSemi, lambda h, s: KernAssigmentNode(s[1],s[3])  
+    kern_assignment %= member_access2 + Equal + expr_statement, lambda h, s: KernAssigmentNode(IdentifierNode(s[1]),s[3])  
     
    
     destroy_collection %= destructive_assignment, lambda h, s : CollectionNode(s[1])
@@ -160,19 +150,17 @@ def gramm_Hulk_LR1():
     #factor %=  oBrace + statement_list + cBrace, lambda h, s: CollectionNode(s[2])
     #factor %= print_statement, lambda h, s: s[1]
     #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
-    
-    
-        
     #TODO Annadi el self a los factores
-    
     #factor %= function_call, lambda h, s: s[1]
     #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
     #factor %= assignment + In + oBrace + statement_list + cBrace, lambda h, s: LetInNode(s[1], s[3])  
     factor %= math_call, lambda h, s:  s[1]
     factor %= member_access, lambda h, s:  s[1]  
     factor %= kern_instance_creation, lambda h,s: s[1]  
+    
     member_access %= factor + Dot + identifier + oPar + arguments + cPar , lambda h, s: MemberAccessNode(s[1], IdentifierNode(s[3]), s[5]) 
-    member_access %= factor + Dot + identifier , lambda h, s: MemberAccessNode(s[1], IdentifierNode(s[3]), [])  #Todo member access Los parametros son privados de la clase #! NAOMI ARREGLA ESTO EN EL CHECKEO SEMANTICO ❤️
+    member_access %= member_access2, lambda h, s: s[1] 
+    member_access2 %= factor + Dot + identifier , lambda h, s: MemberAccessNode(s[1], IdentifierNode(s[3]), [])  #Todo member access Los parametros son privados de la clase #! NAOMI ARREGLA ESTO EN EL CHECKEO SEMANTICO ❤️
     kern_instance_creation %= New + identifier + oPar + arguments + cPar, lambda h, s: KernInstanceCreationNode(IdentifierNode(s[2]),s[4])
     #kern_instance_creation %= New + identifier, lambda h, s: KernInstanceCreationNode(IdentifierNode(s[2]),[])
     
@@ -191,13 +179,12 @@ def gramm_Hulk_LR1():
     arguments %= G.Epsilon, lambda h, s: []
     
     # Estructuras adicionales para tipos
-    #type_definition %= Type + identifier + oPar + parameters + cPar + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[4],s[6], s[8],s[9])
     type_definition %= Type + identifier + oPar + parameters + cPar+ inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[4],s[6], s[8],s[9])
     type_definition %= Type + identifier + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),[],s[3], s[5],s[6])
 
     #! El siguiente comentario paso a ser lo que era antes
     #TODO Quite el self porque cuando se inicializan los atributos no se pone self
-    attribute_definition %= _self + Dot + kern_assignment + Semi + attribute_definition, lambda h, s: s[5] + [s[3]]
+    attribute_definition %= _self + Dot + kern_assignment + Semi + attribute_definition, lambda h, s: [s[3]] + s[5]
     #attribute_definition %= kern_assignment + Semi + attribute_definition, lambda h, s: [s[1]] + s[3]
     attribute_definition %= G.Epsilon, lambda h, s: []
 
