@@ -1,40 +1,4 @@
-type Persona(first:string, last:string) {
-    get_full() => first@@last;
-    calculaEdad(edad:number) {
-        if(edad<18)
-        {
-            print("Menor de edad");
-        }
-        elif(edad >18 and edad < 21)
-        {
-            print("No es nada");
-        }
-        else
-        {
-            let residuo = 0;
-            while(edad%10 > 0){
-                residuo := edad%10;
-            }
-            print("Tu residuo es"@residuo);
-        }
-    }
-}
 
-
-type Estudiante(first, last) inherits Persona(first,last) {
-    self.first = first;
-    self.last = last;
-    get_promedio(n1,n2){
-        self.last := last;
-        let newVar = self.fist @ self.last;
-        let return in print(
-            for(let semestre = 1; semestre <= 4; semestre := semestre +1)
-            {
-                (n1+n2)*semestre;
-            }
-        )
-    }
-}
-
-let leo = new Estudiante("Leo","Ramirez");
-let result in leo.get_promedio(10,8);
+let return = 6 in print(
+        (n1+n2)*semestre
+);
