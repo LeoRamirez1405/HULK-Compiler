@@ -17,6 +17,7 @@ class TypeBuilderVisitor():
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
         for statment in node.statments:
+            print(f"Statement (Builder): {statment}")
             self.visit(statment)
 
     @visitor.when(TypeDefinitionNode)

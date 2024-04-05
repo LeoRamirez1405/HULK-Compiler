@@ -17,6 +17,7 @@ class TypeCheckerVisitor:
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
         for statment in node.statments:
+            print(f"Statement (Checker): {statment}")
             self.visit(statment, self.scope) 
             
     @visitor.when(PrintStatmentNode)
@@ -303,12 +304,14 @@ class TypeCheckerVisitor:
         
     @visitor.when(AritmeticExpression)
     def visit(self, node: AritmeticExpression, scope: Scope):
+        print("OnAritmeticExpressionNode")
         type_1: Type = self.visit(node.expression_1, scope)
-
+        print(f"type 1: {type_1}")
         type_2: Type = self.visit(node.expression_2, scope)
+        print(f"type 2: {type_2}")
         
         if not type_1.conforms_to('number') or not type_2.conforms_to('number'):
-            self.errors.append(SemanticError(f'Solo se pueden emplear aritmeticos entre expresiones aritmeticas.'))
+            self.errors.append(SemanticError(f'Solo se pueden emplear aritmeticos entre expresiones aritmeticas.')) #TODO
             return self.context.get_type('any')
         
         return type_1
@@ -448,6 +451,7 @@ class TypeCheckerVisitor:
     
     @visitor.when(NumberNode)
     def visit(self, node: NumberNode, scope):
+        print("OnNumberNode")
         try:
             a: float = float(node.value)
             return self.context.get_type('number')
@@ -508,6 +512,7 @@ class TypeCheckerVisitor:
 
     @visitor.when(StringNode)
     def visit(self, node: StringNode, scope):
+        print("OnStringNode")
         try:
             string = str(node.value)
             return self.context.get_type('string')

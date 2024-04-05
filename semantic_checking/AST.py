@@ -4,8 +4,6 @@ import math
 from cmp.utils import Token
 
 class Node():
-    def __init__(self):
-        self.location = (0,0)
         pass
         
 class AtomicNode(Node):
@@ -250,7 +248,7 @@ class PowExpressionNode(AritmeticExpression):
 class NumberNode(Node):
     def __init__(self, value : Token) -> None:
         super().__init__()
-        self.value = value
+        self.value = value.lex
         self.location = value.location
 
 class PINode(NumberNode):
@@ -308,15 +306,15 @@ class FunctionCallNode(Node):
 class BooleanNode(Node):
     def __init__(self, value : Token) -> None:
         super().__init__()
-        self.value = value
-        self.value = value.location
+        self.value = value.lex
+        self.location = value.location
 
         
 class StringNode(Node):
     def __init__(self, value : Token) -> None:
         super().__init__()
-        self.value = value
-        self.value = value.location
+        self.value = value.lex
+        self.location = value.location
         
 class StringConcatNode(BinaryNode):
     def __init__(self, left, right, tokenBinary: Token):
