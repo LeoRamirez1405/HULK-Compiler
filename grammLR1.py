@@ -157,6 +157,12 @@ def gramm_Hulk_LR1():
     factor %= control_structure, lambda h, s: s[1]
     factor %= oPar + assignment + cPar, lambda h, s: s[2] 
     factor %= oPar+ destroy_collection + cPar, lambda h, s: s[2]
+    #factor %=  oBrace + statement_list + cBrace, lambda h, s: CollectionNode(s[2])
+    #factor %= print_statement, lambda h, s: s[1]
+    #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
+    
+    
+        
     #TODO Annadi el self a los factores
     
     #factor %= function_call, lambda h, s: s[1]
@@ -166,8 +172,9 @@ def gramm_Hulk_LR1():
     factor %= member_access, lambda h, s:  s[1]  
     factor %= kern_instance_creation, lambda h,s: s[1]  
     member_access %= factor + Dot + identifier + oPar + arguments + cPar , lambda h, s: MemberAccessNode(s[1], IdentifierNode(s[3]), s[5]) 
-    #member_access %= factor + Dot + identifier , lambda h, s: MemberAccesNode(s[1], s[3], [])  #Todo member access Los parametros son privados de la clase #! NAOMI ARREGLA ESTO EN EL CHECKEO SEMANTICO ❤️
+    member_access %= factor + Dot + identifier , lambda h, s: MemberAccessNode(s[1], IdentifierNode(s[3]), [])  #Todo member access Los parametros son privados de la clase #! NAOMI ARREGLA ESTO EN EL CHECKEO SEMANTICO ❤️
     kern_instance_creation %= New + identifier + oPar + arguments + cPar, lambda h, s: KernInstanceCreationNode(IdentifierNode(s[2]),s[4])
+    #kern_instance_creation %= New + identifier, lambda h, s: KernInstanceCreationNode(IdentifierNode(s[2]),[])
     
     math_call %= sqrt + oPar + ExprNum + cPar, lambda h, s: SqrtMathNode(s[3])
     math_call %= cos + oPar + ExprNum + cPar, lambda h, s: CosMathNode(s[3])
@@ -186,12 +193,12 @@ def gramm_Hulk_LR1():
     # Estructuras adicionales para tipos
     #type_definition %= Type + identifier + oPar + parameters + cPar + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[4],s[6], s[8],s[9])
     type_definition %= Type + identifier + oPar + parameters + cPar+ inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[4],s[6], s[8],s[9])
-    type_definition %= Type + identifier + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),s[4],s[6], s[8],s[9])
+    type_definition %= Type + identifier + inheritance + oBrace + attribute_definition + method_definition + cBrace, lambda h, s: TypeDefinitionNode(IdentifierNode(s[2]),[],s[3], s[5],s[6])
 
     #! El siguiente comentario paso a ser lo que era antes
     #TODO Quite el self porque cuando se inicializan los atributos no se pone self
-    #attribute_definition %= _self + Dot + kern_assignment + Semi + attribute_definition, lambda h, s: s[5] + [s[3]]
-    attribute_definition %= kern_assignment + Semi + attribute_definition, lambda h, s: [s[1]] + s[3]
+    attribute_definition %= _self + Dot + kern_assignment + Semi + attribute_definition, lambda h, s: s[5] + [s[3]]
+    #attribute_definition %= kern_assignment + Semi + attribute_definition, lambda h, s: [s[1]] + s[3]
     attribute_definition %= G.Epsilon, lambda h, s: []
 
     method_definition %= identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],s[7])] + s[9]
