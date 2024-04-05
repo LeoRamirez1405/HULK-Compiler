@@ -1,6 +1,6 @@
 from semantic_checking.AST import *
 from semantic_checking.semantic_checking import SemanticCheckingVisitor
-from interpreter import TreeWalkInterpreter
+from format_visitor import TreeWalkInterpreter
 #from semantic_checking.semantic_checking import SemanticCheckingVisitor
 #from semantic_checking.evaluation import evaluate_reverse_parse
 from grammLR1 import gramm_Hulk_LR1
