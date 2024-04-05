@@ -10,13 +10,13 @@ class TypeCollectorVisitor:
         
     @visitor.on('node')
     def visit(self, node):
+        print(f"OnGeneric: {type(node)}")
         pass
 
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
         for statment in node.statments:
             print(f"Statement (Collector): {statment}")
-            print(statment)
             self.visit(statment)
             
     @visitor.when(TypeDefinitionNode)

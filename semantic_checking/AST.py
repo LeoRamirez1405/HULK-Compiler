@@ -219,6 +219,7 @@ class AritmeticExpression(Node):
         super().__init__()
         self.expression_1 = expression_1
         self.expression_2 = expression_2
+        print(f"Ari: {expression_1}, {expression_2}")
         self.location = tokenArit.location
         
 #-------------------------------Aritmetic-Expressions-------------------------------------------------------------------------------------------------#

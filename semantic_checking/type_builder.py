@@ -12,6 +12,7 @@ class TypeBuilderVisitor():
         
     @visitor.on('node')
     def visit(self, node, tabs):
+        print(f"OnGeneric: {type(node)}")
         pass
     
     @visitor.when(ProgramNode)
