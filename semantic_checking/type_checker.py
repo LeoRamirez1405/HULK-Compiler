@@ -524,7 +524,9 @@ class TypeCheckerVisitor:
         
     @visitor.when(BoolIsTypeNode)
     def visit(self, node: BoolIsTypeNode, scope: Scope):
-        return self.visit(node.left, scope).conforms_to(self.visit(node.right, scope))
+        self.visit(node.left, scope)
+        self.visit(node.right, scope)
+        return self.context.get_type('bool')
         
     @visitor.when(IdentifierNode)
     def visit(self, node: IdentifierNode, scope: Scope):

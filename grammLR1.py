@@ -112,7 +112,7 @@ def gramm_Hulk_LR1():
     ExprNeg %= Not + ExprIsType, lambda h, s:  BoolNotNode(s[2])
     
     ExprIsType %= ExprComp, lambda h, s: s[1]
-    ExprIsType %= ExprComp + Is + identifier, lambda h, s:  BoolIsTypeNode(s[1],s[3])
+    ExprIsType %= ExprComp + Is + identifier, lambda h, s:  BoolIsTypeNode(s[1],TypeNode(s[3]))
     
     ExprComp %= ExprNum, lambda h, s: s[1]
     ExprComp %= ExprNum + Less + ExprNum, lambda h, s:  BoolCompLessNode(s[1],s[3])

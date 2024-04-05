@@ -39,7 +39,7 @@ class SemanticCheckingVisitor:
         
         #scope = type_checker.scope
         #context = type_checker.context
-        #treeInterpreter = TreeWalkInterpreter(context, scope)
+        #treeInterpreter = TreeWalkInterpreter(self.context, self.scope)
         #treeInterpreter.visit(ast)
         # print('Context')
         # for name, type in self.context.types.items():
