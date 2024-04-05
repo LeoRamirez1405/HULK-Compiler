@@ -19,7 +19,7 @@ def gramm_Hulk_LR1():
     sComil, dComill, = G.Terminals('\' \"')
     sqrt, sin, cos, tan, exp, log, rand = G.Terminals('sqrt sin cos tan exp log rand')
     collection, destroy_collection, selfExpr = G.NonTerminals('collection destroy_collection selfExpr')
-    member_access2 = G.NonTerminal('member_access2')
+    self_access = G.NonTerminal('self_access')
     
     Program %= statement_list, lambda h, s: ProgramNode(s[1])
     statement_list %= statement + statement_list, lambda h, s: [s[1]] + s[2] 
@@ -39,8 +39,9 @@ def gramm_Hulk_LR1():
     
     
     #TODO aqui hay que ver como se maneja la cosa de las listas
-    expr_statement %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
-    expr_statement %= expression, lambda h, s: s[1]
+    #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
+    expr_statement %= assignment + In + expr_statement, lambda h, s: [LetInExpressionNode(s[1], s[3])]
+    expr_statement %= expression, lambda h, s: [s[1]]
     
     
     print_statement %= Print + oPar + expression + cPar, lambda h, s: PrintStatmentNode(s[3])
@@ -72,11 +73,13 @@ def gramm_Hulk_LR1():
     multi_assignment %= kern_assignment + Comma + multi_assignment, lambda h, s: [s[1]] + s[3]
     multi_assignment %= kern_assignment, lambda h, s: [s[1]]
     kern_assignment %= identifier + Equal + expr_statement, lambda h, s: KernAssigmentNode(IdentifierNode(s[1]),s[3])  
-    kern_assignment %= member_access2 + Equal + expr_statement, lambda h, s: KernAssigmentNode(IdentifierNode(s[1]),s[3])  
+    kern_assignment %= self_access + Equal + expr_statement, lambda h, s: KernAssigmentNode(IdentifierNode(s[1]),s[3])  
     
    
     destroy_collection %= destructive_assignment, lambda h, s : CollectionNode(s[1])
+    destructive_assignment %= self_access + Destroy + expression + Comma + destructive_assignment, lambda h, s : [DestroyNode(s[1],s[3])] + s[4]
     destructive_assignment %= identifier + Destroy + expression + Comma + destructive_assignment, lambda h, s : [DestroyNode(IdentifierNode(s[1]) , s[3])] + s[4]
+    destructive_assignment %= self_access + Destroy + expression, lambda h, s: [DestroyNode(s[1] , s[3])] 
     destructive_assignment %= identifier + Destroy + expression, lambda h, s: [DestroyNode(IdentifierNode(s[1]) , s[3])] 
 
     function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4],s[8]) 
@@ -150,11 +153,11 @@ def gramm_Hulk_LR1():
     #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
     factor %= math_call, lambda h, s:  s[1]
     factor %= member_access, lambda h, s:  s[1]  
+    factor %= self_access, lambda h, s:  s[1]  
     factor %= kern_instance_creation, lambda h,s: s[1]  
     
     member_access %= factor + Dot + identifier + oPar + arguments + cPar , lambda h, s: MemberAccessNode(s[1], IdentifierNode(s[3]), s[5]) 
-    member_access %= member_access2, lambda h, s: s[1] 
-    member_access2 %= factor + Dot + identifier , lambda h, s: MemberAccessNode(s[1], IdentifierNode(s[3]), [])  #Todo member access Los parametros son privados de la clase #! NAOMI ARREGLA ESTO EN EL CHECKEO SEMANTICO ❤️
+    self_access %= _self + Dot + identifier , lambda h, s: SelfNode(IdentifierNode(s[3]))  #Todo member access Los parametros son privados de la clase #! NAOMI ARREGLA ESTO EN EL CHECKEO SEMANTICO ❤️
     kern_instance_creation %= New + identifier + oPar + arguments + cPar, lambda h, s: KernInstanceCreationNode(IdentifierNode(s[2]),s[4])
     #kern_instance_creation %= New + identifier, lambda h, s: KernInstanceCreationNode(IdentifierNode(s[2]),[])
     
