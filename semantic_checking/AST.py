@@ -234,17 +234,17 @@ class SubsExpressionNode(AritmeticExpression):
         self.expression_1 = expression_1
         
 class DivExpressionNode(AritmeticExpression):
-    def __init__(self, expression_1, expresion_, tokenArit2) -> None:
+    def __init__(self, expression_1, expresion_2, tokenArit) -> None:
         super().__init__(expression_1, expresion_2, tokenArit)
         
 class MultExpressionNode(AritmeticExpression):
     def __init__(self, expression_1, expresion_2, tokenArit) -> None:
         super().__init__(expression_1, expresion_2, tokenArit)
 class ModExpressionNode(AritmeticExpression):
-    def __init__(self, expression_1, expresion_, tokenArit2) -> None:
+    def __init__(self, expression_1, expresion_2, tokenArit) -> None:
         super().__init__(expression_1, expresion_2, tokenArit)
 class PowExpressionNode(AritmeticExpression):
-    def __init__(self, expression_1, expresion_, tokenArit2) -> None:
+    def __init__(self, expression_1, expresion_2, tokenArit) -> None:
         super().__init__(expression_1, expresion_2, tokenArit)
 
 class NumberNode(Node):
