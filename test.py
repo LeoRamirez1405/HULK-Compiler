@@ -10,7 +10,7 @@ gramatica, lexer = gramm_Hulk_LR1()
 
 
 # Leer el contenido del archivo y reemplazar los saltos de línea
-with open('prueba.txt', 'r') as archivo:
+with open('prueba.hulk', 'r') as archivo:
     contenido = archivo.read()
 
     contenido_modificado = contenido.replace('\n', '[LineJump]')

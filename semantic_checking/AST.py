@@ -217,34 +217,35 @@ class BooleanExpression(BinaryNode):
         # self.expressiin_2 = expression_2
         
 class AritmeticExpression(Node):
-    def __init__(self, expression_1, expression_2) -> None:
+    def __init__(self, expression_1, expression_2, tokenArit : Token) -> None:
         super().__init__()
         self.expression_1 = expression_1
         self.expression_2 = expression_2
+        self.location = tokenArit.location
         
 #-------------------------------Aritmetic-Expressions-------------------------------------------------------------------------------------------------#
 class PlusExpressionNode(AritmeticExpression):
-    def __init__(self, expression_1, expresion_2) -> None:
-        super().__init__(expression_1, expresion_2)
+    def __init__(self, expression_1, expresion_2, tokenArit) -> None:
+        super().__init__(expression_1, expresion_2, tokenArit)
         
 class SubsExpressionNode(AritmeticExpression):
-    def __init__(self, expression_1, expresion_2) -> None:
-        super().__init__(expression_1, expresion_2)
+    def __init__(self, expression_1, expresion_2, tokenArit) -> None:
+        super().__init__(expression_1, expresion_2, tokenArit)
         self.expression_1 = expression_1
         
 class DivExpressionNode(AritmeticExpression):
-    def __init__(self, expression_1, expresion_2) -> None:
-        super().__init__(expression_1, expresion_2)
+    def __init__(self, expression_1, expresion_, tokenArit2) -> None:
+        super().__init__(expression_1, expresion_2, tokenArit)
         
 class MultExpressionNode(AritmeticExpression):
-    def __init__(self, expression_1, expresion_2) -> None:
-        super().__init__(expression_1, expresion_2)
+    def __init__(self, expression_1, expresion_2, tokenArit) -> None:
+        super().__init__(expression_1, expresion_2, tokenArit)
 class ModExpressionNode(AritmeticExpression):
-    def __init__(self, expression_1, expresion_2) -> None:
-        super().__init__(expression_1, expresion_2)
+    def __init__(self, expression_1, expresion_, tokenArit2) -> None:
+        super().__init__(expression_1, expresion_2, tokenArit)
 class PowExpressionNode(AritmeticExpression):
-    def __init__(self, expression_1, expresion_2) -> None:
-        super().__init__(expression_1, expresion_2)
+    def __init__(self, expression_1, expresion_, tokenArit2) -> None:
+        super().__init__(expression_1, expresion_2, tokenArit)
 
 class NumberNode(Node):
     def __init__(self, value : Token) -> None:
