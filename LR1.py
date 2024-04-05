@@ -55,7 +55,7 @@ class ShiftReduceParser:
                     assert False, 'Must be something wrong!'
             except KeyError:
                 raise Exception('Aborting parsing, item is not viable.')
-        
+
 class LR1Parser(ShiftReduceParser):
     def _build_parsing_table(self):
         G = self.G.AugmentedGrammar(True)
@@ -185,13 +185,17 @@ def evaluate_reverse_parse(right_parse, operations, tokens):
     for operation in operations:
         if operation == ShiftReduceParser.SHIFT:
             token = next(tokens)
-            stack.append(token.lex)
+            # stack.append(token.lex)
+            stack.append(token)
         elif operation == ShiftReduceParser.REDUCE:
             production = next(right_parse)
             head, body = production
             attributes = production.attributes
             assert all(rule is None for rule in attributes[1:]), 'There must be only synteticed attributes.'
+            print(f"Attr: {attributes}")
             rule = attributes[0]
+            print(f"Rule: {rule}")
+
 
             if len(body):
                 synteticed = [None] + stack[-len(body):]

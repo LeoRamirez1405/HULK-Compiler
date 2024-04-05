@@ -55,7 +55,7 @@ class TypeCheckerVisitor:
         try:
             return self.context.get_type(node.type)
         except:
-            self.errors.append(SemanticError(f'Tipo {node.type} no esta definido'))
+            self.errors.append(SemanticError(f'Tipo {node.type} no esta definido [L:{node.location[0]}, C:{node.location[1]}]'))
             return self.context.get_type('any')
             
     @visitor.when(FunctionDefinitionNode)

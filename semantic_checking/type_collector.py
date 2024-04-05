@@ -23,4 +23,4 @@ class TypeCollectorVisitor:
         try:
             self.context.create_type(node.id.id)
         except:
-            self.errors.append(SemanticError(f'El nombre de tipo {node.id.id} ya ha sido tomado'))
+            self.errors.append(SemanticError(f'El nombre de tipo {node.id.id} ya ha sido tomado [L:{node.location[0]}, C:{node.location[1]}]'))
