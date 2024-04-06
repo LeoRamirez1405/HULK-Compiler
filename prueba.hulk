@@ -1,7 +1,7 @@
 42;
 print(42);
 print(2 @@ "aaa");
-print(if (True){"True";}else{"False";} @ ". Prueba del if en el interpreter.");
-for (let a = 0; a < 3; a := a + 1){
-  
+print(if (False){"True";}elif(False){"No entro al primer elif";}elif(True){"Entro al segundo elif";}else{"False";} @ ". Prueba del if en el interpreter.");
+for (; True; ){
+  print("Entro al for");
 }

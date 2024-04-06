@@ -8,7 +8,7 @@ class SemanticError(Exception):
         return self.args[0]
     
 class Attribute:
-    def __init__(self, name, typex, value):
+    def __init__(self, name, typex):
         self.name = name
         self.type: Type = typex
 

@@ -36,20 +36,14 @@ print(checker.semantic_checking(ast))
 
 interpreter = TreeInterpreter(checker.context)
 interpreter.visit(ast)
+
 # formatter = TreeWalkInterpreter()
 # tree = formatter.visit(ast)
 # print(tree)
-
-# # checker = SemanticCheckingVisitor()
-# # print(checker.semantic_checking(ast))
-
-
 
 # # formatter = FormatVisitor()
 # # tree = formatter.visit(ast)
 # # print(tree)
 
-# # checker = SemanticCheckingVisitor()
-# # print(checker.semantic_checking(ast))
 
 

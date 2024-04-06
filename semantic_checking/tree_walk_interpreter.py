@@ -19,7 +19,31 @@ class InterpreterScope(Scope):
         self.local_variables.add(info)
         self.var_values[vname] = value
         return info
+    
+    def find_variable_value(self, vname, index=None):
+        locals = self.local_variables if index is None else itt.islice(self.local_variables, index)
+        try:
+            return next((x, self.var_values[x.name]) for x in locals if x.name == vname)
+        except StopIteration:
+            return self.parent.find_variable(vname, self.index) if not self.parent is None else None
+        
+    def set_variable_value(self, vname, value, index=0):
+        locals = self.local_variables if index is None else itt.islice(self.local_variables, index)
+        try:
+            return next((x, self.var_values[x.name]) for x in locals if x.name == vname)
+        except StopIteration:
+            return self.parent.find_variable(vname, self.index) if not self.parent is None else None
 
+class InterpreterMethod(Method):
+    def __init__(self, name, param_names, params_types, return_type, body):
+        super().__init__(name, param_names, params_types, return_type)
+        self.body = body
+        
+class InterpreterAttribute(Attribute):
+    def __init__(self, name, typex, value):
+        super().__init__(name, typex)
+        self.value = value
+        
 class TreeInterpreter:
 
     def __init__(self, context):
@@ -47,8 +71,8 @@ class TreeInterpreter:
     @visitor.when(IdentifierNode)
     def visit(self, node: IdentifierNode, scope: InterpreterScope):
         try:
-            var: VariableInfo = self.scope.find_variable(node.id)
-            return var.type, scope.var_values[var.name]
+            var, value = self.scope.find_variable(node.id)
+            return var.type, value
         except:
             return self.context.get_type('any'), None
 
@@ -58,7 +82,7 @@ class TreeInterpreter:
 
     @visitor.when(StringNode)
     def visit(self, node: StringNode, scope: InterpreterScope):
-        word = node.value[1::len(node.value)-1]
+        word = node.value[1:len(node.value)-1]
         return self.context.get_type('string'), str(word)
     
     @visitor.when(BooleanNode)
@@ -74,7 +98,7 @@ class TreeInterpreter:
     
     @visitor.when(DestroyNode)
     def visit(self, node: DestroyNode, scope: InterpreterScope):
-        var: VariableInfo = scope.find_variable(node.id.id)
+        var, value = scope.find_variable(node.id.id)
         type, value =  self.visit(self, node.expression, scope)
         scope.var_values[var.name] = value
         
@@ -145,7 +169,7 @@ class TreeInterpreter:
         self.visit(node.init_assigments, inner_scope)
         while self.visit(node.condition, inner_scope):
             result = self.visit_body(node.body, inner_scope)
-            self.visit(node.increment_condition, scope)
+            self.visit(node.increment_condition, inner_scope)
         
         return result
         
