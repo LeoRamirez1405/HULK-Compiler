@@ -41,7 +41,7 @@ def gramm_Hulk_LR1():
     #TODO aqui hay que ver como se maneja la cosa de las listas
     #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
     expr_statement %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3], s[2]) #Ya
-    expr_statement %= expression, lambda h, s: [s[1]]
+    expr_statement %= expression, lambda h, s: s[1]
     
     
     print_statement %= Print + oPar + expression + cPar, lambda h, s: PrintStatmentNode(s[3], s[1]) #Ya
