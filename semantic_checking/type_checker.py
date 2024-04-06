@@ -512,7 +512,7 @@ class TypeCheckerVisitor:
     @visitor.when(BooleanNode)
     def visit(self, node: BooleanNode, scope):
         try:
-            boolean = bool(node.value)
+            eval(node.value)
             return self.context.get_type('bool')
         except:
             return self.context.get_type('any')

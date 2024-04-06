@@ -87,7 +87,10 @@ class TreeInterpreter:
     
     @visitor.when(BooleanNode)
     def visit(self, node: BooleanNode, scope: InterpreterScope):
-        return self.context.get_type('bool'), bool(node.value)
+        try:
+            return self.context.get_type('bool'), eval(node.value)
+        except:
+            return self.context.get_type('any'), None
     
     @visitor.when(KernAssigmentNode)
     def visit(self, node: KernAssigmentNode, scope: InterpreterScope):

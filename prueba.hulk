@@ -1,7 +1,5 @@
 42;
 print(42);
 print(2 @@ "aaa");
-print(if (False){"True";}elif(False){"No entro al primer elif";}elif(True){"Entro al segundo elif";}else{"False";} @ ". Prueba del if en el interpreter.");
-for (; True; ){
-  print("Entro al for");
-}
+print(if (False){"True";}elif(False){"No entro al primer elif";}elif(False){"Entro al segundo elif";}else{"Entro al else";} @ ". Prueba del if en el interpreter.");
+

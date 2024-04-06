@@ -16,6 +16,9 @@ print(1 + 2)
 
 
 #dentro del for:
+for (; True; ){
+  print("Entro al for");
+}
   if(a is number and True){
         print("value:"@@a);
     }
