@@ -1,6 +1,7 @@
 from semantic_checking.AST import *
 from semantic_checking.semantic_checking import SemanticCheckingVisitor
-from format_visitor import TreeWalkInterpreter
+from semantic_checking.tree_walk_interpreter import TreeInterpreter
+# from format_visitor import TreeWalkInterpreter
 #from semantic_checking.semantic_checking import SemanticCheckingVisitor
 #from semantic_checking.evaluation import evaluate_reverse_parse
 from grammLR1 import gramm_Hulk_LR1
@@ -33,9 +34,11 @@ ast = evaluate_reverse_parse(output,operations,tokensAST)
 checker = SemanticCheckingVisitor()
 print(checker.semantic_checking(ast))
 
-## formatter = TreeWalkInterpreter()
-## tree = formatter.visit(ast)
-## print(tree)
+interpreter = TreeInterpreter(checker.context)
+interpreter.visit(ast)
+# formatter = TreeWalkInterpreter()
+# tree = formatter.visit(ast)
+# print(tree)
 
 # # checker = SemanticCheckingVisitor()
 # # print(checker.semantic_checking(ast))

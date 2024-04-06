@@ -8,7 +8,7 @@ class SemanticError(Exception):
         return self.args[0]
     
 class Attribute:
-    def __init__(self, name, typex):
+    def __init__(self, name, typex, value):
         self.name = name
         self.type: Type = typex
 
@@ -30,9 +30,10 @@ class Argument:
         return str(self)
 
 class VariableInfo:
-    def __init__(self, name, vtype):
-        self.name = name
+    def __init__(self, vname, vtype ): # ,value
+        self.name = vname
         self.type = vtype
+        # self.value = value
         
 class Type:
     def __init__(self, name:str):

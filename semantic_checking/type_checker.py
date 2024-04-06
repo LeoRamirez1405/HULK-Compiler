@@ -337,18 +337,6 @@ class TypeCheckerVisitor:
     @visitor.when(RandomFunctionCallNode)
     def visit(self, node: RandomFunctionCallNode, scope: Scope):
         return self.context.get_type('number')
-        
-    # @visitor.when(LetInNode)
-    # def visit(self, node: LetInNode, scope: Scope):
-    #     inner_scope = scope.create_child()
-    #     # for assign in node.assigments:
-    #     #     self.visit(assign, inner_scope)
-    #     self.visit(node.assigments, inner_scope)
-         
-    #     for statment in node.body[:-1]:    
-    #         self.visit(statment, inner_scope)
-        
-    #     return self.visit(node.body[-1], inner_scope)
     
     @visitor.when(LetInExpressionNode)
     def visit(self, node: LetInExpressionNode, scope: Scope):

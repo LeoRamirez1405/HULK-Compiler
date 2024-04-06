@@ -70,7 +70,9 @@ def gramm_Hulk_LR1():
     
     #TODO Cambie la atributacion y le puse que creara un nodo collection para saber luego en los checkeos que hay que iterar en ese tipo de nodos
     # assignment %= Let + multi_assignment, lambda h, s: s[2]
-    assignment %= Let + multi_assignment, lambda h, s: CollectionNode(s[2], s[1]) #Ya
+    # assignment %= Let + multi_assignment, lambda h, s: CollectionNode(s[2], s[1]) #Ya
+    #* En los assigments y en los destroy se crean collection y cada uno de esos debe tener su propio token cada a = expression se supone q a tiene un token y expression tiene otro
+    assignment %= Let + multi_assignment, lambda h, s: CollectionNode(s[2])
     multi_assignment %= kern_assignment + Comma + multi_assignment, lambda h, s: [s[1]] + s[3]
     multi_assignment %= kern_assignment, lambda h, s: [s[1]]
     kern_assignment %= identifier + Equal + expr_statement, lambda h, s: KernAssigmentNode(IdentifierNode(s[1]),s[3], s[1]) #Ya

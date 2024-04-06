@@ -319,7 +319,8 @@ class StringNode(Node):
         
 class StringConcatNode(BinaryNode):
     def __init__(self, left, right, tokenBinary: Token):
-        super().__init__(left, right, tokenBinary)
+        super().__init__(left, right)
+        self.location = tokenBinary.location
         
 class StringConcatWithSpaceNode(StringConcatNode):
     def __init__(self, left, right, tokenConcat : Token):
@@ -342,7 +343,8 @@ class BoolOrNode(BooleanExpression):
 
 class BoolCompAritNode(BinaryNode):
     def __init__(self, left, right, tokenBinary: Token):
-        super().__init__(left, right, tokenBinary)
+        super().__init__(left, right)
+        self.location = tokenBinary.location
         
 class BoolNotNode(UnaryNode):
     def __init__(self, node, tokenNot : Token):
@@ -410,7 +412,7 @@ class LogFunctionCallNode(Node):
         self.location = tokenLog.location
         
 class CollectionNode(Node):
-    def __init__(self, collection, token : Token) -> None:
+    def __init__(self, collection) -> None:
         super().__init__()
         self.collection = collection
-        self.location = token.location
+        # self.location = token.location

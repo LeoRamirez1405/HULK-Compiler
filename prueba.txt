@@ -1,0 +1,21 @@
+print(
+    let a = 3 
+        in 
+            while(a >= 0){  
+                a := a - 1; 
+                if(a == 0){
+                    "Ya termino";
+                    }
+                });
+while(False){
+    "No entra a aqui";
+}
+print(1 + 2)
+
+
+
+
+#dentro del for:
+  if(a is number and True){
+        print("value:"@@a);
+    }

@@ -1,4 +1,4 @@
-from format_visitor import TreeWalkInterpreter
+# from format_visitor import TreeWalkInterpreter
 from semantic_checking.semantic import Context, Scope
 from semantic_checking.type_collector import TypeCollectorVisitor
 from semantic_checking.type_builder import TypeBuilderVisitor
