@@ -313,25 +313,11 @@ class TypeCheckerVisitor:
         print(f"type 2: {type_2}")
         
         if not type_1.conforms_to('number') or not type_2.conforms_to('number'):
-            self.errors.append(SemanticError(f'Solo se pueden emplear aritmeticos entre expresiones aritmeticas.')) #TODO
+            self.errors.append(SemanticError(f'Solo se pueden emplear aritmeticos entre expresiones aritmeticas. On: L: {node.location[0]} C: {node.location[1]}')) #TODO
             return self.context.get_type('any')
         
         return type_1
     
-    @visitor.when(PlusExpressionNode)
-    def visit(self, node: PlusExpressionNode, scope: Scope):
-        print("OnAritmeticExpressionNode")
-        type_1: Type = self.visit(node.expression_1, scope)
-        print(f"type 1: {type_1}")
-        type_2: Type = self.visit(node.expression_2, scope)
-        print(f"type 2: {type_2}")
-        
-        if not type_1.conforms_to('number') or not type_2.conforms_to('number'):
-            self.errors.append(SemanticError(f'Solo se pueden emplear aritmeticos entre expresiones aritmeticas.')) #TODO
-            return self.context.get_type('any')
-        
-        return type_1
-        
     @visitor.when(MathOperationNode)
     def visit(self, node: MathOperationNode, scope: Scope):
         if not self.visit(node.node, scope).conforms_to('number'):
