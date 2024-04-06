@@ -231,12 +231,12 @@ class TreeWalkInterpreter:
         expression_value = self.visit(node.expression)
         return math.exp(expression_value)
 
-    @visitor.when(RandomCallNode)
-    def visit(self, node: RandomCallNode):
+    @visitor.when(RandomFunctionCallNode)
+    def visit(self, node: RandomFunctionCallNode):
         return random.random()
 
-    @visitor.when(LogCallNode)
-    def visit(self, node: LogCallNode):
+    @visitor.when(LogFunctionCallNode)
+    def visit(self, node: LogFunctionCallNode):
         base_value = self.visit(node.base)
         expression_value = self.visit(node.expression)
         return math.log(expression_value, base_value)

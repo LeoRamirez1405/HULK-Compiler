@@ -4,6 +4,8 @@ import math
 from cmp.utils import Token
 
 class Node():
+    def __init__(self):
+        self.location = None
         pass
         
 class AtomicNode(Node):
@@ -43,11 +45,11 @@ class ProgramNode(Node):
         self.statments = statments
         
 class IdentifierNode(Node):
-    def __init__(self, id) -> None:
+    def __init__(self, tokenID : Token) -> None:
         super().__init__()
-        self.id = id
+        self.id = tokenID.lex
         print(f"Identifier: {id}")
-        self.id = id.location
+        self.location = tokenID.location
 
            
 class SelfNode(Node):
@@ -168,6 +170,7 @@ class InheritanceNode(Node):
         super().__init__()
         self.type : IdentifierNode = type
         self.args: list[dict[IdentifierNode, TypeNode]] = args
+        self.location = type.location
 
 #? Verificar que son los parametros type y args
 #* En new type (args = [param_1, param_2, ...])
@@ -298,11 +301,11 @@ class LetInExpressionNode(Node):
 
 #----------------------------------Factor-Nodes----------------------------------------------------------------------------------------------------------------#
 class FunctionCallNode(Node):
-    def __init__(self, id, args) -> None:
+    def __init__(self, tokenFunc : Token, args) -> None:
         super().__init__()
-        self.id = id
+        self.id = tokenFunc.lex
         self.args = args
-        self.location = id.location
+        self.location = tokenFunc.location
 
 class BooleanNode(Node):
     def __init__(self, value : Token) -> None:
