@@ -57,7 +57,7 @@ def gramm_Hulk_LR1():
     contElif %= G.Epsilon , lambda h, s: []
 
     contElse %= Else + oBrace + statement_list + cBrace , lambda h, s: ElseStructureNode(s[3], s[1]) #Ya
-    contElse %= G.Epsilon , lambda h, s:  ElseStructureNode([], s[1]) #Ya
+    contElse %= G.Epsilon , lambda h, s:  ElseStructureNode([]) #Ya
 
     while_structure %= While + oPar + expression + cPar + oBrace + statement_list + cBrace , lambda h, s:  WhileStructureNode(s[3], s[6], s[1]) #Ya
     for_assignment = G.NonTerminal('for_assignment')
