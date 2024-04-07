@@ -21,29 +21,27 @@ class InterpreterScope(Scope):
         return info
     
     def find_variable_value(self, vname, index=None):
-        locals = self.local_variables if index is None else itt.islice(self.local_variables, index)
-        try:
-            return next((x, self.var_values[x.name]) for x in locals if x.name == vname)
-        except StopIteration:
-            return self.parent.find_variable(vname, self.index) if not self.parent is None else None
+        for x in self.local_variables:
+            if x.name == vname:
+                return x, self.var_values[x.name]
+        
+        return self.parent.find_variable_value(vname, self.index) if not self.parent is None else None
         
     def set_variable_value(self, vname, value, index=0):
-        locals = self.local_variables if index is None else itt.islice(self.local_variables, index)
-        try:
-            return next((x, self.var_values[x.name]) for x in locals if x.name == vname)
-        except StopIteration:
-            return self.parent.find_variable(vname, self.index) if not self.parent is None else None
+        for x in self.local_variables:
+            if x.name == vname:
+                self.var_values[x.name] = value
+                return
+        
+        return self.parent.set_variable_value(vname, value, self.index) if not self.parent is None else None
 
-class InterpreterMethod(Method):
-    def __init__(self, name, param_names, params_types, return_type, body):
-        super().__init__(name, param_names, params_types, return_type)
-        self.body = body
+# class InterpreterMethod(Method):
+#     def __init__(self, name, param_names, params_types, return_type, body, values = None):
+#         super().__init__(name, param_names, params_types, return_type)
+#         self.body = body
+#         self.param_value = values
         
-class InterpreterAttribute(Attribute):
-    def __init__(self, name, typex, value):
-        super().__init__(name, typex)
-        self.value = value
-        
+    
 class TreeInterpreter:
 
     def __init__(self, context):
@@ -63,7 +61,7 @@ class TreeInterpreter:
 
     @visitor.when(PrintStatmentNode)
     def visit(self, node: PrintStatmentNode, scope: InterpreterScope):
-        _, value = self.visit(node.expression, scope)
+        _, value = self.visit_body(node.expression, scope)
         print(value)
         return self.context.get_type('string'), value
     
@@ -71,7 +69,7 @@ class TreeInterpreter:
     @visitor.when(IdentifierNode)
     def visit(self, node: IdentifierNode, scope: InterpreterScope):
         try:
-            var, value = self.scope.find_variable(node.id)
+            var, value = scope.find_variable_value(node.id)
             return var.type, value
         except:
             return self.context.get_type('any'), None
@@ -101,39 +99,18 @@ class TreeInterpreter:
     
     @visitor.when(DestroyNode)
     def visit(self, node: DestroyNode, scope: InterpreterScope):
-        var, value = scope.find_variable(node.id.id)
-        type, value =  self.visit(self, node.expression, scope)
-        scope.var_values[var.name] = value
+        type, value =  self.visit(node.expression, scope)
+        scope.set_variable_value(node.id.id, value)
         
         return type, value
-
-    @visitor.when(TypeDefinitionNode)
-    def visit(self, node: TypeDefinitionNode, scope: InterpreterScope):
-        pass
-
-    @visitor.when(FunctionDefinitionNode)
-    def visit(self, node: FunctionDefinitionNode, scope: InterpreterScope):
-        if self.currentType:
-            try:
-                self.scope.node[self.currentType.name].append(node)
-            except:
-                self.scope.node[self.currentType.name] = [node]
-        else:
-            try:
-                self.scope.node[None].append(node)
-            except:
-                self.scope.node[None] = [node]
-
-    @visitor.when(FunctionCallNode)
-    def visit(self, node: FunctionCallNode, scope: InterpreterScope):
-        function = list(
-            filter(
-                lambda x: len(x.parameters) == len(node.args), self.scope.node[node.id]
-            )
-        )[0]
-
-        for statment in function.body:
-            self.visit(statment)
+    
+    @visitor.when(TypeNode)
+    def visit(self, node: TypeNode, scope: InterpreterScope):
+        try:
+            type = self.context.types[node.type]
+            return type, type
+        except:
+            return self.context.get_type('any') , None
 
     @visitor.when(IfStructureNode)
     def visit(self, node: IfStructureNode, scope: InterpreterScope):
@@ -145,14 +122,17 @@ class TreeInterpreter:
                 _, elif_condition = self.visit(elif_node.condition, scope)
                 if elif_condition:
                     return self.visit_body(elif_node.body, scope)
-                
-        return self.visit_body(node._else.body, scope)
+        elif len(node._else) != 0:
+            return self.visit_body(node._else.body, scope)
+        
+        return self.context.get_type('any'), None
             
     def visit_body(self, node, scope):
         result = self.context.get_type('any'), None
         if type(node) == list:
             for statement in node:
-                result = self.visit(statement, scope)
+                aux = self.visit(statement, scope)
+                result = aux if aux[1] != None else result
             return result
         return self.visit(node, scope)
             
@@ -161,8 +141,10 @@ class TreeInterpreter:
     def visit(self, node: WhileStructureNode, scope: InterpreterScope):
         result = self.context.get_type('any'), None
         inner_scope = scope.create_child()
-        while self.visit(node.condition, scope):
+        _, condition_value = self.visit(node.condition, scope)
+        while condition_value:
             result = self.visit_body(node.body, inner_scope)
+            _, condition_value = self.visit(node.condition, scope)
         return result
 
     @visitor.when(ForStructureNode)
@@ -170,9 +152,11 @@ class TreeInterpreter:
         result = self.context.get_type('any'), None
         inner_scope = scope.create_child()
         self.visit(node.init_assigments, inner_scope)
-        while self.visit(node.condition, inner_scope):
+        _, condition_value = self.visit(node.condition, inner_scope)
+        while condition_value:
             result = self.visit_body(node.body, inner_scope)
             self.visit(node.increment_condition, inner_scope)
+            _, condition_value = self.visit(node.condition, inner_scope)
         
         return result
         
@@ -341,3 +325,63 @@ class TreeInterpreter:
         _, left_value = self.visit(node.left, scope)
         _, right_value = self.visit(node.right, scope)
         return self.context.get_type('string'), str(left_value) + " " + str(right_value)
+
+#_______Bloque-3________________________________________________________________________________________________________________________________________________________________________
+
+    @visitor.when(LetInExpressionNode)
+    def visit(self, node: LetInExpressionNode, scope: InterpreterScope):
+        inner_scope = scope.create_child()
+        self.visit(node.assigments, inner_scope)
+        return self.visit_body(node.body, inner_scope)
+
+#_______Bloque-4__________________________________________________________________________________________________________________________________________________________________//
+    
+    @visitor.when(FunctionDefinitionNode)
+    def visit(self, node: FunctionDefinitionNode, scope: InterpreterScope):
+        if self.currentType:
+            try:
+                type: Type = self.context.get_type(self.currentType.name)
+                method_1: Method = type.get_method(node.id.id, len(node.parameters))
+                method_1.body = node.body
+            except:
+                pass
+                # self.scope.node[self.currentType.name] = [node]
+        else:
+            method = Method(node.id.id, [list(param.items())[0][0] for param in node.parameters], [list(param.items())[0][1] for param in node.parameters], node.type_annotation)
+            method.body = node.body
+            try:
+                scope.functions[node.id.id].append(method)
+            except:
+                scope.functions[node.id.id] = [method]
+                
+    @visitor.when(FunctionCallNode)
+    def visit(self, node: FunctionCallNode, scope: InterpreterScope):
+        try: 
+            method: Method = self.currentType.get_method(node.id.id)
+        except:
+            #Como ya paso por el chequeo semantico solo llega aca cuando current type es None
+            method: Method = [func for func in scope.functions[node.id.id] if len(func.param_names) == len(node.args)][0] 
+            
+        inner_scope = scope.create_child()    
+        for i in range(len(node.args)):
+            _, value = self.visit(node.args[i], inner_scope)
+            inner_scope.define_variable(method.param_names[i], method.param_types[i], value)
+        return self.visit_body(method.body, inner_scope)
+            
+    @visitor.when(TypeDefinitionNode)
+    def visit(self, node: TypeDefinitionNode, scope: InterpreterScope):
+        self.currentType = self.context.get_type(node.id.id)
+        
+        for attr in node.attributes.collection:
+            self.currentType.set_attribute_expression(attr.id.id, attr.expression)
+            
+        for method in node.methods:
+            meth = self.currentType.get_method(method.id.id)
+            meth.body = method.body
+        
+        self.currentType = None
+    
+    @visitor.when(MemberAccessNode)
+    def visit(self, node: MemberAccessNode, scope: InterpreterScope):
+        type, value = self.visit(node.base_object, scope)
+        #self.currentType = self.context.get_type(base_object_type.name)
