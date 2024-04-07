@@ -45,4 +45,8 @@ type Range(min:number, max:number) {
 }
 
 let ran = new Range(0,1);
-print(ran)
+print(ran);
+
+function fib(n: number): number => if (n == 0 or n == 1) {1;} else {fib(n - 1) + fib(n - 2);}  
+print(fib(0));
+print(fib(5));

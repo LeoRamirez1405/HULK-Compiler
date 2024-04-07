@@ -9,7 +9,17 @@ class AttributeInstance:
         self.name = name
         self.type = type
         self.value = value
-
+    
+class InstanceType:
+    def __init__(self, type, attrs) -> None:
+        self.type = type
+        self.attrs : dict[str, Type] = attrs
+        
+    def __str__(self):
+        return f'{self.type}({", ".join([f"{k}: {v.value}" for k, v in self.attrs.items()])})'
+        # return f'{self.type}({", ".join([f"{k}: {v}" for k, v in self.attrs.items()])})'
+        # return f'{self.name}: {self.value} ({self.type})'
+    
 class InterpreterScope(Scope):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -366,7 +376,8 @@ class TreeInterpreter:
             method: Method = self.currentType.get_method(node.id.id)
         except:
             #Como ya paso por el chequeo semantico solo llega aca cuando current type es None
-            method: Method = [func for func in scope.functions[node.id.id] if len(func.param_names) == len(node.args)][0] 
+            method: Method = scope.get_method(node.id.id, len(node.args))
+            #[func for func in scope.functions[node.id.id] if len(func.param_names) == len(node.args)][0] 
             
         inner_scope = scope.create_child()    
         for i in range(len(node.args)):
@@ -404,11 +415,11 @@ class TreeInterpreter:
             type_attr, value = self.visit(expression, inner_scope)
             instance[attr_name] = AttributeInstance(attr_name, type_attr, value)
             
-        return type, instance
+        return type, InstanceType(type.name, instance)
     
-    @visitor.when(AttributeInstance)
-    def visit(self, node: AttributeInstance, scope: IndentationError):
-        return node.type, node.value
+    @visitor.when(InstanceType)
+    def visit(self, node: InstanceType, scope: IndentationError):
+        return node.type, node.attrs
     
     @visitor.when(MemberAccessNode)
     def visit(self, node: MemberAccessNode, scope: InterpreterScope):

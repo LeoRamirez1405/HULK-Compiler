@@ -235,7 +235,8 @@ class Scope:
             methods = [method for method in self.functions[vname] if len(method.param_names) == params_num]
             return methods[0]
         except:
-            raise SemanticError(f'La funcion {vname} no esta definida')
+            return self.parent.get_method(vname, params_num) if not self.parent is None else None
+            # raise SemanticError(f'La funcion {vname} no esta definida')
     
 class Context:
     def __init__(self):

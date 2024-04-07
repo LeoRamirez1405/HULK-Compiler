@@ -69,8 +69,9 @@ class ShiftReduceParser:
                 # Invalid case
                 else:
                     assert False, 'Must be something wrong!'
-            except KeyError:
-                raise Exception('Aborting parsing, item is not viable.')
+            # except KeyError:
+            except:
+                raise Exception(f'Aborting parsing, item is not viable. lookahead: {lookahead}')
             
     def findActionAndTag(self, state, lookahead):
         for key, value in self.action.items():
