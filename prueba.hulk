@@ -1,13 +1,7 @@
 let a = 7;
 
-let a = 2;
 function test(x: number){
     x + 7;
-    2 + 7 ;
 }
-print(test(7));
-new A();
-7 != False;
-for (let a = 2;7 != False;a := a+1){
 
-}
+print(test(7));

@@ -46,3 +46,11 @@ type Range(min:number, max:number) {
 }
 
 let a = new Range(2, 3) in print(a.min)
+
+
+type A{}
+new A();
+7 != False;
+for (let a = 2;7 != False;a := a+1){
+
+}

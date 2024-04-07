@@ -347,7 +347,7 @@ class TreeInterpreter:
                 pass
                 # self.scope.node[self.currentType.name] = [node]
         else:
-            method = Method(node.id.id, [list(param.items())[0][0] for param in node.parameters], [list(param.items())[0][1] for param in node.parameters], node.type_annotation)
+            method = Method(node.id.id, [list(param.items())[0][0] for param in node.parameters], [self.context.get_type(list(param.items())[0][1].type) for param in node.parameters], node.type_annotation)
             method.body = node.body
             try:
                 scope.functions[node.id.id].append(method)
@@ -365,7 +365,7 @@ class TreeInterpreter:
         inner_scope = scope.create_child()    
         for i in range(len(node.args)):
             _, value = self.visit(node.args[i], inner_scope)
-            inner_scope.define_variable(method.param_names[i], method.param_types[i], value)
+            inner_scope.define_variable(method.param_names[i].id, method.param_types[i], value)
         return self.visit_body(method.body, inner_scope)
             
     @visitor.when(TypeDefinitionNode)
