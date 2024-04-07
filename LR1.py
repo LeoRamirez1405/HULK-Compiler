@@ -1,20 +1,37 @@
+from dill import dump, load
 from cmp.pycompiler import Item
 from cmp.utils import ContainerSet
 from cmp.automata import multiline_formatter,State
 from FirstsAndFollows import compute_firsts,compute_local_first
 from cmp.pycompiler import EOF
 
+
+
 class ShiftReduceParser:
     SHIFT = 'SHIFT'
     REDUCE = 'REDUCE'
     OK = 'OK'
     
-    def __init__(self, G, verbose=False):
+    def __init__(self, G, verbose=False, rebuild=False):
         self.G = G
         self.verbose = verbose
-        self.action = {}
-        self.goto = {}
-        self._build_parsing_table()
+        
+        if rebuild:
+            self.action = {}
+            self.goto = {}
+            self._build_parsing_table()
+            with open('parsing_table.joblib', 'wb') as f:
+                dump((self.action, self.goto), f)
+            print("The parsing table it's done")
+        else:
+            with open('parsing_table.joblib', 'rb') as f:
+                action, goto = load(f)
+                self.action = action
+                self.goto = goto
+                print(self.action)
+                print(self.goto)
+
+
     
     def _build_parsing_table(self):
         raise NotImplementedError()
@@ -32,7 +49,8 @@ class ShiftReduceParser:
                 
             # Detect error
             try:
-                action, tag = self.action[state, lookahead]
+                action, tag = self.findActionAndTag(state, lookahead)
+                # action, tag = self.action[state, lookahead]
                 # Shift case
                 if action == ShiftReduceParser.SHIFT:
                     print(f'Shift: Tag: {tag} State: {state} Lookahead: {lookahead}')
@@ -55,6 +73,12 @@ class ShiftReduceParser:
                     assert False, 'Must be something wrong!'
             except KeyError:
                 raise Exception('Aborting parsing, item is not viable.')
+            
+    def findActionAndTag(self, state, lookahead):
+        for key, value in self.action.items():
+            if state == key[0] and lookahead.Name == key[1].Name:
+                return value
+
 
 class LR1Parser(ShiftReduceParser):
     def _build_parsing_table(self):

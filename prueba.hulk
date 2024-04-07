@@ -1,6 +1,1 @@
-let a = 2;
-function test(x: number){
-    x + 7 ;
-}
-
-print(test(7));
+42;
