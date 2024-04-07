@@ -27,18 +27,18 @@ tokens = lexer(text)
 tokentypes = [token.token_type for token in tokens]
 #print(tokentypes)
 
-parser = LR1Parser(gramatica, rebuild=False)
+# parser = LR1Parser(gramatica, rebuild=False)
 
-output,operations = parser(tokens)
+# output,operations = parser(tokens)
 tokensAST = [token for token in tokens if token.token_type != 'space']
-#print(tokensAST)
-ast = evaluate_reverse_parse(output,operations,tokensAST)
-# ast = ProgramNode([PlusExpressionNode(NumberNode(5), StringNode('casa'))])
-checker = SemanticCheckingVisitor()
-print(checker.semantic_checking(ast))
+print(tokensAST)
+# ast = evaluate_reverse_parse(output,operations,tokensAST)
+# # ast = ProgramNode([PlusExpressionNode(NumberNode(5), StringNode('casa'))])
+# checker = SemanticCheckingVisitor()
+# print(checker.semantic_checking(ast))
 
-interpreter = TreeInterpreter(checker.context)
-interpreter.visit(ast)
+# interpreter = TreeInterpreter(checker.context)
+# interpreter.visit(ast)
 
 # formatter = TreeWalkInterpreter()
 # tree = formatter.visit(ast)

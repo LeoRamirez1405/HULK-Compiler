@@ -1,6 +1,7 @@
+
 let a = 2;
 function test(x: number){
-    x + 7 ;
+    2 + 7 ;
 }
 
 print(test(7));
