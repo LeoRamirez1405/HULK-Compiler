@@ -91,7 +91,7 @@ class DestroyNode(Node):
 #? Podriamos instanciar la clase Type
 #* Eso se hace luego cuando se viita el nodo en el visitor
 class TypeNode(Node):
-    def __init__(self, type) -> None:
+    def __init__(self, type: Token) -> None:
         super().__init__()
         self.type = type.lex
         if type != 'object':
@@ -245,32 +245,33 @@ class NumberNode(Node):
         self.value = value.lex
 
 class PINode(NumberNode):
-    def __init__(self, tokenPI : Token) -> None:
+    def __init__(self, tokenPI : Token = None) -> None:
         super().__init__(math.pi, tokenPI)
     
 #------------------------------------------------------------Math-Operations-----------------------------------------------------------------------------------#
 class MathOperationNode(UnaryNode):
-    def __init__(self, expression, tokenOp : Token) -> None:
-        super().__init__(expression, tokenOp)
+    def __init__(self, expression, tokenOp : Token = None) -> None:
+        super().__init__(expression)
+        self.location = tokenOp.location
 
 class SqrtMathNode(MathOperationNode):
-    def __init__(self, expression, token : Token) -> None:
+    def __init__(self, expression, token : Token = None) -> None:
         super().__init__(expression, token)
         
 class SinMathNode(MathOperationNode):
-    def __init__(self, expression, token : Token) -> None:
+    def __init__(self, expression, token : Token = None) -> None:
         super().__init__(expression, token)
         
 class CosMathNode(MathOperationNode):
-    def __init__(self, expression, token : Token) -> None:
+    def __init__(self, expression, token : Token = None) -> None:
         super().__init__(expression, token)
         
 class TanMathNode(MathOperationNode):
-    def __init__(self, expression, token : Token) -> None:
+    def __init__(self, expression, token : Token = None) -> None:
         super().__init__(expression, token)
 
 class ExpMathNode(MathOperationNode):
-    def __init__(self, expression, token : Token) -> None:
+    def __init__(self, expression, token : Token = None) -> None:
         super().__init__(expression, token)
 
 #-----------------------------------Let-In--------------------------------------------------------------------------------------------------------------------#
@@ -309,15 +310,14 @@ class StringConcatNode(BinaryNode):
         super().__init__(left, right, tokenBinary)
         
 class StringConcatWithSpaceNode(StringConcatNode):
-    def __init__(self, left, right, tokenConcat : Token):
+    def __init__(self, left, right, tokenConcat : Token = None):
         super().__init__(left, right, tokenConcat)
         
 #TODO Ver que es esto
 class BoolIsTypeNode(BinaryNode):
-    def __init__(self, expression, type):
-        super().__init__(expression, type)
-        # self.expression = expression
-        # self.type = type
+    def __init__(self, expression, type, token: Token = None):
+        super().__init__(expression, type, token)
+        # self.location = token.location
         
 class BoolAndNode(BooleanExpression):
     def __init__(self, expression_1, expression_2, tokenBool) -> None:
@@ -328,34 +328,35 @@ class BoolOrNode(BooleanExpression):
         super().__init__(expression_1, expression_2, tokenBool)
 
 class BoolCompAritNode(BinaryNode):
-    def __init__(self, left, right, tokenBinary: Token):
+    def __init__(self, left, right, tokenBinary: Token = None):
         super().__init__(left, right, tokenBinary)
+        # self.location = tokenBinary.location
         
 class BoolNotNode(UnaryNode):
     def __init__(self, node, tokenNot : Token):
         super().__init__(node, tokenNot)  
 class BoolCompLessNode(BoolCompAritNode):
-    def __init__(self, left, right, tokenBinary: Token):
+    def __init__(self, left, right, tokenBinary: Token = None):
         super().__init__(left, right, tokenBinary)
 
 class BoolCompGreaterNode(BoolCompAritNode):
-    def __init__(self, left, right, tokenBinary: Token):
+    def __init__(self, left, right, tokenBinary: Token = None):
         super().__init__(left, right, tokenBinary)
         
 class BoolCompEqualNode(BoolCompAritNode):
-    def __init__(self, left, right, tokenBinary: Token):
+    def __init__(self, left, right, tokenBinary: Token = None):
         super().__init__(left, right, tokenBinary)
         
 class BoolCompLessEqualNode(BoolCompAritNode):
-    def __init__(self, left, right, tokenBinary: Token):
+    def __init__(self, left, right, tokenBinary: Token = None):
         super().__init__(left, right, tokenBinary)
         
 class BoolCompGreaterEqualNode(BoolCompAritNode):
-    def __init__(self, left, right, tokenBinary: Token):
+    def __init__(self, left, right, tokenBinary: Token = None):
         super().__init__(left, right, tokenBinary)
         
 class BoolCompNotEqualNode(BoolCompAritNode):
-    def __init__(self, left, right, tokenBinary: Token):
+    def __init__(self, left, right, tokenBinary: Token = None):
         super().__init__(left, right, tokenBinary)
         
 #------------------------------------------------Default-Functions-----------------------------------------------------------------------#
