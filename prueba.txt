@@ -13,5 +13,26 @@ for(let a = 0; a < 3; a := a + 1){
     }
 }
 
+print(
+    let a = 3 
+        in 
+            while(a > 0){  
+                a := a - 1; 
+                print(a);
+                if(a == 0){
+                    "Ya termino";
+                    }
+                });
+while(False){
+    print("No debe entrar a aqui");
+}
+print(1 + 2);
+
 
 #Pendiente
+let a = 7;
+function test(x: number){
+    x + 7;
+}
+print(test(7));
+

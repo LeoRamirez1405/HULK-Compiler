@@ -1,3 +1,17 @@
+42;
+print(42);
+print(2 @@ "aaa");
+print(if (False){"True";}elif(False){"No entro al primer elif";}elif(False){"Entro al segundo elif";}else{"Entro al else";} @ ". Prueba del if en el interpreter.");
+
+for(let a = 0; a < 3; a := a + 1){
+    if(a is number and True){
+        print("value:"@@a);
+    }
+    else{
+        print("Este es el else del for");
+    }
+}
+
 print(
     let a = 3 
         in 
