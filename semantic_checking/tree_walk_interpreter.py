@@ -135,14 +135,17 @@ class TreeInterpreter:
                 _, elif_condition = self.visit(elif_node.condition, scope)
                 if elif_condition:
                     return self.visit_body(elif_node.body, scope)
-                
-        return self.visit_body(node._else.body, scope)
+        elif len(node._else) != 0:
+            return self.visit_body(node._else.body, scope)
+        
+        return self.context.get_type('any'), None
             
     def visit_body(self, node, scope):
         result = self.context.get_type('any'), None
         if type(node) == list:
             for statement in node:
-                result = self.visit(statement, scope)
+                aux = self.visit(statement, scope)
+                result = aux if aux[1] != None else result
             return result
         return self.visit(node, scope)
             
