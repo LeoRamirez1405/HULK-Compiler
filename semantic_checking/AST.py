@@ -51,7 +51,7 @@ class IdentifierNode(Node):
     def __init__(self, tokenID : Token) -> None:
         super().__init__(tokenID)
         self.id = tokenID.lex
-        print(f"Identifier: {id}")
+        # print(f"Identifier: {id}")
 
            
 class SelfNode(Node):
@@ -275,19 +275,19 @@ class ExpMathNode(MathOperationNode):
     def __init__(self, expression, token : Token = None) -> None:
         super().__init__(expression, token)
 
-#-----------------------------------Let-In--------------------------------------------------------------------------------------------------------------------#
-class LetInNode(Node):
-    def __init__(self, assigments, body) -> None:
-        super().__init__()
-        self.assigments = assigments
-        self.body = body
+# #-----------------------------------Let-In--------------------------------------------------------------------------------------------------------------------#
+# class LetInNode(Node):
+#     def __init__(self, assigments, body) -> None:
+#         super().__init__()
+#         self.assigments = assigments
+#         self.body = body
         
 class LetInExpressionNode(Node):
     def __init__(self, assigments, body, tokenIn : Token) -> None:
         super().__init__(tokenIn)
         self.assigments = assigments
         self.body = body 
-        self.location = tokenIn.location
+        # self.location = tokenIn.location
 
 #----------------------------------Factor-Nodes----------------------------------------------------------------------------------------------------------------#
 class FunctionCallNode(Node):

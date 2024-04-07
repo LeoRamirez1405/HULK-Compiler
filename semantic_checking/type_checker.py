@@ -306,11 +306,11 @@ class TypeCheckerVisitor:
         
     @visitor.when(AritmeticExpression)
     def visit(self, node: AritmeticExpression, scope: Scope):
-        print("OnAritmeticExpressionNode")
+        # print("OnAritmeticExpressionNode")
         type_1: Type = self.visit(node.expression_1, scope)
-        print(f"type 1: {type_1}")
+        # print(f"type 1: {type_1}")
         type_2: Type = self.visit(node.expression_2, scope)
-        print(f"type 2: {type_2}")
+        # print(f"type 2: {type_2}")
         
         if not type_1.conforms_to('number') or not type_2.conforms_to('number'):
             self.errors.append(SemanticError(f'Solo se pueden emplear aritmeticos entre expresiones aritmeticas. On: L: {node.location[0]} C: {node.location[1]}')) #TODO
@@ -441,7 +441,7 @@ class TypeCheckerVisitor:
     
     @visitor.when(NumberNode)
     def visit(self, node: NumberNode, scope):
-        print("OnNumberNode")
+        # print("OnNumberNode")
         try:
             a: float = float(node.value)
             return self.context.get_type('number')

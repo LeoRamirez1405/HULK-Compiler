@@ -21,11 +21,11 @@ class InterpreterScope(Scope):
         return info
     
     def find_variable_value(self, vname, index=None):
-        locals = self.local_variables if index is None else itt.islice(self.local_variables, index)
-        try:
-            return next((x, self.var_values[x.name]) for x in locals if x.name == vname)
-        except StopIteration:
-            return self.parent.find_variable_value(vname, self.index) if not self.parent is None else None, None
+        for x in self.local_variables:
+            if x.name == vname:
+                return x, self.var_values[x.name]
+        
+        return self.parent.find_variable_value(vname, self.index) if not self.parent is None else None
         
     def set_variable_value(self, vname, value, index=0):
         for x in self.local_variables:
@@ -33,18 +33,28 @@ class InterpreterScope(Scope):
                 self.var_values[x.name] = value
                 return
         
-        return self.parent.find_variable_value(vname, self.index) if not self.parent is None else None
+        return self.parent.set_variable_value(vname, value, self.index) if not self.parent is None else None
 
 class InterpreterMethod(Method):
     def __init__(self, name, param_names, params_types, return_type, body):
         super().__init__(name, param_names, params_types, return_type)
         self.body = body
         
-class InterpreterAttribute(Attribute):
-    def __init__(self, name, typex, value):
+class InterpreterAttribute(Type):
+    def __init__(self, name, typex, expression):
         super().__init__(name, typex)
-        self.value = value
+        self.attr_expression: dict() = expression
         
+    def define_attribute_with_expression(self, name:str, typex, expression):
+        try:
+            self.get_attribute(name)
+        except SemanticError:
+            attribute = Attribute(name, typex)
+            self.attributes.append(attribute)
+            self.attr_expression[name] = expression
+            return attribute
+        else:
+            raise SemanticError(f'Attribute "{name}" is already defined in {self.name}.')
 class TreeInterpreter:
 
     def __init__(self, context):
@@ -64,7 +74,7 @@ class TreeInterpreter:
 
     @visitor.when(PrintStatmentNode)
     def visit(self, node: PrintStatmentNode, scope: InterpreterScope):
-        _, value = self.visit(node.expression, scope)
+        _, value = self.visit_body(node.expression, scope)
         print(value)
         return self.context.get_type('string'), value
     
@@ -114,34 +124,6 @@ class TreeInterpreter:
             return type, type
         except:
             return self.context.get_type('any') , None
-
-    @visitor.when(TypeDefinitionNode)
-    def visit(self, node: TypeDefinitionNode, scope: InterpreterScope):
-        pass
-
-    @visitor.when(FunctionDefinitionNode)
-    def visit(self, node: FunctionDefinitionNode, scope: InterpreterScope):
-        if self.currentType:
-            try:
-                self.scope.node[self.currentType.name].append(node)
-            except:
-                self.scope.node[self.currentType.name] = [node]
-        else:
-            try:
-                self.scope.node[None].append(node)
-            except:
-                self.scope.node[None] = [node]
-
-    @visitor.when(FunctionCallNode)
-    def visit(self, node: FunctionCallNode, scope: InterpreterScope):
-        function = list(
-            filter(
-                lambda x: len(x.parameters) == len(node.args), self.scope.node[node.id]
-            )
-        )[0]
-
-        for statment in function.body:
-            self.visit(statment)
 
     @visitor.when(IfStructureNode)
     def visit(self, node: IfStructureNode, scope: InterpreterScope):
@@ -353,3 +335,41 @@ class TreeInterpreter:
         _, left_value = self.visit(node.left, scope)
         _, right_value = self.visit(node.right, scope)
         return self.context.get_type('string'), str(left_value) + " " + str(right_value)
+
+#______Blouque-3________________________________________________________________________________________________________________________________________________________________________
+
+    @visitor.when(LetInExpressionNode)
+    def visit(self, node: LetInExpressionNode, scope: InterpreterScope):
+        inner_scope = scope.create_child()
+        self.visit(node.assigments, inner_scope)
+        return self.visit_body(node.body, inner_scope)
+
+#__________________________________________________________________________________________________________________________________________________________________________//
+    
+    @visitor.when(FunctionDefinitionNode)
+    def visit(self, node: FunctionDefinitionNode, scope: InterpreterScope):
+        if self.currentType:
+            try:
+                self.scope.node[self.currentType.name].append(node)
+            except:
+                self.scope.node[self.currentType.name] = [node]
+        else:
+            try:
+                self.scope.node[None].append(node)
+            except:
+                self.scope.node[None] = [node]
+
+    @visitor.when(FunctionCallNode)
+    def visit(self, node: FunctionCallNode, scope: InterpreterScope):
+        function = list(
+            filter(
+                lambda x: len(x.parameters) == len(node.args), self.scope.node[node.id]
+            )
+        )[0]
+
+        for statment in function.body:
+            self.visit(statment)
+            
+    @visitor.when(TypeDefinitionNode)
+    def visit(self, node: TypeDefinitionNode, scope: InterpreterScope):
+        pass
