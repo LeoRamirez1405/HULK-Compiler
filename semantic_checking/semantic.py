@@ -117,7 +117,7 @@ class Type:
             plain[attr.name] = (attr, self)
         return plain.values() if clean else plain
 
-    def set_attribute_expression(self, name:str, typex, expression):
+    def set_attribute_expression(self, name:str, expression):
         try:
             # attr = self.get_attribute(name)
             self.attrs_expression[name] = expression

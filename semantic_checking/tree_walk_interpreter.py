@@ -4,6 +4,12 @@ from semantic_checking.semantic import *
 from semantic_checking.AST import *
 import semantic_checking.visitor as visitor
 
+class AttributeInstance:
+    def __init__(self, name, type, value) -> None:
+        self.name = name
+        self.type = type
+        self.value = value
+
 class InterpreterScope(Scope):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -372,7 +378,7 @@ class TreeInterpreter:
     def visit(self, node: TypeDefinitionNode, scope: InterpreterScope):
         self.currentType = self.context.get_type(node.id.id)
         
-        for attr in node.attributes.collection:
+        for attr in node.attributes:
             self.currentType.set_attribute_expression(attr.id.id, attr.expression)
             
         for method in node.methods:
@@ -380,6 +386,29 @@ class TreeInterpreter:
             meth.body = method.body
         
         self.currentType = None
+        
+    @visitor.when(KernInstanceCreationNode)
+    def visit(self, node: KernInstanceCreationNode, scope: InterpreterScope):
+        type: Type = self.context.get_type(node.type.id)
+        instance = {}
+        inner_scope = scope.create_child()
+        
+        #Construir los argumentos basando el los argumentos que tienen el nodo basandose en los valores de los argumentos
+        for i, arg_node in enumerate(node.args):
+            type_arg, value = self.visit(arg_node, inner_scope)
+            #Ver si aqui type.attributes[i].name es un Identifier o es un string
+            inner_scope.define_variable(type.args[i].name, type_arg, value)
+            
+        #Le pone valor a cada uno d los atributos de la instancia
+        for attr_name, expression in type.attrs_expression.items():
+            type_attr, value = self.visit(expression, inner_scope)
+            instance[attr_name] = AttributeInstance(attr_name, type_attr, value)
+            
+        return type, instance
+    
+    @visitor.when(AttributeInstance)
+    def visit(self, node: AttributeInstance, scope: IndentationError):
+        return node.type, node.value
     
     @visitor.when(MemberAccessNode)
     def visit(self, node: MemberAccessNode, scope: InterpreterScope):
