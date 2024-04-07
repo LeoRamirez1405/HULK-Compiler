@@ -77,7 +77,6 @@ class KernAssigmentNode(Node):
         super().__init__(token)
         self.id : IdentifierNode = id
         self.expression = expression
-        self.location = token.location
         
 class DestroyNode(Node):
     def __init__(self, id, expression, tokenDestroy : Token) -> None:
@@ -94,9 +93,11 @@ class DestroyNode(Node):
 class TypeNode(Node):
     def __init__(self, type: Token) -> None:
         super().__init__()
-        self.type = type.lex
         if type != 'object':
+            self.type = type.lex
             self.location = type.location
+        else:
+            self.type = type
         
 class FunctionDefinitionNode(Node):
     def __init__(self, id: IdentifierNode, type_annotation: TypeNode, parameters:list[dict[IdentifierNode, TypeNode]], body) -> None:
@@ -170,10 +171,9 @@ class InheritanceNode(Node):
 #* En new type (args = [param_1, param_2, ...])
 class KernInstanceCreationNode(BinaryNode):
     def __init__(self, type : IdentifierNode, args):
-        super().__init__(type, args)
+        super().__init__(type, args, type)
         self.type = type
         self.args = args
-        self.location = type.location
         
 #? Ver bien que en que consiste el member acces
 #* x.method_name(parametro_1, parametro_2, ...)
@@ -251,9 +251,8 @@ class PINode(NumberNode):
     
 #------------------------------------------------------------Math-Operations-----------------------------------------------------------------------------------#
 class MathOperationNode(UnaryNode):
-    def __init__(self, expression, tokenOp : Token = None) -> None:
-        super().__init__(expression)
-        self.location = tokenOp.location
+    def __init__(self, expression, tokenOp : Token) -> None:
+        super().__init__(expression, tokenOp)
 
 class SqrtMathNode(MathOperationNode):
     def __init__(self, expression, token : Token = None) -> None:
@@ -287,7 +286,6 @@ class LetInExpressionNode(Node):
         super().__init__(tokenIn)
         self.assigments = assigments
         self.body = body 
-        # self.location = tokenIn.location
 
 #----------------------------------Factor-Nodes----------------------------------------------------------------------------------------------------------------#
 class FunctionCallNode(Node):
@@ -317,9 +315,10 @@ class StringConcatWithSpaceNode(StringConcatNode):
         
 #TODO Ver que es esto
 class BoolIsTypeNode(BinaryNode):
-    def __init__(self, expression, type, token: Token = None):
+    def __init__(self, expression, type, token):
         super().__init__(expression, type, token)
-        # self.location = token.location
+        # self.expression = expression
+        # self.type = type
         
 class BoolAndNode(BooleanExpression):
     def __init__(self, expression_1, expression_2, tokenBool) -> None:
@@ -330,9 +329,8 @@ class BoolOrNode(BooleanExpression):
         super().__init__(expression_1, expression_2, tokenBool)
 
 class BoolCompAritNode(BinaryNode):
-    def __init__(self, left, right, tokenBinary: Token = None):
+    def __init__(self, left, right, tokenBinary: Token):
         super().__init__(left, right, tokenBinary)
-        # self.location = tokenBinary.location
         
 class BoolNotNode(UnaryNode):
     def __init__(self, node, tokenNot : Token):
