@@ -165,6 +165,7 @@ class Method:
         self.param_types = params_types
         self.return_type: Type = return_type
         self.body = None
+        #self.params_values = None
 
     def __str__(self):
         params = ', '.join(f'{n}:{t.name}' for n,t in zip(self.param_names, self.param_types))

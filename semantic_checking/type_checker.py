@@ -551,4 +551,6 @@ class TypeCheckerVisitor:
             self.errors.append(SemanticError(f'No existe un atributo {node.id.id} en la clase {self.current_type.name}'))
             return self.context.get_type('any')
         
-    
+    @visitor.when(PINode)
+    def visit(self, node: PINode, scope: Scope):
+        return self.context.get_type('number')

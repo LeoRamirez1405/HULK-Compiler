@@ -35,11 +35,11 @@ class InterpreterScope(Scope):
         
         return self.parent.set_variable_value(vname, value, self.index) if not self.parent is None else None
 
-class InterpreterMethod(Method):
-    def __init__(self, name, param_names, params_types, return_type, body, values = None):
-        super().__init__(name, param_names, params_types, return_type)
-        self.body = body
-        self.param_value = values
+# class InterpreterMethod(Method):
+#     def __init__(self, name, param_names, params_types, return_type, body, values = None):
+#         super().__init__(name, param_names, params_types, return_type)
+#         self.body = body
+#         self.param_value = values
         
     
 class TreeInterpreter:
@@ -344,9 +344,11 @@ class TreeInterpreter:
                 method_1: Method = type.get_method(node.id.id, len(node.parameters))
                 method_1.body = node.body
             except:
-                self.scope.node[self.currentType.name] = [node]
+                pass
+                # self.scope.node[self.currentType.name] = [node]
         else:
-            method = InterpreterMethod(node.id.id, [list(param.items())[0][0] for param in node.parameters], [list(param.items())[0][1] for param in node.parameters], node.type_annotation, node.body)
+            method = Method(node.id.id, [list(param.items())[0][0] for param in node.parameters], [list(param.items())[0][1] for param in node.parameters], node.type_annotation)
+            method.body = node.body
             try:
                 scope.functions[node.id.id].append(method)
             except:

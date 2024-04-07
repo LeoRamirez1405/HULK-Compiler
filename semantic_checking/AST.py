@@ -49,8 +49,15 @@ class ProgramNode(Node):
         
 class IdentifierNode(Node):
     def __init__(self, tokenID : Token) -> None:
-        super().__init__(tokenID)
-        self.id = tokenID.lex
+        token = None
+        if tokenID != 'object':
+            self.id = tokenID.lex
+            #self.location = type.location
+            token = tokenID
+        else:
+            self.id = tokenID
+        super().__init__(token)
+        # self.id = tokenID.lex
         # print(f"Identifier: {id}")
 
            
@@ -92,12 +99,14 @@ class DestroyNode(Node):
 #* Eso se hace luego cuando se viita el nodo en el visitor
 class TypeNode(Node):
     def __init__(self, type: Token) -> None:
-        super().__init__()
+        token = None
         if type != 'object':
             self.type = type.lex
-            self.location = type.location
+            #self.location = type.location
+            token = type
         else:
             self.type = type
+        super().__init__(token)
         
 class FunctionDefinitionNode(Node):
     def __init__(self, id: IdentifierNode, type_annotation: TypeNode, parameters:list[dict[IdentifierNode, TypeNode]], body) -> None:
@@ -247,7 +256,7 @@ class NumberNode(Node):
 
 class PINode(NumberNode):
     def __init__(self, tokenPI : Token = None) -> None:
-        super().__init__(math.pi, tokenPI)
+        super().__init__(tokenPI)
     
 #------------------------------------------------------------Math-Operations-----------------------------------------------------------------------------------#
 class MathOperationNode(UnaryNode):
@@ -291,7 +300,7 @@ class LetInExpressionNode(Node):
 class FunctionCallNode(Node):
     def __init__(self, tokenFunc : Token, args) -> None:
         super().__init__(tokenFunc)
-        self.id = tokenFunc.lex
+        self.id = IdentifierNode(tokenFunc)
         self.args = args
 
 class BooleanNode(Node):
@@ -315,8 +324,8 @@ class StringConcatWithSpaceNode(StringConcatNode):
         
 #TODO Ver que es esto
 class BoolIsTypeNode(BinaryNode):
-    def __init__(self, expression, type):
-        super().__init__(expression, type)
+    def __init__(self, expression, type, token: Token):
+        super().__init__(expression, type, token)
         # self.expression = expression
         # self.type = type
         
