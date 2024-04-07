@@ -6,7 +6,6 @@ from semantic_checking.tree_walk_interpreter import TreeInterpreter
 #from semantic_checking.evaluation import evaluate_reverse_parse
 from grammLR1 import gramm_Hulk_LR1
 from LR1 import LR1Parser,evaluate_reverse_parse
-
 gramatica, lexer = gramm_Hulk_LR1()
 
 
@@ -26,6 +25,7 @@ tokentypes = [token.token_type for token in tokens]
 print(tokentypes)
 
 parser = LR1Parser(gramatica,False)
+
 output,operations = parser(tokens)
 tokensAST = [token for token in tokens if token.token_type != 'space']
 print(tokensAST)
