@@ -169,10 +169,9 @@ class InheritanceNode(Node):
 #* En new type (args = [param_1, param_2, ...])
 class KernInstanceCreationNode(BinaryNode):
     def __init__(self, type : IdentifierNode, args):
-        super().__init__(type, args)
+        super().__init__(type, args, type)
         self.type = type
         self.args = args
-        self.location = type.location
         
 #? Ver bien que en que consiste el member acces
 #* x.method_name(parametro_1, parametro_2, ...)
@@ -315,9 +314,10 @@ class StringConcatWithSpaceNode(StringConcatNode):
         
 #TODO Ver que es esto
 class BoolIsTypeNode(BinaryNode):
-    def __init__(self, expression, type, token: Token = None):
+    def __init__(self, expression, type, token):
         super().__init__(expression, type, token)
-        # self.location = token.location
+        # self.expression = expression
+        # self.type = type
         
 class BoolAndNode(BooleanExpression):
     def __init__(self, expression_1, expression_2, tokenBool) -> None:
