@@ -314,8 +314,8 @@ class StringConcatWithSpaceNode(StringConcatNode):
         
 #TODO Ver que es esto
 class BoolIsTypeNode(BinaryNode):
-    def __init__(self, expression, type):
-        super().__init__(expression, type)
+    def __init__(self, expression, type, token):
+        super().__init__(expression, type, token)
         # self.expression = expression
         # self.type = type
         
