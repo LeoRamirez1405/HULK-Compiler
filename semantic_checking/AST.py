@@ -318,8 +318,8 @@ class StringConcatWithSpaceNode(StringConcatNode):
 #TODO Ver que es esto
 class BoolIsTypeNode(BinaryNode):
     def __init__(self, expression, type, token: Token = None):
-        super().__init__(expression, type)
-        self.location = token.location
+        super().__init__(expression, type, token)
+        # self.location = token.location
         
 class BoolAndNode(BooleanExpression):
     def __init__(self, expression_1, expression_2, tokenBool) -> None:
@@ -331,8 +331,8 @@ class BoolOrNode(BooleanExpression):
 
 class BoolCompAritNode(BinaryNode):
     def __init__(self, left, right, tokenBinary: Token = None):
-        super().__init__(left, right)
-        self.location = tokenBinary.location
+        super().__init__(left, right, tokenBinary)
+        # self.location = tokenBinary.location
         
 class BoolNotNode(UnaryNode):
     def __init__(self, node, tokenNot : Token):

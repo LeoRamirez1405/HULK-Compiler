@@ -53,7 +53,7 @@ def gramm_Hulk_LR1():
     if_structure %= If + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif + contElse , lambda h, s: IfStructureNode(s[3], s[6], s[8], s[9], s[1]) #Ya
 
     #TODO Ponerle que sea un coleccion
-    contElif %= Elif + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif , lambda h, s: [ElifStructureNode(s[3],s[6], s[1])] + s[8] #Ya
+    contElif %= Elif + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif , lambda h, s: [ElifStructureNode(s[1], s[3],s[6])] + s[8] #Ya
     contElif %= G.Epsilon , lambda h, s: []
 
     contElse %= Else + oBrace + statement_list + cBrace , lambda h, s: ElseStructureNode(s[3], s[1]) #Ya
