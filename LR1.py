@@ -28,8 +28,6 @@ class ShiftReduceParser:
                 action, goto = load(f)
                 self.action = action
                 self.goto = goto
-                print(self.action)
-                print(self.goto)
 
 
     
