@@ -77,7 +77,6 @@ class KernAssigmentNode(Node):
         super().__init__(token)
         self.id : IdentifierNode = id
         self.expression = expression
-        self.location = token.location
         
 class DestroyNode(Node):
     def __init__(self, id, expression, tokenDestroy : Token) -> None:
@@ -252,8 +251,7 @@ class PINode(NumberNode):
 #------------------------------------------------------------Math-Operations-----------------------------------------------------------------------------------#
 class MathOperationNode(UnaryNode):
     def __init__(self, expression, tokenOp : Token) -> None:
-        super().__init__(expression)
-        self.location = tokenOp.location
+        super().__init__(expression, tokenOp)
 
 class SqrtMathNode(MathOperationNode):
     def __init__(self, expression, token : Token) -> None:
@@ -287,7 +285,6 @@ class LetInExpressionNode(Node):
         super().__init__(tokenIn)
         self.assigments = assigments
         self.body = body 
-        self.location = tokenIn.location
 
 #----------------------------------Factor-Nodes----------------------------------------------------------------------------------------------------------------#
 class FunctionCallNode(Node):
@@ -332,8 +329,7 @@ class BoolOrNode(BooleanExpression):
 
 class BoolCompAritNode(BinaryNode):
     def __init__(self, left, right, tokenBinary: Token):
-        super().__init__(left, right)
-        self.location = tokenBinary.location
+        super().__init__(left, right, tokenBinary)
         
 class BoolNotNode(UnaryNode):
     def __init__(self, node, tokenNot : Token):
