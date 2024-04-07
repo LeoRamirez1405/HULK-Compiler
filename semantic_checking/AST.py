@@ -93,9 +93,11 @@ class DestroyNode(Node):
 class TypeNode(Node):
     def __init__(self, type) -> None:
         super().__init__()
-        self.type = type.lex
         if type != 'object':
+            self.type = type.lex
             self.location = type.location
+        else:
+            self.type = type
         
 class FunctionDefinitionNode(Node):
     def __init__(self, id: IdentifierNode, type_annotation: TypeNode, parameters:list[dict[IdentifierNode, TypeNode]], body) -> None:
