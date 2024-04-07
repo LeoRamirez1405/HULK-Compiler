@@ -4,16 +4,18 @@ import math
 from cmp.utils import Token
 
 class Node():
-    def __init__(self):
-        self.location = None
+    def __init__(self, token: Token = None):
+        self.location = token.location if token is not None else None
         pass
         
 class AtomicNode(Node):
-    def __init__(self, lex):
+    def init(self, lex, token):
+        super().__init__(token)
         self.lex = lex
 
 class UnaryNode(Node):
-    def __init__(self, node):
+    def __init__(self, node, token : Token):
+        super().__init__(token)
         self.node = node
 
     def evaluate(self):
@@ -25,7 +27,8 @@ class UnaryNode(Node):
         raise NotImplementedError()
 
 class BinaryNode(Node):
-    def __init__(self, left, right):
+    def __init__(self, left, right, token):
+        super().__init__(token)
         self.left = left
         self.right = right
 
@@ -40,51 +43,47 @@ class BinaryNode(Node):
     
 #-------------------------------------------------------------------------------------------------------------------------------------------------#
 class ProgramNode(Node):
-    def __init__(self, statments) -> None:
-        super().__init__()
+    def __init__(self, statments, token = None) -> None:
+        super().__init__(token)
         self.statments = statments
         
 class IdentifierNode(Node):
-    def __init__(self, tokenID : Token = None) -> None:
-        super().__init__()
+    def __init__(self, tokenID : Token) -> None:
+        super().__init__(tokenID)
         self.id = tokenID.lex
         print(f"Identifier: {id}")
-        self.location = tokenID.location
 
            
 class SelfNode(Node):
-    def __init__(self, identifier) -> None:
-        super().__init__()
+    def __init__(self, identifier, token) -> None:
+        super().__init__(token)
         self.identifier = identifier             
         self.id : str = id
         
 class SelfNode(Node):
-    def __init__(self, id : IdentifierNode) -> None:
-        super().__init__()
+    def __init__(self, id : IdentifierNode, token) -> None:
+        super().__init__(token)
         self.identifier: IdentifierNode = id
         self.id : str = id
-        self.location = id.location
 
 class PrintStatmentNode(Node):
-    def __init__(self, expression, tokenPrint : Token = None) -> None:
-        super().__init__()
+    def __init__(self, expression, tokenPrint : Token) -> None:
+        super().__init__(tokenPrint)
         self.expression = expression
-        self.tokenPrint = tokenPrint
         
 #TODO creo que se deberia poner el type_annotation en el kern_assigment
 class KernAssigmentNode(Node):
-    def __init__(self, id, expression, token : Token = None) -> None:
-        super().__init__()
+    def __init__(self, id, expression, token : Token) -> None:
+        super().__init__(token)
         self.id : IdentifierNode = id
         self.expression = expression
         self.location = token.location
         
 class DestroyNode(Node):
-    def __init__(self, id, expression, tokenDestroy : Token = None) -> None:
-        super().__init__()
+    def __init__(self, id, expression, tokenDestroy : Token) -> None:
+        super().__init__(tokenDestroy)
         self.id : IdentifierNode = id
         self.expression = expression
-        self.location = tokenDestroy.location
         
 # class LetNode(KernAssigmentNode):
 #     def __init__(self, id, expression) -> None:
@@ -96,77 +95,72 @@ class TypeNode(Node):
     def __init__(self, type: Token) -> None:
         super().__init__()
         self.type = type.lex
-        if type.lex != 'object':
+        if type != 'object':
             self.location = type.location
         
 class FunctionDefinitionNode(Node):
     def __init__(self, id: IdentifierNode, type_annotation: TypeNode, parameters:list[dict[IdentifierNode, TypeNode]], body) -> None:
-        super().__init__()
+        super().__init__(id)
         self.id: IdentifierNode = id
         self.type_annotation = type_annotation
         self.parameters = parameters
         self.body = body
-        self.location = id.location
         
 #--------------------------------Non_Create-Statment-----------------------------------------------------------------------------------------------------------------------#
         
 class IfStructureNode(Node):
-    def __init__(self, condition, body, _elif, _else, tokenIf : Token = None) -> None:
-        super().__init__()
+    def __init__(self, condition, body, _elif, _else, tokenIf : Token) -> None:
+        super().__init__(tokenIf)
         self.condition = condition
         self.body = body
         self._elif = _elif
         self._else = _else
-        self.location = tokenIf.location
         
 class ElifStructureNode(Node):
-    def __init__(self, condition, body, tokenElif : Token = None) -> None:
-        super().__init__()
+    def __init__(self, tokenElif : Token, condition, body) -> None:
+        super().__init__(tokenElif)
         self.condition = condition
         self.body = body
-        self.location = tokenElif.location
         
     def __len__(self):
         return len(self.body)
     
 class ElseStructureNode(Node):
     def __init__(self, body, tokenElse : Token = None) -> None:
-        super().__init__()
+        super().__init__(tokenElse)
         self.body = body
-        self.location = tokenElse.location
 
     def __len__(self):
         return len(self.body)
 
         
 class WhileStructureNode(Node):
-    def __init__(self, condition, body, tokenWhile : Token = None) -> None:
-        super().__init__()
+    def __init__(self, condition, body, tokenWhile : Token) -> None:
+        super().__init__(tokenWhile)
         self.condition = condition
         self.body = body
-        self.location = tokenWhile.location
 
 class ForStructureNode(Node):
-    def __init__(self, init_assigments: List[KernAssigmentNode], condition, increment_assigment: List[KernAssigmentNode], body, tokenFor : Token = None) -> None:
-        super().__init__() 
+    def __init__(self, init_assigments: List[KernAssigmentNode], condition, increment_assigment: List[KernAssigmentNode], body, tokenFor : Token) -> None:
+        super().__init__(tokenFor) 
         self.init_assigments = init_assigments
         self.condition = condition
         self.increment_condition = increment_assigment
         self.body = body
-        self.location = tokenFor.location
         
 #-----------------------------------Class----------------------------------------------------------------------------------------------#
 class TypeDefinitionNode(Node):
-    def __init__(self, id, parameters:list[dict],inheritance, attributes: List[KernAssigmentNode], methods) -> None:
+    def __init__(self, id : IdentifierNode, parameters:list[dict],inheritance, attributes: List[KernAssigmentNode], methods) -> None:
         super().__init__()
         self.id = id
+        self.location = id.location
         self.parameters = parameters
         self.inheritance: InheritanceNode = inheritance
         self.attributes: List[KernAssigmentNode] = attributes
         self.methods = methods
         
 class InheritanceNode(Node):
-    def __init__(self, type, args) -> None:
+    def __init__(self, type : IdentifierNode, args) -> None:
         super().__init__()
         self.type : IdentifierNode = type
         self.args: list[dict[IdentifierNode, TypeNode]] = args
@@ -179,7 +173,6 @@ class KernInstanceCreationNode(BinaryNode):
         super().__init__(type, args)
         self.type = type
         self.args = args
-        print(type)
         self.location = type.location
         
 #? Ver bien que en que consiste el member acces
@@ -196,34 +189,32 @@ class MemberAccessNode(Node):
 #------------------------------------Operators----------------------------------------------------------------------------------------------------#       
 # class BooleanOperator(Node):
 #     def __init__(self, operator) -> None:
-#         super().__init__()
+#               super().__init__(token)
 #         self.operator = operator
         
 # class AritmeticOperator(Node):
 #     def __init__(self, operator) -> None:
-#         super().__init__()
+#               super().__init__(token)
 #         self.operator = operator
         
 # class ConcatOperator(Node):
 #     def __init__(self, operator) -> None:
-#         super().__init__()
+#               super().__init__(token)
 #         self.operator = operator
         
 #-------------------------------------------Abstrct-Expressions------------------------------------------------------------------------------------------#
 class BooleanExpression(BinaryNode):
     def __init__(self, expression_1, expression_2, tokenBool) -> None:
-        super().__init__(expression_1, expression_2)
-        self.location = tokenBool.location
+        super().__init__(expression_1, expression_2, tokenBool)
         # self.expression_1 = expression_1
         # self.expressiin_2 = expression_2
         
 class AritmeticExpression(Node):
-    def __init__(self, expression_1, expression_2, tokenArit : Token = None) -> None:
-        super().__init__()
+    def __init__(self, expression_1, expression_2, tokenArit : Token) -> None:
+        super().__init__(tokenArit)
         self.expression_1 = expression_1
         self.expression_2 = expression_2
         print(f"Ari: {expression_1}, {expression_2}")
-        self.location = tokenArit.location
         
 #-------------------------------Aritmetic-Expressions-------------------------------------------------------------------------------------------------#
 class PlusExpressionNode(AritmeticExpression):
@@ -250,10 +241,9 @@ class PowExpressionNode(AritmeticExpression):
         super().__init__(expression_1, expresion_2, tokenArit)
 
 class NumberNode(Node):
-    def __init__(self, value : Token = None) -> None:
-        super().__init__()
+    def __init__(self, value : Token) -> None:
+        super().__init__(value)
         self.value = value.lex
-        self.location = value.location
 
 class PINode(NumberNode):
     def __init__(self, tokenPI : Token = None) -> None:
@@ -293,37 +283,33 @@ class LetInNode(Node):
         self.body = body
         
 class LetInExpressionNode(Node):
-    def __init__(self, assigments, body, tokenIn : Token = None) -> None:
-        super().__init__()
+    def __init__(self, assigments, body, tokenIn : Token) -> None:
+        super().__init__(tokenIn)
         self.assigments = assigments
         self.body = body 
         self.location = tokenIn.location
 
 #----------------------------------Factor-Nodes----------------------------------------------------------------------------------------------------------------#
 class FunctionCallNode(Node):
-    def __init__(self, args, tokenFunc : Token = None) -> None:
-        super().__init__()
+    def __init__(self, tokenFunc : Token, args) -> None:
+        super().__init__(tokenFunc)
         self.id = tokenFunc.lex
         self.args = args
-        self.location = tokenFunc.location
 
 class BooleanNode(Node):
-    def __init__(self, value : Token = None) -> None:
-        super().__init__()
+    def __init__(self, value : Token) -> None:
+        super().__init__(value)
         self.value = value.lex
-        self.location = value.location
 
         
 class StringNode(Node):
-    def __init__(self, value : Token = None) -> None:
-        super().__init__()
+    def __init__(self, value : Token) -> None:
+        super().__init__(value)
         self.value = value.lex
-        self.location = value.location
         
 class StringConcatNode(BinaryNode):
-    def __init__(self, left, right, tokenBinary: Token = None):
-        super().__init__(left, right)
-        self.location = tokenBinary.location
+    def __init__(self, left, right, tokenBinary: Token):
+        super().__init__(left, right, tokenBinary)
         
 class StringConcatWithSpaceNode(StringConcatNode):
     def __init__(self, left, right, tokenConcat : Token = None):
@@ -349,13 +335,12 @@ class BoolCompAritNode(BinaryNode):
         self.location = tokenBinary.location
         
 class BoolNotNode(UnaryNode):
-    def __init__(self, node, tokenNot : Token = None):
-        super().__init__(node)  
-        self.location = tokenNot.location      
+    def __init__(self, node, tokenNot : Token):
+        super().__init__(node, tokenNot)  
 class BoolCompLessNode(BoolCompAritNode):
     def __init__(self, left, right, tokenBinary: Token = None):
         super().__init__(left, right, tokenBinary)
-             
+
 class BoolCompGreaterNode(BoolCompAritNode):
     def __init__(self, left, right, tokenBinary: Token = None):
         super().__init__(left, right, tokenBinary)
@@ -402,19 +387,16 @@ class BoolCompNotEqualNode(BoolCompAritNode):
 #         super().__init__(id, args)
 
 class RandomFunctionCallNode(Node):
-    def __init__(self, tokenRan : Token = None) -> None:
-        super().__init__()
-        self.location = tokenRan.location
+    def __init__(self, tokenRan : Token) -> None:
+        super().__init__(tokenRan)
         
 class LogFunctionCallNode(Node):
-    def __init__(self, base, expression, tokenLog : Token = None) -> None:
-        super().__init__()
+    def __init__(self, base, expression, tokenLog : Token) -> None:
+        super().__init__(tokenLog)
         self.base = base
         self.expression = expression
-        self.location = tokenLog.location
         
 class CollectionNode(Node):
     def __init__(self, collection) -> None:
         super().__init__()
         self.collection = collection
-        # self.location = token.location
