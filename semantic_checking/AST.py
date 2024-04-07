@@ -289,9 +289,10 @@ class LetInExpressionNode(Node):
 
 #----------------------------------Factor-Nodes----------------------------------------------------------------------------------------------------------------#
 class FunctionCallNode(Node):
-    def __init__(self, tokenFunc : Token, args) -> None:
-        super().__init__(tokenFunc)
-        self.id = tokenFunc.lex
+    def __init__(self, id : IdentifierNode, args) -> None:
+        super().__init__()
+        self.id = id
+        self.location = id.location
         self.args = args
 
 class BooleanNode(Node):

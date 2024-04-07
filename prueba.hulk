@@ -1,11 +1,6 @@
-
-type Range(min:number, max:number) {
-    self.min = min;
-    self.max = max;
-    self.current = min - 1;
-
-    next(): bool => (self.current := self.current + 1) < self.max;
-    current(): number => self.current;
+let a = 2;
+function test(x: number){
+    x + 7 ;
 }
 
-let a = new Range(2, 3) in print(a.min)
+print(test(7));
