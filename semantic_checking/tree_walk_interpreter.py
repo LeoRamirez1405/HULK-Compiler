@@ -25,14 +25,15 @@ class InterpreterScope(Scope):
         try:
             return next((x, self.var_values[x.name]) for x in locals if x.name == vname)
         except StopIteration:
-            return self.parent.find_variable(vname, self.index) if not self.parent is None else None
+            return self.parent.find_variable_value(vname, self.index) if not self.parent is None else None, None
         
     def set_variable_value(self, vname, value, index=0):
-        locals = self.local_variables if index is None else itt.islice(self.local_variables, index)
-        try:
-            return next((x, self.var_values[x.name]) for x in locals if x.name == vname)
-        except StopIteration:
-            return self.parent.find_variable(vname, self.index) if not self.parent is None else None
+        for x in self.local_variables:
+            if x.name == vname:
+                self.var_values[x.name] = value
+                return
+        
+        return self.parent.find_variable_value(vname, self.index) if not self.parent is None else None
 
 class InterpreterMethod(Method):
     def __init__(self, name, param_names, params_types, return_type, body):
@@ -71,7 +72,7 @@ class TreeInterpreter:
     @visitor.when(IdentifierNode)
     def visit(self, node: IdentifierNode, scope: InterpreterScope):
         try:
-            var, value = self.scope.find_variable(node.id)
+            var, value = scope.find_variable_value(node.id)
             return var.type, value
         except:
             return self.context.get_type('any'), None
@@ -101,11 +102,18 @@ class TreeInterpreter:
     
     @visitor.when(DestroyNode)
     def visit(self, node: DestroyNode, scope: InterpreterScope):
-        var, value = scope.find_variable(node.id.id)
-        type, value =  self.visit(self, node.expression, scope)
-        scope.var_values[var.name] = value
+        type, value =  self.visit(node.expression, scope)
+        scope.set_variable_value(node.id.id, value)
         
         return type, value
+    
+    @visitor.when(TypeNode)
+    def visit(self, node: TypeNode, scope: InterpreterScope):
+        try:
+            type = self.context.types[node.type]
+            return type, type
+        except:
+            return self.context.get_type('any') , None
 
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode, scope: InterpreterScope):
@@ -161,8 +169,10 @@ class TreeInterpreter:
     def visit(self, node: WhileStructureNode, scope: InterpreterScope):
         result = self.context.get_type('any'), None
         inner_scope = scope.create_child()
-        while self.visit(node.condition, scope):
+        _, condition_value = self.visit(node.condition, scope)
+        while condition_value:
             result = self.visit_body(node.body, inner_scope)
+            _, condition_value = self.visit(node.condition, scope)
         return result
 
     @visitor.when(ForStructureNode)
@@ -170,9 +180,11 @@ class TreeInterpreter:
         result = self.context.get_type('any'), None
         inner_scope = scope.create_child()
         self.visit(node.init_assigments, inner_scope)
-        while self.visit(node.condition, inner_scope):
+        _, condition_value = self.visit(node.condition, inner_scope)
+        while condition_value:
             result = self.visit_body(node.body, inner_scope)
             self.visit(node.increment_condition, inner_scope)
+            _, condition_value = self.visit(node.condition, inner_scope)
         
         return result
         

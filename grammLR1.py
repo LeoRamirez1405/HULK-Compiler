@@ -53,11 +53,11 @@ def gramm_Hulk_LR1():
     if_structure %= If + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif + contElse , lambda h, s: IfStructureNode(s[3], s[6], s[8], s[9], s[1]) #Ya
 
     #TODO Ponerle que sea un coleccion
-    contElif %= Elif + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif , lambda h, s: [ElifStructureNode(s[1], s[3],s[6])] + s[8] #Ya
+    contElif %= Elif + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif , lambda h, s: [ElifStructureNode(s[3],s[6], s[1])] + s[8] #Ya
     contElif %= G.Epsilon , lambda h, s: []
 
     contElse %= Else + oBrace + statement_list + cBrace , lambda h, s: ElseStructureNode(s[3], s[1]) #Ya
-    contElse %= G.Epsilon , lambda h, s:  ElseStructureNode([], s[1]) #Ya
+    contElse %= G.Epsilon , lambda h, s:  ElseStructureNode([]) #Ya
 
     while_structure %= While + oPar + expression + cPar + oBrace + statement_list + cBrace , lambda h, s:  WhileStructureNode(s[3], s[6], s[1]) #Ya
     for_assignment = G.NonTerminal('for_assignment')
@@ -143,7 +143,7 @@ def gramm_Hulk_LR1():
     factor %= string, lambda h, s:  StringNode(s[1]) #Ya
     factor %= _False, lambda h, s:  BooleanNode(s[1]) #Ya
     factor %= _True, lambda h, s:  BooleanNode(s[1]) #Ya
-    factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(IdentifierNode(s[1]),s[3]) #Ya
+    factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(IdentifierNode(s[3], s[1])) #Ya
     factor %= identifier, lambda h, s:  IdentifierNode(s[1]) #Ya
     factor %= control_structure, lambda h, s: s[1]
     factor %= oPar + assignment + cPar, lambda h, s: s[2] 
