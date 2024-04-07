@@ -41,21 +41,7 @@ class InterpreterMethod(Method):
         self.body = body
         self.param_value = values
         
-class InterpreterAttribute(Type):
-    def __init__(self, name, typex, expression):
-        super().__init__(name, typex)
-        self.attr_expression: dict() = expression
-        
-    def define_attribute_with_expression(self, name:str, typex, expression):
-        try:
-            self.get_attribute(name)
-        except SemanticError:
-            attribute = Attribute(name, typex)
-            self.attributes.append(attribute)
-            self.attr_expression[name] = expression
-            return attribute
-        else:
-            raise SemanticError(f'Attribute "{name}" is already defined in {self.name}.')
+    
 class TreeInterpreter:
 
     def __init__(self, context):
@@ -340,7 +326,7 @@ class TreeInterpreter:
         _, right_value = self.visit(node.right, scope)
         return self.context.get_type('string'), str(left_value) + " " + str(right_value)
 
-#______Blouque-3________________________________________________________________________________________________________________________________________________________________________
+#_______Bloque-3________________________________________________________________________________________________________________________________________________________________________
 
     @visitor.when(LetInExpressionNode)
     def visit(self, node: LetInExpressionNode, scope: InterpreterScope):
@@ -348,7 +334,7 @@ class TreeInterpreter:
         self.visit(node.assigments, inner_scope)
         return self.visit_body(node.body, inner_scope)
 
-#__________________________________________________________________________________________________________________________________________________________________________//
+#_______Bloque-4__________________________________________________________________________________________________________________________________________________________________//
     
     @visitor.when(FunctionDefinitionNode)
     def visit(self, node: FunctionDefinitionNode, scope: InterpreterScope):
@@ -366,20 +352,34 @@ class TreeInterpreter:
             except:
                 scope.functions[node.id.id] = [method]
                 
-    def build_function(node: FunctionDefinitionNode, scope: InterpreterScope):
-        return InterpreterMethod(node.id.id, [list(param.items())[0][0] for param in node.parameters], [list(param.items())[0][1] for param in node.parameters], node.type_annotation, node.body)
-
     @visitor.when(FunctionCallNode)
     def visit(self, node: FunctionCallNode, scope: InterpreterScope):
-        function = list(
-            filter(
-                lambda x: len(x.parameters) == len(node.args), self.scope.node[node.id]
-            )
-        )[0]
-
-        for statment in function.body:
-            self.visit(statment)
+        try: 
+            method: Method = self.currentType.get_method(node.id.id)
+        except:
+            #Como ya paso por el chequeo semantico solo llega aca cuando current type es None
+            method: Method = [func for func in scope.functions[node.id.id] if len(func.param_names) == len(node.args)][0] 
+            
+        inner_scope = scope.create_child()    
+        for i in range(len(node.args)):
+            _, value = self.visit(node.args[i], inner_scope)
+            inner_scope.define_variable(method.param_names[i], method.param_types[i], value)
+        return self.visit_body(method.body, inner_scope)
             
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode, scope: InterpreterScope):
-        pass
+        self.currentType = self.context.get_type(node.id.id)
+        
+        for attr in node.attributes.collection:
+            self.currentType.set_attribute_expression(attr.id.id, attr.expression)
+            
+        for method in node.methods:
+            meth = self.currentType.get_method(method.id.id)
+            meth.body = method.body
+        
+        self.currentType = None
+    
+    @visitor.when(MemberAccessNode)
+    def visit(self, node: MemberAccessNode, scope: InterpreterScope):
+        type, value = self.visit(node.base_object, scope)
+        #self.currentType = self.context.get_type(base_object_type.name)

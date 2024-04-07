@@ -41,6 +41,7 @@ class Type:
         self.inhertance: Type = None
         self.args: List[Argument] = []
         self.attributes: List[Attribute] = []
+        self.attrs_expression = {}
         self.methods: List[Method] = []
         self.parent = None
 
@@ -116,6 +117,19 @@ class Type:
             plain[attr.name] = (attr, self)
         return plain.values() if clean else plain
 
+    def set_attribute_expression(self, name:str, typex, expression):
+        try:
+            # attr = self.get_attribute(name)
+            self.attrs_expression[name] = expression
+        except SemanticError:
+            pass
+        #     attribute = Attribute(name, typex)
+        #     self.attributes.append(attribute)
+        #     self.attr_expression[name] = expression
+        #     return attribute
+        # else:
+        #     raise SemanticError(f'Attribute "{name}" is already defined in {self.name}.')
+    
     def all_methods(self, clean=True):
         plain = OrderedDict() if self.parent is None else self.parent.all_methods(False)
         for method in self.methods:
