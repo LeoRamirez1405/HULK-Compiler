@@ -6,7 +6,9 @@ from semantic_checking.tree_walk_interpreter import TreeInterpreter
 #from semantic_checking.evaluation import evaluate_reverse_parse
 from grammLR1 import gramm_Hulk_LR1
 from LR1 import LR1Parser,evaluate_reverse_parse
-from joblib import load,dump
+from joblib import dump, load
+
+
 gramatica, lexer = gramm_Hulk_LR1()
 
 
@@ -25,15 +27,11 @@ tokens = lexer(text)
 tokentypes = [token.token_type for token in tokens]
 #print(tokentypes)
 
-
-parser = LR1Parser(gramatica,False)
-# dump(parser, 'resultado_LR1Parser.joblib')
-# parser = load('resultado_LR1Parser.joblib')
-
+parser = LR1Parser(gramatica, rebuild=True)
 
 output,operations = parser(tokens)
 tokensAST = [token for token in tokens if token.token_type != 'space']
-#print(tokensAST)
+# print(tokensAST)
 ast = evaluate_reverse_parse(output,operations,tokensAST)
 # ast = ProgramNode([PlusExpressionNode(NumberNode(5), StringNode('casa'))])
 checker = SemanticCheckingVisitor()

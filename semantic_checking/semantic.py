@@ -96,10 +96,10 @@ class Type:
         try:
             return next(method for method in self.methods if method.name == name)
         except StopIteration:
-            if self.parent is None:
+            if self.inhertance is None:
                 raise SemanticError(f'Method "{name}" is not defined in {self.name}.')
             try:
-                return self.parent.get_method(name)
+                return self.inhertance.get_method(name)
             except SemanticError:
                 raise SemanticError(f'Method "{name}" is not defined in {self.name}.')
 

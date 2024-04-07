@@ -143,7 +143,7 @@ def gramm_Hulk_LR1():
     factor %= string, lambda h, s:  StringNode(s[1]) #Ya
     factor %= _False, lambda h, s:  BooleanNode(s[1]) #Ya
     factor %= _True, lambda h, s:  BooleanNode(s[1]) #Ya
-    factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(s[1], s[3]) #Ya
+    factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(s[1],s[3]) #Ya
     factor %= identifier, lambda h, s:  IdentifierNode(s[1]) #Ya
     factor %= control_structure, lambda h, s: s[1]
     factor %= oPar + assignment + cPar, lambda h, s: s[2] 
@@ -159,7 +159,7 @@ def gramm_Hulk_LR1():
     factor %= kern_instance_creation, lambda h,s: s[1]  
     
     member_access %= factor + Dot + identifier + oPar + arguments + cPar , lambda h, s: MemberAccessNode(s[1], IdentifierNode(s[3]), s[5]) #Ya
-    self_access %= _self + Dot + identifier , lambda h, s: SelfNode(IdentifierNode(s[3]), s[1]) #Ya #Todo member access Los parametros son privados de la clase #! NAOMI ARREGLA ESTO EN EL CHECKEO SEMANTICO ❤️
+    self_access %= _self + Dot + identifier , lambda h, s: SelfNode(IdentifierNode(s[3])) #Ya #Todo member access Los parametros son privados de la clase #! NAOMI ARREGLA ESTO EN EL CHECKEO SEMANTICO ❤️
     kern_instance_creation %= New + identifier + oPar + arguments + cPar, lambda h, s: KernInstanceCreationNode(IdentifierNode(s[2]),s[4]) #Ya
     #kern_instance_creation %= New + identifier, lambda h, s: KernInstanceCreationNode(IdentifierNode(s[2]),[])
     
@@ -193,7 +193,7 @@ def gramm_Hulk_LR1():
     method_definition %= G.Epsilon , lambda h, s: []
 
     inheritance %= Inherits + identifier, lambda h, s: InheritanceNode(IdentifierNode(s[2]),[])
-    inheritance %= Inherits + identifier + oPar + parameters + cPar, lambda h, s: InheritanceNode(IdentifierNode(s[2]),s[4])
+    inheritance %= Inherits + identifier + oPar + arguments + cPar, lambda h, s: InheritanceNode(IdentifierNode(s[2]),s[4])
     inheritance %= G.Epsilon, lambda h, s: InheritanceNode(IdentifierNode('object'),[])
     
     nonzero_digits = '|'.join(str(n) for n in range(1,10))
@@ -205,6 +205,7 @@ def gramm_Hulk_LR1():
     lexer = Lexer([
     (number, f'(((({nonzero_digits})({zero_digits})*)|0)(.({zero_digits})*))|((({nonzero_digits})({zero_digits})*)|0)'),
     (string, f'\"(({all_characters})|(\\\\\"))*\"'),
+    ('[comment]', f'##'),
     ("[LineJump]", "[LineJump]"),
     (Print, 'print'),
     (oPar, "\("),

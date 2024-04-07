@@ -65,6 +65,8 @@ class Lexer:
         
         row = 1
         col = 1
+        skipUntilNextLine = False
+        
         while text:
             final, lex = self._walk(text)
 
@@ -84,7 +86,10 @@ class Lexer:
 
             text = text[len(lex):]
             
+            if token_type == '[comment]':
+                skipUntilNextLine = True
             if token_type == '[LineJump]':
+                skipUntilNextLine = False
                 row += 1
                 col = 0
                 continue
@@ -96,7 +101,8 @@ class Lexer:
             elif token_type:
                 col += len(lex)
 
-            yield lex, token_type, row, col
+            if not skipUntilNextLine: 
+                yield lex, token_type, row, col
             
 
         yield '$', self.eof, row, col
