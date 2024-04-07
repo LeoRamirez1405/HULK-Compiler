@@ -169,10 +169,9 @@ class InheritanceNode(Node):
 #* En new type (args = [param_1, param_2, ...])
 class KernInstanceCreationNode(BinaryNode):
     def __init__(self, type : IdentifierNode, args):
-        super().__init__(type, args)
+        super().__init__(type, args, type)
         self.type = type
         self.args = args
-        self.location = type.location
         
 #? Ver bien que en que consiste el member acces
 #* x.method_name(parametro_1, parametro_2, ...)
