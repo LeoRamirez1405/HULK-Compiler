@@ -1,1 +1,5 @@
 new A();
+7 != False;
+for (let a = 2;7 != False;a := a+1){
+
+}
