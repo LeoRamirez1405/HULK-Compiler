@@ -1,5 +1,16 @@
-new A();
-7 != False;
-for (let a = 2;7 != False;a := a+1){
-
+function calcula(a:number, b:number){
+    if(a>b)
+    {
+        print("a es mayor que b");
+    }
+    elif(a==b)
+    {
+        print("a es igual a b");
+    }
+    else
+    {
+        print("b es igual a a");
+    }
 }
+
+print("a mi me gusta Alexita un" @@ (10+5*20) @ " %" @@ calcula(10,1));

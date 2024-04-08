@@ -50,23 +50,27 @@ def gramm_Hulk_LR1():
     control_structure %= while_structure , lambda h, s: s[1]
     control_structure %= for_structure , lambda h, s: s[1]
     
-    if_structure %= If + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif + contElse , lambda h, s: IfStructureNode(s[3], s[6], s[8], s[9], s[1]) #Ya
+    body = G.NonTerminal('body')
+    body %= oBrace + statement_list + cBrace,lambda h, s: s[2]
+    body %= expr_statement, lambda h, s: [s[1]]
+    #body %= statement,lambda h, s: [s[1]]
+    if_structure %= If + oPar + expression + cPar + body + contElif + contElse , lambda h, s: IfStructureNode(s[3], s[5], s[6], s[7], s[1]) #Ya
 
     #TODO Ponerle que sea un coleccion
-    contElif %= Elif + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif , lambda h, s: [ElifStructureNode(s[1], s[3],s[6])] + s[8] #Ya
+    contElif %= Elif + oPar + expression + cPar + body + contElif , lambda h, s: [ElifStructureNode(s[1], s[3],s[5])] + s[6] #Ya
     contElif %= G.Epsilon , lambda h, s: []
 
-    contElse %= Else + oBrace + statement_list + cBrace , lambda h, s: ElseStructureNode(s[3], s[1]) #Ya
+    contElse %= Else + body , lambda h, s: ElseStructureNode(s[2], s[1]) #Ya
     contElse %= G.Epsilon , lambda h, s:  ElseStructureNode([]) #Ya
 
-    while_structure %= While + oPar + expression + cPar + oBrace + statement_list + cBrace , lambda h, s:  WhileStructureNode(s[3], s[6], s[1]) #Ya
+    while_structure %= While + oPar + expression + cPar + body , lambda h, s:  WhileStructureNode(s[3], s[5], s[1]) #Ya
     for_assignment = G.NonTerminal('for_assignment')
     for_assignment %= G.Epsilon, lambda h, s: CollectionNode([])
     for_assignment %= assignment, lambda h, s: s[1]
 
     for_assignment %= destroy_collection, lambda h, s: s[1]
     
-    for_structure %= For + oPar + for_assignment + Semi + expression + Semi + destroy_collection + cPar + oBrace + statement_list + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10], s[1]) #Ya
+    for_structure %= For + oPar + for_assignment + Semi + expression + Semi + destroy_collection + cPar + body , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[9], s[1]) #Ya
     
     #TODO Cambie la atributacion y le puse que creara un nodo collection para saber luego en los checkeos que hay que iterar en ese tipo de nodos
     # assignment %= Let + multi_assignment, lambda h, s: s[2]
