@@ -11,9 +11,16 @@ class AttributeInstance:
         self.value = value
     
 class InstanceType:
-    def __init__(self, type, attrs) -> None:
+    def __init__(self, type, attrs, parent = None) -> None:
         self.type = type
-        self.attrs : dict[str, Type] = attrs
+        self.attrs : dict[str, object] = attrs
+        self.parent = parent
+        
+    def get_attribute(self, name):
+        for k, v in self.attrs.items():
+            if k == name:
+                return v.type, v.value
+        return self.parent.get_attribute(name) if self.parent is not None else None
         
     def __str__(self):
         return f'{self.type}({", ".join([f"{k}: {v.value}" for k, v in self.attrs.items()])})'
@@ -55,7 +62,7 @@ class TreeInterpreter:
         self.context: Context = context
         self.scope = InterpreterScope()
         self.errors = []
-        self.currentType: Type = None
+        self.currentInstance: InstanceType = None
 
     @visitor.on("node")
     def visit(self, node, scope):
@@ -283,8 +290,8 @@ class TreeInterpreter:
         return self.context.get_type('number'), math.sqrt(expression_value)
 
     @visitor.when(SinMathNode)
-    def visit(self, node: SinMathNode):
-        _, expression_value = self.visit(node.node)
+    def visit(self, node: SinMathNode, scope):
+        _, expression_value = self.visit(node.node, scope)
         return self.context.get_type('number'), math.sin(expression_value)
 
     @visitor.when(CosMathNode)
@@ -315,7 +322,7 @@ class TreeInterpreter:
 
     @visitor.when(LogFunctionCallNode)
     def visit(self, node: LogFunctionCallNode, scope: InterpreterScope):
-        _, base_value = self.visit(node.base)
+        _, base_value = self.visit(node.base, scope)
         _, expression_value = self.visit(node.expression, scope)
         if expression_value <= 0:
             raise Exception(f'El logaritmo no esta definido para numeros menores o iguales a 0. {node.location}')
@@ -332,6 +339,10 @@ class TreeInterpreter:
         _, left_value = self.visit(node.left, scope)
         _, right_value = self.visit(node.right, scope)
         return self.context.get_type('string'), str(left_value) + " " + str(right_value)
+    
+    @visitor.when(PINode)
+    def visit(self, node: PINode, scope: InterpreterScope):
+        return self.context.get_type('number'), math.pi
 
 #_______Bloque-3________________________________________________________________________________________________________________________________________________________________________
 
@@ -414,5 +425,20 @@ class TreeInterpreter:
     
     @visitor.when(MemberAccessNode)
     def visit(self, node: MemberAccessNode, scope: InterpreterScope):
-        type, value = self.visit(node.base_object, scope)
-        #self.currentType = self.context.get_type(base_object_type.name)
+        type_base, value = self.visit(node.base_object, scope)
+        self.current_instance = value
+    
+        method = type_base.get_method(node.object_property_to_acces.id)
+        
+        inner_scope = scope.create_child()    
+        for i in range(len(node.args)):
+            _, value = self.visit(node.args[i], inner_scope)
+            inner_scope.define_variable(method.param_names[i].id, method.param_types[i], value)
+        
+        type_result, value_result = self.visit(method.body, inner_scope)
+        self.current_instance = None
+        
+    @visitor.when(SelfNode)
+    def visit(self, node: SelfNode, scope: InterpreterScope):
+        return self.current_instance.get_attribute(node.id.id)
+        

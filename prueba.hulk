@@ -44,7 +44,7 @@ type Range(min:number, max:number) {
     current(): number => self.current;
 }
 
-let ran = new Range(0,1);
+let ran = new Range(5, 9);
 print(ran);
 
 function fib(n: number): number => if (n == 0 or n == 1) {1;} else {fib(n - 1) + fib(n - 2);}  
