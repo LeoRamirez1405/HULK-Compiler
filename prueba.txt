@@ -1,14 +1,48 @@
+#Done
+42;
+print(42);
+print(2 @@ "aaa");
+print(if (False){"True";}elif(False){"No entro al primer elif";}elif(False){"Entro al segundo elif";}else{"Entro al else";} @ ". Prueba del if en el interpreter.");
+
+for(let a = 0; a < 3; a := a + 1){
+    if(a is number and True){
+        print("value:"@@a);
+    }
+    else{
+        print("Este es el else del for");
+    }
+}
+
 print(
     let a = 3 
         in 
-            while(a >= 0){  
+            while(a > 0){  
                 a := a - 1; 
+                print(a);
                 if(a == 0){
                     "Ya termino";
                     }
                 });
 while(False){
-    "No entra a aqui";
+    print("No debe entrar a aqui");
 }
-print(1 + 2)
+print(1 + 2);
 
+
+#Pendiente
+let a = 7;
+function test(x: number){
+    x + 7;
+}
+print(test(7));
+
+type Range(min:number, max:number) {
+    self.min = min;
+    self.max = max;
+    self.current = min - 1;
+
+    next(): bool => (self.current := self.current + 1) < self.max;
+    current(): number => self.current;
+}
+
+let a = new Range(2, 3) in print(a.min)

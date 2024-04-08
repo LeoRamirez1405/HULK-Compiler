@@ -147,7 +147,7 @@ def gramm_Hulk_LR1():
     factor %= string, lambda h, s:  StringNode(s[1]) #Ya
     factor %= _False, lambda h, s:  BooleanNode(s[1]) #Ya
     factor %= _True, lambda h, s:  BooleanNode(s[1]) #Ya
-    factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(IdentifierNode(s[3], s[1])) #Ya
+    factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(IdentifierNode(s[1]),s[3]) #Ya
     factor %= identifier, lambda h, s:  IdentifierNode(s[1]) #Ya
     factor %= control_structure, lambda h, s: s[1]
     factor %= oPar + assignment + cPar, lambda h, s: s[2] 
@@ -209,6 +209,7 @@ def gramm_Hulk_LR1():
     lexer = Lexer([
     (number, f'(((({nonzero_digits})({zero_digits})*)|0)(.({zero_digits})*))|((({nonzero_digits})({zero_digits})*)|0)'),
     (string, f'\"(({all_characters})|(\\\\\"))*\"'),
+    ('[comment]', f'##'),
     ("[LineJump]", "[LineJump]"),
     (Print, 'print'),
     (oPar, "\("),

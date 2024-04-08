@@ -49,9 +49,16 @@ class ProgramNode(Node):
         
 class IdentifierNode(Node):
     def __init__(self, tokenID : Token) -> None:
-        super().__init__(tokenID)
-        self.id = tokenID.lex
-        print(f"Identifier: {id}")
+        token = None
+        if tokenID != 'object':
+            self.id = tokenID.lex
+            #self.location = type.location
+            token = tokenID
+        else:
+            self.id = tokenID
+        super().__init__(token)
+        # self.id = tokenID.lex
+        # print(f"Identifier: {id}")
 
            
 class SelfNode(Node):
@@ -92,10 +99,14 @@ class DestroyNode(Node):
 #* Eso se hace luego cuando se viita el nodo en el visitor
 class TypeNode(Node):
     def __init__(self, type: Token) -> None:
-        super().__init__()
-        self.type = type.lex
+        token = None
         if type != 'object':
-            self.location = type.location
+            self.type = type.lex
+            #self.location = type.location
+            token = type
+        else:
+            self.type = type
+        super().__init__(token)
         
 class FunctionDefinitionNode(Node):
     def __init__(self, id: IdentifierNode, type_annotation: TypeNode, parameters:list[dict[IdentifierNode, TypeNode]], body) -> None:
@@ -245,13 +256,12 @@ class NumberNode(Node):
 
 class PINode(NumberNode):
     def __init__(self, tokenPI : Token = None) -> None:
-        super().__init__(math.pi, tokenPI)
+        super().__init__(tokenPI)
     
 #------------------------------------------------------------Math-Operations-----------------------------------------------------------------------------------#
 class MathOperationNode(UnaryNode):
-    def __init__(self, expression, tokenOp : Token = None) -> None:
-        super().__init__(expression)
-        self.location = tokenOp.location
+    def __init__(self, expression, tokenOp : Token) -> None:
+        super().__init__(expression, tokenOp)
 
 class SqrtMathNode(MathOperationNode):
     def __init__(self, expression, token : Token = None) -> None:
@@ -273,12 +283,12 @@ class ExpMathNode(MathOperationNode):
     def __init__(self, expression, token : Token = None) -> None:
         super().__init__(expression, token)
 
-#-----------------------------------Let-In--------------------------------------------------------------------------------------------------------------------#
-class LetInNode(Node):
-    def __init__(self, assigments, body) -> None:
-        super().__init__()
-        self.assigments = assigments
-        self.body = body
+# #-----------------------------------Let-In--------------------------------------------------------------------------------------------------------------------#
+# class LetInNode(Node):
+#     def __init__(self, assigments, body) -> None:
+#         super().__init__()
+#         self.assigments = assigments
+#         self.body = body
         
 class LetInExpressionNode(Node):
     def __init__(self, assigments, body, tokenIn : Token) -> None:
@@ -290,7 +300,7 @@ class LetInExpressionNode(Node):
 class FunctionCallNode(Node):
     def __init__(self, tokenFunc : Token, args) -> None:
         super().__init__(tokenFunc)
-        self.id = tokenFunc.lex
+        self.id = IdentifierNode(tokenFunc)
         self.args = args
 
 class BooleanNode(Node):
@@ -314,7 +324,7 @@ class StringConcatWithSpaceNode(StringConcatNode):
         
 #TODO Ver que es esto
 class BoolIsTypeNode(BinaryNode):
-    def __init__(self, expression, type, token):
+    def __init__(self, expression, type, token: Token):
         super().__init__(expression, type, token)
         # self.expression = expression
         # self.type = type
@@ -328,9 +338,8 @@ class BoolOrNode(BooleanExpression):
         super().__init__(expression_1, expression_2, tokenBool)
 
 class BoolCompAritNode(BinaryNode):
-    def __init__(self, left, right, tokenBinary: Token = None):
+    def __init__(self, left, right, tokenBinary: Token):
         super().__init__(left, right, tokenBinary)
-        # self.location = tokenBinary.location
         
 class BoolNotNode(UnaryNode):
     def __init__(self, node, tokenNot : Token):
