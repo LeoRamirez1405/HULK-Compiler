@@ -70,8 +70,7 @@ class SelfNode(Node):
 class SelfNode(Node):
     def __init__(self, id : IdentifierNode, token) -> None:
         super().__init__(token)
-        self.identifier: IdentifierNode = id
-        self.id : str = id
+        self.id : IdentifierNode = id
 
 class PrintStatmentNode(Node):
     def __init__(self, expression, tokenPrint : Token) -> None:

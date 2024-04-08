@@ -65,6 +65,8 @@ class Lexer:
         
         row = 1
         col = 1
+        skipUntilNextLine = False
+        
         while text:
             final, lex = self._walk(text)
 
