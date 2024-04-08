@@ -9,7 +9,7 @@ type B inherits A{
   
 type C inherits B{
     self.x = 4;
-    getx() => base() + base();
+    getx() => base(6) + base();
 }
 
 let b = (new C()).getx() in print(b);

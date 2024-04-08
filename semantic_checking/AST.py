@@ -165,7 +165,7 @@ class InheritanceNode(Node):
     def __init__(self, type : IdentifierNode, args) -> None:
         super().__init__()
         self.type : IdentifierNode = type
-        self.args: list[dict[IdentifierNode, TypeNode]] = args
+        self.args = args
         self.location = type.location
 
 #? Verificar que son los parametros type y args

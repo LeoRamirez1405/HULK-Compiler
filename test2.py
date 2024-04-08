@@ -1,7 +1,3 @@
-_true = 'False'
-print(True if bool(_true) else False)
+a = "\" Hola \""
 
-def test(a=3):
-    print(a)
-    
-test(9)
+print(a)

@@ -44,6 +44,7 @@ class Type:
         self.attrs_expression = {}
         self.methods: List[Method] = []
         self.parent = None
+        self.inheritance_args_expressions = []
 
     def set_parent(self, parent):
         if self.parent is not None:

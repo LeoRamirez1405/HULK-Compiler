@@ -16,6 +16,11 @@ class InstanceType:
         self.attrs : dict[str, object] = attrs
         self.parent = parent
         
+    def copy(self):
+        new_attrs = self.attrs.copy()
+        
+        return InstanceType(self.type,new_attrs,self.parent)
+    
     def get_attribute_value(self, name):
         for k, v in self.attrs.items():
             if k == name:
@@ -103,7 +108,7 @@ class TreeInterpreter:
     @visitor.when(StringNode)
     def visit(self, node: StringNode, scope: InterpreterScope):
         word = node.value[1:len(node.value)-1]
-        return self.context.get_type('string'), str(word)
+        return self.context.get_type('string'), str(word).replace("\\\"","\"").replace("\\\'","\'").replace("\\\\","\\")
     
     @visitor.when(BooleanNode)
     def visit(self, node: BooleanNode, scope: InterpreterScope):
@@ -427,13 +432,10 @@ class TreeInterpreter:
                 if self.currentMethod and node.id.id == 'base':
                     inheritance_methods = self.currentType.inhertance.methods
                     try:
-                        method = list(
-                            filter(
-                                lambda x: x.name == self.currentMethod.name,
-                                inheritance_methods,
-                            )
-                        )[0]
+                        #method = list(filter(lambda x: x.name == self.currentMethod.name,inheritance_methods,))[0]
+                        method = self.currentType.inhertance.get_method(self.currentMethod.name)
                     except:
+                        print("Error")
                         pass
                 else:
                     method = self.currentType.get_method(node.id.id)
@@ -451,14 +453,17 @@ class TreeInterpreter:
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode, scope: InterpreterScope):
         self.currentType = self.context.get_type(node.id.id)
-        parent_type=self.currentType.inhertance
+        parent_type = self.currentType.inhertance
+        self.currentType.inheritance_args_expressions = node.inheritance.args
+        
         for attr in node.attributes:
             self.currentType.set_attribute_expression(attr.id.id, attr.expression)
-        if parent_type.name != 'object':
-            for attr in parent_type.attrs_expression.items():
-                if not attr[0] in list(map(lambda x : x.id.id,node.attributes)):
-                # if not attr[0] in list(map(lambda x : x.name,node.attributes)):
-                    self.currentType.set_attribute_expression(attr[0], attr[1])
+            
+        # if parent_type.name != 'object':
+        #     for attr in parent_type.attrs_expression.items():
+        #         if not attr[0] in list(map(lambda x : x.id.id,node.attributes)):
+        #         # if not attr[0] in list(map(lambda x : x.name,node.attributes)):
+        #             self.currentType.set_attribute_expression(attr[0], attr[1])
             
             
         for method in node.methods:
@@ -476,7 +481,8 @@ class TreeInterpreter:
     @visitor.when(KernInstanceCreationNode)
     def visit(self, node: KernInstanceCreationNode, scope: InterpreterScope):
         type: Type = self.context.get_type(node.type.id)
-        type_parent:Type=type.inhertance
+        type_parent:Type = type.inhertance
+        
         instance = {}
         inner_scope = scope.create_child()
         
@@ -486,10 +492,10 @@ class TreeInterpreter:
             #Ver si aqui type.attributes[i].name es un Identifier o es un string
             inner_scope.define_variable(type.args[i].name, type_arg, value)
             
-            try:
-                inner_scope.define_variable(type_parent.args[i].name,type_arg, value)
-            except:
-                pass
+            # try:
+            #     inner_scope.define_variable(type_parent.args[i].name,type_arg, value)
+            # except:
+            #     pass
                 
             
             
@@ -498,8 +504,39 @@ class TreeInterpreter:
             type_attr, value = self.visit(expression, inner_scope)
             instance[attr_name] = AttributeInstance(attr_name, type_attr, value)
             
+        
+        current_instance = InstanceType(type.name, instance)
+        if type_parent.name != 'object':
+            self.currentInstance = current_instance
+            current_instance.parent = self.build_parent(type_parent, type.inheritance_args_expressions, inner_scope)
+            self.currentInstance = None
+        return type, current_instance
+    
+    def build_parent(self, type: Type, node_args: list, scope:InterpreterScope):
+        current_instance = self.currentInstance.copy()
+        instance = {}
+        #if type.parent:
+        #Construir los argumentos basando el los argumentos que tienen el nodo basandose en los valores de los argumentos
+        #type: Type = self.context.get_type(node.type.id)
+        inner_scope = scope.create_child()
+        for i, arg_node in enumerate(node_args):
+            type_arg, value = self.visit(arg_node, inner_scope)
+            #Ver si aqui type.attributes[i].name es un Identifier o es un string
+            inner_scope.define_variable(type.args[i].name, type_arg, value)
+        
+        #Le pone valor a cada uno d los atributos de la instancia
+        for attr_name, expression in type.attrs_expression.items():
+            type_attr, value = self.visit(expression, inner_scope)
+            instance[attr_name] = AttributeInstance(attr_name, type_attr, value)
             
-        return type, InstanceType(type.name, instance)
+        instance_type = InstanceType(type, instance) if len(instance) != 0 else  None
+        if type.parent.name != 'object' and instance_type:
+            self.currentInstance = instance_type
+            instance_type.parent = self.build_parent(type.parent, type.inheritance_args_expressions, inner_scope) if instance else None
+            current_instance.parent = instance_type
+            self.currentInstance = current_instance
+        
+        return instance_type
     
     @visitor.when(InstanceType)
     def visit(self, node: InstanceType, scope: IndentationError):
@@ -529,8 +566,30 @@ class TreeInterpreter:
         return self.currentInstance.get_attribute_value(node.id.id)
     
     @visitor.when(InheritanceNode)
-    def visit(self, node: InheritanceNode, scope):
+    def visit(self, node: InheritanceNode, scope:InterpreterScope):
         pass
+        # current_instance = self.currentInstance.copy()
+        # while self.currentInstance.parent:
+        #     #Construir los argumentos basando el los argumentos que tienen el nodo basandose en los valores de los argumentos
+        #     type: Type = self.context.get_type(node.type.id)
+        #     inner_scope = scope.create_child()
+        #     for i, arg_node in enumerate(node.args):
+        #         type_arg, value = self.visit(arg_node, inner_scope)
+        #         #Ver si aqui type.attributes[i].name es un Identifier o es un string
+        #         inner_scope.define_variable(type.args[i].name, type_arg, value)
+            
+        #     instance = {}
+        #     #Le pone valor a cada uno d los atributos de la instancia
+        #     for attr_name, expression in type.attrs_expression.items():
+        #         type_attr, value = self.visit(expression, inner_scope)
+        #         instance[attr_name] = AttributeInstance(attr_name, type_attr, value)
+                
+        # instance_type = InstanceType(type, instance)
+        # self.currentInstance = instance_type
+        # instance_type.parent = self.visit(InheritanceNode(type.parent.name, type.inheritance_args_expressions))
+        
+        # self.currentInstance = current_instance
+        # return type, InstanceType(type,instance)
         
     @visitor.when(BlockNode)
     def visit(self, node: BlockNode, scope: InterpreterScope):

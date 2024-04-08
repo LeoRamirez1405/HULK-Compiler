@@ -1,25 +1,32 @@
-type A{
-    self.x = 2;
-    getx() => self.x;
+type Point(x:number,y:number) {
+    self.x = x;
+    self.y = y;
+
+    getX():number => self.x;
+    getY():number => self.y;
+
+    setX(x:number):number => self.x := x;
+    setY(y:number):number => self.y := y;
+}
+type PolarPoint(phi:number, rho:number) inherits Point(phi, rho) {
+    rho() => sqrt(5 ^ 2 + 5 ^ 2); 
 }
 
-type B inherits A{
-    self.y = 3;
+print("RHO"@@(new PolarPoint(4,3)).rho());
+
+
+
+type Knight(fname:string, lastname:string) inherits Person(fname, lastname) {
+    name():string => "Sir" @@ base();
 }
-  
-type C inherits B{
-    self.x = 4;
-    getx() => base() + base();
+
+type Person(firstname:string, lastname:string) {
+    self.firstname = firstname;
+    self.lastname = lastname;
+
+    name():string => self.firstname @@ self.lastname;
 }
 
-let b = (new C()).getx() in print(b);
-let a = new A();
-
-let b = new B();
-
-let c = new C();
-
-a := b;
-//b := a;
-
-print(b is C);
+    let p = new Knight("Phil", "Collins") in
+        print(p.name());
+   
