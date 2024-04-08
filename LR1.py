@@ -215,9 +215,9 @@ def evaluate_reverse_parse(right_parse, operations, tokens):
             head, body = production
             attributes = production.attributes
             assert all(rule is None for rule in attributes[1:]), 'There must be only synteticed attributes.'
-            print(f"Attr: {attributes}")
+            #print(f"Attr: {attributes}")
             rule = attributes[0]
-            print(f"Rule: {rule}")
+            #print(f"Rule: {rule}")
 
 
             if len(body):

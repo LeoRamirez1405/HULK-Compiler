@@ -138,7 +138,7 @@ class ElseStructureNode(Node):
     def __init__(self, body, tokenElse : Token = None) -> None:
         super().__init__(tokenElse)
         self.body = body
-
+        
     def __len__(self):
         return len(self.body)
 

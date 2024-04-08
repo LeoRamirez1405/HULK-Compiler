@@ -17,8 +17,6 @@ class InstanceType:
         
     def __str__(self):
         return f'{self.type}({", ".join([f"{k}: {v.value}" for k, v in self.attrs.items()])})'
-        # return f'{self.type}({", ".join([f"{k}: {v}" for k, v in self.attrs.items()])})'
-        # return f'{self.name}: {self.value} ({self.type})'
     
 class InterpreterScope(Scope):
     def __init__(self, parent=None):
@@ -50,13 +48,6 @@ class InterpreterScope(Scope):
                 return
         
         return self.parent.set_variable_value(vname, value, self.index) if not self.parent is None else None
-
-# class InterpreterMethod(Method):
-#     def __init__(self, name, param_names, params_types, return_type, body, values = None):
-#         super().__init__(name, param_names, params_types, return_type)
-#         self.body = body
-#         self.param_value = values
-        
     
 class TreeInterpreter:
 
@@ -138,10 +129,10 @@ class TreeInterpreter:
                 _, elif_condition = self.visit(elif_node.condition, scope)
                 if elif_condition:
                     return self.visit_body(elif_node.body, scope)
-        elif len(node._else) != 0:
-            return self.visit_body(node._else.body, scope)
+        #elif len(node._else) != 0:
+        return self.visit_body(node._else.body, scope)
         
-        return self.context.get_type('any'), None
+        #return self.context.get_type('any'), None
             
     def visit_body(self, node, scope):
         result = self.context.get_type('any'), None
