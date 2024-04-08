@@ -25,7 +25,7 @@ print(
 while(False){
     print("No debe entrar a aqui");
 }
-print(1 + 2);
+print(1.4 + 2);
 
 let m = 7;
 
@@ -62,3 +62,18 @@ print(
 
 print(m is Range);
 print(ran is Range);
+
+type Person(firstname:string, lastname:string) {
+    self.firstname = firstname;
+    self.lastname = lastname;
+
+    name(): string => self.firstname @@ self.lastname;
+    hash() : number {
+        5;
+    }
+}
+
+type Knight(value:string, value1:string) inherits Person(value , value1) {
+    name():string => "Sir" @@ base();
+    base():number=>1;
+}
