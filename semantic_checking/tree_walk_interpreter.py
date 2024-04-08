@@ -205,7 +205,10 @@ class TreeInterpreter:
     @visitor.when(BoolNotNode)
     def visit(self, node: BoolNotNode, scope: InterpreterScope):
         _, value = self.visit(node.node, scope)
-        return self.context.get_type('bool'), not value
+        try:
+            return self.context.get_type('bool'), not value
+        except:
+            raise Exception(f'El valor debe ser booleano. location {node.location}')
 
     @visitor.when(BoolCompLessNode)
     def visit(self, node: BoolCompLessNode, scope: InterpreterScope):
@@ -370,10 +373,6 @@ class TreeInterpreter:
             return self.context.get_type('string'), str(left_value) + " " + str(right_value)
         except:
             raise Exception(f'No es posible concatenar los elementos. location : {node.location}')
-    
-    @visitor.when(PINode)
-    def visit(self, node: PINode, scope: InterpreterScope):
-        return self.context.get_type('number'), math.pi
 
 #_______Bloque-3________________________________________________________________________________________________________________________________________________________________________
 
@@ -481,14 +480,19 @@ class TreeInterpreter:
     @visitor.when(BlockNode)
     def visit(self, node: BlockNode, scope: InterpreterScope):
         inner_scope = scope.create_child()
-        return self.visit_body(node, inner_scope)
+        result = self.context.get_type('any'),None
+        for expression in node.list_non_create_statemnet:
+            result = self.visit(expression, inner_scope)
+        
+        return result
+
     
     @visitor.when(BoolAndNode)
     def visit(self, node: BoolAndNode, scope: InterpreterScope):
         _, left = self.visit(node.left, scope)
         _, right = self.visit(node.right, scope)
         try:
-            return self.context.create_type('bool'), left and right
+            return self.context.get_type('bool'), left and right
         except:
             raise Exception(f'Las operaciones logica se realizan solo entre elementos booleanos.')
         
@@ -497,7 +501,7 @@ class TreeInterpreter:
         _, left = self.visit(node.left, scope)
         _, right = self.visit(node.right, scope)
         try:
-            return self.context.create_type('bool'), left or right
+            return self.context.get_type('bool'), left or right
         except:
             raise Exception(f'Las operaciones logica se realizan solo entre elementos booleanos.')
         

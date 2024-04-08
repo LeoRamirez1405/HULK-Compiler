@@ -41,15 +41,8 @@ class TypeCheckerVisitor:
         
     @visitor.when(KernAssigmentNode)
     def visit(self, node: KernAssigmentNode, scope: Scope):
-        # if scope.parent == None:
-        #     try:
-        #         var: VariableInfo = self.scope.find_variable(node.id.id)
-        #         var.type = self.visit(node.expression, scope)
-        #     except:
-        #         self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida.'))
-        #     return self.context.get_type('any')
         if scope.is_local(node.id.id):
-            self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida.'))
+            self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida. location: {node.location}'))
             return scope.find_variable(node.id.id).type
         else:
             type = self.visit(node.expression, scope)
@@ -484,8 +477,11 @@ class TypeCheckerVisitor:
         inner_scope = scope.create_child()
         inner_type = self.context.get_type('any')
         
-        for expression in node.list_non_create_statemnet:
-            inner_type = self.visit(expression,inner_scope)
+        if type(node.list_non_create_statemnet) == list:
+            for expression in node.list_non_create_statemnet:
+                inner_type = self.visit(expression, inner_scope)
+        else:
+            inner_type = self.visit(node.list_non_create_statemnet, inner_scope)
             
         return inner_type
         
