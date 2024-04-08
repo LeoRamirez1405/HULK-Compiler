@@ -17,9 +17,9 @@ class TypeCheckerVisitor:
     
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
-        print("OnProgram (Checker)")
+        #print("OnProgram (Checker)")
         for statment in node.statments:
-            print(f"Statement (Checker): {statment}")
+            #print(f"Statement (Checker): {statment}")
             self.visit(statment, self.scope) 
             
     @visitor.when(PrintStatmentNode)
@@ -502,7 +502,7 @@ class TypeCheckerVisitor:
 
     @visitor.when(StringNode)
     def visit(self, node: StringNode, scope):
-        print("OnStringNode")
+        #print("OnStringNode")
         try:
             string = str(node.value)
             return self.context.get_type('string')
