@@ -239,10 +239,9 @@ class TypeCheckerVisitor:
             # inner_scope.define_variable(att.id.id, typ) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
             
         for method in node.methods:
-            self.current_method = method
+            self.current_metod = method
             self.visit(method, inner_scope)
-        
-        
+            
         self.current_method = None
         self.current_type = None
         
@@ -380,6 +379,10 @@ class TypeCheckerVisitor:
                 else:
                     method = self.current_type.get_method(node.id.id)
                 # En caso de ser un metodo se verifica si la cantidad de parametros suministrados es correcta
+
+                
+                #method = self.current_type.get_method(node.id.id)
+                #En caso de ser un metodo se verifica si la cantidad de parametros suministrados es correcta
                 if method :
                     if len(node.args) != len(method.param_names):
                         #Si la cantidad de parametros no es correcta se lanza un error
@@ -484,62 +487,29 @@ class TypeCheckerVisitor:
         try:
             ret_type = self.context.get_type(node.type.id)
             if len(ret_type.args) != len(node.args):
-                self.errors.append(
-                    SemanticError(
-                        f"El tipo {node.id} recibe {len(ret_type.args)} parametros para instanciarse"
-                    )
-                )
+                self.errors.append(SemanticError(f"El tipo {node.id} recibe {len(ret_type.args)} parametros para instanciarse"))
                 return self.context.get_type("any")
 
             correct = True
-            # print("bkadjgiu")
-            # x = [type(parama) for parama in ret_type.args]
-            # print(x)
+            
             arg_types = [parama.type for parama in ret_type.args]
             arg_names = [parama.name for parama in ret_type.args]
             for i, arg in enumerate(arg_types):
                 try:
                     temp_type = self.visit(node.args[i], scope)
                 except:
-                    self.errors.append(
-                        SemanticError(
-                            f"El tipo del argumento {arg_names[i]} es incorrecto a la hora de heredar de {ret_type.name}. Linea:{node.location[0]}"
-                        )
-                    )
+                    self.errors.append(SemanticError(f"El tipo del argumento {arg_names[i]} es incorrecto a la hora de heredar de {ret_type.name}. Linea:{node.location[0]}"))
                     temp_type = self.context.get_type("any")
                     correct = False
 
                 if not temp_type.conforms_to(ret_type.args[i].type.name):
-                    self.errors.append(
-                        SemanticError(
-                            f"El tipo del argumento {arg_names[i]} es incorrecto a la hora de heredar de {ret_type.name}"
-                        )
-                    )
+                    self.errors.append(SemanticError(f"El tipo del argumento {arg_names[i]} es incorrecto a la hora de heredar de {ret_type.name}"))
                     correct = False
             return ret_type if correct else self.context.get_type("any")
-            # Comprobando los tipos
-
-            # arg_types = [list(parama.items())[0] for parama in node.args]
-            # arg_types = [name[1].type for name in arg_types]
-            # for i, arg in enumerate(arg_types):
-            #     try:
-            #         temp_type = self.context.get_type(arg)
-            #     except:
-            #         self.errors.append(SemanticError(f'El tipo del argumento {arg} es incorrecto a la hora de heredar de {ret_type.name}'))
-            #         temp_type = self.context.get_type('any')
-            #         correct = False
-
-            #     if not temp_type.conforms_to(ret_type.args[i].type.name):
-            #         self.errors.append(SemanticError(f'El tipo del argumento {arg} es incorrecto a la hora de heredar de {ret_type.name}'))
-            #         correct = False
-            # return ret_type if correct else self.context.get_type('any')
         except:
-            self.errors.append(
-                SemanticError(
-                    f"El tipo {node.type.id} no esta definido. Linea:{node.location[0]} , Columna:{node.location[1]}"
-                )
-            )
+            self.errors.append(SemanticError(f"El tipo {node.type.id} no esta definido. Linea:{node.location[0]} , Columna:{node.location[1]}"))
             return self.context.get_type("any")
+
 
     @visitor.when(StringNode)
     def visit(self, node: StringNode, scope):

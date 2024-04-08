@@ -1,11 +1,32 @@
 
-function tan2(x: number): number => sin(x) / cos(x);
-function cot(x:number):number => 1 / tan2(x);
-function operate(x:number, y:number) {
-    print(x + y);
-    print(x - y);
-    print(x * y);
-    print(x / y);
+for(let a = 0; a < 3; a := a + 1){
+    if(a is number and True){
+        print("value:"@@a);
+    }
+    else{
+        print("Este es el else del for");
+    }
+}
+
+print(
+    let a = 3 
+        in 
+            while(a > 0){  
+                a := a - 1; 
+                print(a);
+                if(a == 0){
+                    "Ya termino";
+                    }
+                });
+while(False){
+    print("No debe entrar a aqui");
+}
+print(1.4 + 2);
+
+let m = 7;
+
+function test(x: number){
+    x + 7;
 }
 function fib(n:number):number => if (n == 0 or n == 1){ 1;} else{ fib(n-1) + fib(n-2);};
 function fact(x:number) => let f = 1, range = new Range(1,x+1) in while(range.next()) {f := f * range.current();};
@@ -23,6 +44,7 @@ type Range(min:number, max:number) {
 
     next(): bool => (self.current := self.current + 1) < self.max;
     current(): number => self.current;
+    test_self(x: number): number => self.min + x;
 }
 type Point(x:number,y:number) {
     self.x = x;
@@ -31,18 +53,9 @@ type Point(x:number,y:number) {
     getX():number => self.x;
     getY():number => self.y;
 
-    setX(x):number => self.x := x;
-    setY(y):number => self.y := y;
-}
-type PolarPoint(phi:number, rho:number) inherits Point(phi, rho) {
-    rho() => sqrt(5 ^ 2 + 5 ^ 2); 
-}
-type Knight(firstname:string, lastname:string) inherits Person(firstname, lastname) {
-    name() => "Sir" @@ "base";
-}
-type Person(firstname:string, lastname:string) {
-    self.firstname = firstname;
-    self.lastname = lastname;
+let ran = new Range(5, 9);
+print(ran);
+print(ran.test_self(8));
 
     name() => self.firstname @@ self.lastname;
 }
@@ -147,12 +160,29 @@ type Plane{
         print(p.name());
     let x = 42 in print(x);
 
-    let x = new Superman() in
-        print(
-            if (x is Bird) {"It's bird!";}
-            elif (x is Plane) {"It's a plane!";}
-            else {"No, it's Superman!";}
-        );
-    let x = 42 in print(x);
-    let total = { print("Total"); 5; } + 6 in print(total);
+print(m is Range);
+print(ran is Range);
+
+type Person(firstname:string, lastname:string) {
+    self.firstname = firstname;
+    self.lastname = lastname;
+
+    name(): string => self.firstname @@ self.lastname;
+    hash() : number {
+        5;
+    }
 }
+
+type Knight(value:string, value1:string) inherits Person(value , value1) {
+    name():string => "Sir" @@ base();
+    base():number=>1;
+}
+
+let per = new Person("Naomi", "Lahera");
+print(per.name());
+
+function createPerson(name: string, last_name: string){
+    new Person(name, last_name);
+}
+
+print(createPerson("Leo", "Brian").name());

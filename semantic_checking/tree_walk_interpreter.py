@@ -11,9 +11,16 @@ class AttributeInstance:
         self.value = value
     
 class InstanceType:
-    def __init__(self, type, attrs) -> None:
+    def __init__(self, type, attrs, parent = None) -> None:
         self.type = type
-        self.attrs : dict[str, Type] = attrs
+        self.attrs : dict[str, object] = attrs
+        self.parent = parent
+        
+    def get_attribute(self, name):
+        for k, v in self.attrs.items():
+            if k == name:
+                return v.type, v.value
+        return self.parent.get_attribute(name) if self.parent is not None else None
         
     def __str__(self):
         return f'{self.type}({", ".join([f"{k}: {v.value}" for k, v in self.attrs.items()])})'
@@ -55,6 +62,7 @@ class TreeInterpreter:
         self.context: Context = context
         self.scope = InterpreterScope()
         self.errors = []
+        self.currentInstance: InstanceType = None
         self.currentType: Type = None
 
     @visitor.on("node")
@@ -79,7 +87,7 @@ class TreeInterpreter:
             var, value = scope.find_variable_value(node.id)
             return var.type, value
         except:
-            return self.context.get_type('any'), None
+            raise Exception(f'La variable no esta definida. location: {node.location}')
 
     @visitor.when(NumberNode)
     def visit(self, node: NumberNode, scope: InterpreterScope):
@@ -95,7 +103,7 @@ class TreeInterpreter:
         try:
             return self.context.get_type('bool'), eval(node.value)
         except:
-            return self.context.get_type('any'), None
+            raise Exception(f'El valor no es booleno. location: {node.location}')
     
     @visitor.when(KernAssigmentNode)
     def visit(self, node: KernAssigmentNode, scope: InterpreterScope):
@@ -117,7 +125,7 @@ class TreeInterpreter:
             type = self.context.types[node.type]
             return type, type
         except:
-            return self.context.get_type('any') , None
+            raise Exception(f'El tipo {node.type} no existe')
 
     @visitor.when(IfStructureNode)
     def visit(self, node: IfStructureNode, scope: InterpreterScope):
@@ -239,13 +247,19 @@ class TreeInterpreter:
     def visit(self, node: PlusExpressionNode, scope: InterpreterScope):
         _, left_value = self.visit(node.expression_1, scope)
         _, right_value = self.visit(node.expression_2, scope)
-        return self.context.get_type('number'), left_value + right_value
+        try:
+            return self.context.get_type('number'), left_value + right_value
+        except:
+            raise Exception(f'Solo se puede realizar la operacion entre numeros.')
 
     @visitor.when(SubsExpressionNode)
     def visit(self, node: SubsExpressionNode, scope: InterpreterScope):
         _, left_value = self.visit(node.expression_1, scope)
         _, right_value = self.visit(node.expression_2, scope)
-        return self.context.get_type('number'), left_value - right_value
+        try:
+            return self.context.get_type('number'), left_value - right_value
+        except:
+            raise Exception(f'Solo se puede realizar la operacion entre numeros.')
 
     @visitor.when(DivExpressionNode)
     def visit(self, node: DivExpressionNode, scope: InterpreterScope):
@@ -253,13 +267,19 @@ class TreeInterpreter:
         _, right_value = self.visit(node.expression_2, scope)
         if right_value == 0:
             raise Exception(f'Se esta realizando una division entre 0. {node.location}')
-        return self.context.get_type('number'), left_value / right_value
+        try:
+            return self.context.get_type('number'), left_value / right_value
+        except:
+            raise Exception(f'Solo se puede realizar la operacion entre numeros.')
 
     @visitor.when(MultExpressionNode)
     def visit(self, node: MultExpressionNode, scope: InterpreterScope):
         _, left_value = self.visit(node.expression_1, scope)
         _, right_value = self.visit(node.expression_2, scope)
-        return self.context.get_type('number'), left_value * right_value
+        try:
+            return self.context.get_type('number'), left_value * right_value
+        except:
+            raise Exception(f'Solo se puede realizar la operacion entre numeros.')
 
     @visitor.when(ModExpressionNode)
     def visit(self, node: ModExpressionNode, scope: InterpreterScope):
@@ -267,13 +287,19 @@ class TreeInterpreter:
         _, right_value = self.visit(node.expression_2, scope)
         if right_value == 0:
             raise Exception(f'Se esta realizando una division entre 0. {node.location}')
-        return self.context.get_type('number'), left_value % right_value
+        try:
+            return self.context.get_type('number'), left_value % right_value
+        except:
+            raise Exception(f'Solo se puede realizar la operacion entre numeros.')
 
     @visitor.when(PowExpressionNode)
     def visit(self, node: PowExpressionNode, scope: InterpreterScope):
         _, left_value = self.visit(node.expression_1, scope)
         _, right_value = self.visit(node.expression_2, scope)
-        return self.context.get_type('number'), left_value ** right_value
+        try:
+            return self.context.get_type('number'), left_value ** right_value
+        except:
+            raise Exception(f'Solo se puede realizar la operacion entre numeros.')
 
     @visitor.when(SqrtMathNode)
     def visit(self, node: SqrtMathNode, scope: InterpreterScope):
@@ -310,7 +336,10 @@ class TreeInterpreter:
     @visitor.when(ExpMathNode)
     def visit(self, node: ExpMathNode, scope: InterpreterScope):
         _, expression_value = self.visit(node.node, scope)
-        return self.context.get_type('number'), math.exp(expression_value)
+        try:
+            return self.context.get_type('number'), math.exp(expression_value)
+        except:
+            raise Exception(f'La operacion solo se aplica a numeros. location: {node.location}')
 
     @visitor.when(RandomFunctionCallNode)
     def visit(self, node: RandomFunctionCallNode, scope: InterpreterScope):
@@ -318,7 +347,7 @@ class TreeInterpreter:
 
     @visitor.when(LogFunctionCallNode)
     def visit(self, node: LogFunctionCallNode, scope: InterpreterScope):
-        _, base_value = self.visit(node.base,scope)
+        _, base_value = self.visit(node.base, scope)
         _, expression_value = self.visit(node.expression, scope)
         if expression_value <= 0:
             raise Exception(f'El logaritmo no esta definido para numeros menores o iguales a 0. {node.location}')
@@ -328,13 +357,23 @@ class TreeInterpreter:
     def visit(self, node: StringConcatNode, scope: InterpreterScope):
         _, left_value = self.visit(node.left, scope)
         _, right_value = self.visit(node.right, scope)
-        return self.context.get_type('string'), str(left_value) + str(right_value)
+        try:
+            return self.context.get_type('string'), str(left_value) + str(right_value)
+        except:
+            raise Exception(f'No es posible concatenar los elementos. location : {node.location}')
 
     @visitor.when(StringConcatWithSpaceNode)
     def visit(self, node: StringConcatWithSpaceNode, scope: InterpreterScope):
         _, left_value = self.visit(node.left, scope)
         _, right_value = self.visit(node.right, scope)
-        return self.context.get_type('string'), str(left_value) + " " + str(right_value)
+        try:
+            return self.context.get_type('string'), str(left_value) + " " + str(right_value)
+        except:
+            raise Exception(f'No es posible concatenar los elementos. location : {node.location}')
+    
+    @visitor.when(PINode)
+    def visit(self, node: PINode, scope: InterpreterScope):
+        return self.context.get_type('number'), math.pi
 
 #_______Bloque-3________________________________________________________________________________________________________________________________________________________________________
 
@@ -417,5 +456,21 @@ class TreeInterpreter:
     
     @visitor.when(MemberAccessNode)
     def visit(self, node: MemberAccessNode, scope: InterpreterScope):
-        type, value = self.visit(node.base_object, scope)
-        #self.currentType = self.context.get_type(base_object_type.name)
+        type_base, value = self.visit(node.base_object, scope)
+        self.current_instance = value
+    
+        method = type_base.get_method(node.object_property_to_acces.id)
+        
+        inner_scope = scope.create_child()    
+        for i in range(len(node.args)):
+            _, value = self.visit(node.args[i], inner_scope)
+            inner_scope.define_variable(method.param_names[i], method.param_types[i], value)
+        
+        type_result, value_result = self.visit(method.body, inner_scope)
+        self.current_instance = None
+        return type_result, value_result
+        
+    @visitor.when(SelfNode)
+    def visit(self, node: SelfNode, scope: InterpreterScope):
+        return self.current_instance.get_attribute(node.id.id)
+        
