@@ -63,6 +63,7 @@ class TreeInterpreter:
         self.scope = InterpreterScope()
         self.errors = []
         self.currentInstance: InstanceType = None
+        self.currentType: Type = None
 
     @visitor.on("node")
     def visit(self, node, scope):
@@ -86,7 +87,7 @@ class TreeInterpreter:
             var, value = scope.find_variable_value(node.id)
             return var.type, value
         except:
-            return self.context.get_type('any'), None
+            raise Exception(f'La variable no esta definida. location: {node.location}')
 
     @visitor.when(NumberNode)
     def visit(self, node: NumberNode, scope: InterpreterScope):
@@ -102,7 +103,7 @@ class TreeInterpreter:
         try:
             return self.context.get_type('bool'), eval(node.value)
         except:
-            return self.context.get_type('any'), None
+            raise Exception(f'El valor no es booleno. location: {node.location}')
     
     @visitor.when(KernAssigmentNode)
     def visit(self, node: KernAssigmentNode, scope: InterpreterScope):
@@ -124,7 +125,7 @@ class TreeInterpreter:
             type = self.context.types[node.type]
             return type, type
         except:
-            return self.context.get_type('any') , None
+            raise Exception(f'El tipo {node.type} no existe')
 
     @visitor.when(IfStructureNode)
     def visit(self, node: IfStructureNode, scope: InterpreterScope):
@@ -246,13 +247,19 @@ class TreeInterpreter:
     def visit(self, node: PlusExpressionNode, scope: InterpreterScope):
         _, left_value = self.visit(node.expression_1, scope)
         _, right_value = self.visit(node.expression_2, scope)
-        return self.context.get_type('number'), left_value + right_value
+        try:
+            return self.context.get_type('number'), left_value + right_value
+        except:
+            raise Exception(f'Solo se puede realizar la operacion entre numeros.')
 
     @visitor.when(SubsExpressionNode)
     def visit(self, node: SubsExpressionNode, scope: InterpreterScope):
         _, left_value = self.visit(node.expression_1, scope)
         _, right_value = self.visit(node.expression_2, scope)
-        return self.context.get_type('number'), left_value - right_value
+        try:
+            return self.context.get_type('number'), left_value - right_value
+        except:
+            raise Exception(f'Solo se puede realizar la operacion entre numeros.')
 
     @visitor.when(DivExpressionNode)
     def visit(self, node: DivExpressionNode, scope: InterpreterScope):
@@ -260,13 +267,19 @@ class TreeInterpreter:
         _, right_value = self.visit(node.expression_2, scope)
         if right_value == 0:
             raise Exception(f'Se esta realizando una division entre 0. {node.location}')
-        return self.context.get_type('number'), left_value / right_value
+        try:
+            return self.context.get_type('number'), left_value / right_value
+        except:
+            raise Exception(f'Solo se puede realizar la operacion entre numeros.')
 
     @visitor.when(MultExpressionNode)
     def visit(self, node: MultExpressionNode, scope: InterpreterScope):
         _, left_value = self.visit(node.expression_1, scope)
         _, right_value = self.visit(node.expression_2, scope)
-        return self.context.get_type('number'), left_value * right_value
+        try:
+            return self.context.get_type('number'), left_value * right_value
+        except:
+            raise Exception(f'Solo se puede realizar la operacion entre numeros.')
 
     @visitor.when(ModExpressionNode)
     def visit(self, node: ModExpressionNode, scope: InterpreterScope):
@@ -274,13 +287,19 @@ class TreeInterpreter:
         _, right_value = self.visit(node.expression_2, scope)
         if right_value == 0:
             raise Exception(f'Se esta realizando una division entre 0. {node.location}')
-        return self.context.get_type('number'), left_value % right_value
+        try:
+            return self.context.get_type('number'), left_value % right_value
+        except:
+            raise Exception(f'Solo se puede realizar la operacion entre numeros.')
 
     @visitor.when(PowExpressionNode)
     def visit(self, node: PowExpressionNode, scope: InterpreterScope):
         _, left_value = self.visit(node.expression_1, scope)
         _, right_value = self.visit(node.expression_2, scope)
-        return self.context.get_type('number'), left_value ** right_value
+        try:
+            return self.context.get_type('number'), left_value ** right_value
+        except:
+            raise Exception(f'Solo se puede realizar la operacion entre numeros.')
 
     @visitor.when(SqrtMathNode)
     def visit(self, node: SqrtMathNode, scope: InterpreterScope):
@@ -314,7 +333,10 @@ class TreeInterpreter:
     @visitor.when(ExpMathNode)
     def visit(self, node: ExpMathNode, scope: InterpreterScope):
         _, expression_value = self.visit(node.node, scope)
-        return self.context.get_type('number'), math.exp(expression_value)
+        try:
+            return self.context.get_type('number'), math.exp(expression_value)
+        except:
+            raise Exception(f'La operacion solo se aplica a numeros. location: {node.location}')
 
     @visitor.when(RandomFunctionCallNode)
     def visit(self, node: RandomFunctionCallNode, scope: InterpreterScope):
@@ -332,13 +354,19 @@ class TreeInterpreter:
     def visit(self, node: StringConcatNode, scope: InterpreterScope):
         _, left_value = self.visit(node.left, scope)
         _, right_value = self.visit(node.right, scope)
-        return self.context.get_type('string'), str(left_value) + str(right_value)
+        try:
+            return self.context.get_type('string'), str(left_value) + str(right_value)
+        except:
+            raise Exception(f'No es posible concatenar los elementos. location : {node.location}')
 
     @visitor.when(StringConcatWithSpaceNode)
     def visit(self, node: StringConcatWithSpaceNode, scope: InterpreterScope):
         _, left_value = self.visit(node.left, scope)
         _, right_value = self.visit(node.right, scope)
-        return self.context.get_type('string'), str(left_value) + " " + str(right_value)
+        try:
+            return self.context.get_type('string'), str(left_value) + " " + str(right_value)
+        except:
+            raise Exception(f'No es posible concatenar los elementos. location : {node.location}')
     
     @visitor.when(PINode)
     def visit(self, node: PINode, scope: InterpreterScope):
@@ -433,10 +461,11 @@ class TreeInterpreter:
         inner_scope = scope.create_child()    
         for i in range(len(node.args)):
             _, value = self.visit(node.args[i], inner_scope)
-            inner_scope.define_variable(method.param_names[i].id, method.param_types[i], value)
+            inner_scope.define_variable(method.param_names[i], method.param_types[i], value)
         
         type_result, value_result = self.visit(method.body, inner_scope)
         self.current_instance = None
+        return type_result, value_result
         
     @visitor.when(SelfNode)
     def visit(self, node: SelfNode, scope: InterpreterScope):

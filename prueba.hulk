@@ -42,10 +42,12 @@ type Range(min:number, max:number) {
 
     next(): bool => (self.current := self.current + 1) < self.max;
     current(): number => self.current;
+    test_self(x: number): number => self.min + x;
 }
 
 let ran = new Range(5, 9);
 print(ran);
+print(ran.test_self(8));
 
 function fib(n: number): number => if (n == 0 or n == 1) {1;} else {fib(n - 1) + fib(n - 2);}  
 print(fib(0));
@@ -77,3 +79,12 @@ type Knight(value:string, value1:string) inherits Person(value , value1) {
     name():string => "Sir" @@ base();
     base():number=>1;
 }
+
+let per = new Person("Naomi", "Lahera");
+print(per.name());
+
+function createPerson(name: string, last_name: string){
+    new Person(name, last_name);
+}
+
+print(createPerson("Leo", "Brian").name());
