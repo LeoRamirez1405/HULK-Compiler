@@ -9,18 +9,18 @@ class TypeCheckerVisitor:
         self.scope: Scope = scope
         self.default_functions = default_functions
         self.current_type: Type = None
-        self.current_method: Method = Node
+        self.current_method: Method = None
         
     @visitor.on('node')
     def visit(self, node, scope):
-        print(f"OnGeneric: {type(node)}")
+        #print(f"OnGeneric: {type(node)}")
         pass
     
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
-        print("OnProgram (Checker)")
+        #print("OnProgram (Checker)")
         for statment in node.statments:
-            print(f"Statement (Checker): {statment}")
+            #print(f"Statement (Checker): {statment}")
             self.visit(statment, self.scope) 
             
     @visitor.when(PrintStatmentNode)
@@ -130,7 +130,13 @@ class TypeCheckerVisitor:
         else:
             final_type = self.visit(node.body, inner_scope)
           
-        return method.return_type if final_type.conforms_to(method.return_type.name) else self.context.get_type('any')
+        if method.return_type.name == 'object' or final_type.conforms_to(method.return_type.name):
+            method.return_type = final_type
+            return method.return_type
+        
+        self.errors.append(SemanticError(f'El tipo de retorno de la funcion y el tipo de retorno del cuerpo de la funcion no es el mismo. location: {node.location}'))
+        # return method.return_type if method.return_type.name == 'object' or final_type.conforms_to(method.return_type.name) else self.context.get_type('any')
+        return self.context.get_type('any')
             
     @visitor.when(IfStructureNode)
     def visit(self, node: IfStructureNode, scope: Scope):
@@ -503,7 +509,7 @@ class TypeCheckerVisitor:
 
     @visitor.when(StringNode)
     def visit(self, node: StringNode, scope):
-        print("OnStringNode")
+        # print("OnStringNode")
         try:
             string = str(node.value)
             return self.context.get_type('string')
