@@ -309,8 +309,8 @@ class TreeInterpreter:
         return self.context.get_type('number'), math.sqrt(expression_value)
 
     @visitor.when(SinMathNode)
-    def visit(self, node: SinMathNode, scope):
-        _, expression_value = self.visit(node.node, scope)
+    def visit(self, node: SinMathNode, scope: InterpreterScope):
+        _, expression_value = self.visit(node.node,scope)
         return self.context.get_type('number'), math.sin(expression_value)
 
     @visitor.when(CosMathNode)
@@ -329,7 +329,10 @@ class TreeInterpreter:
             raise Exception(f'La tangente no esta definida para 90 grados o multiplos de 180 grados. {node.location}')
         return self.context.get_type('number'), math.tan(expression_value)
 
-
+    @visitor.when(PINode)
+    def visit(self, node: PINode, scope: InterpreterScope):
+        return self.context.get_type('number'), math.pi
+        
     @visitor.when(ExpMathNode)
     def visit(self, node: ExpMathNode, scope: InterpreterScope):
         _, expression_value = self.visit(node.node, scope)

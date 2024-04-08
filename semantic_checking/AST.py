@@ -193,6 +193,12 @@ class MemberAccessNode(Node):
         self.args = args
         self.location = object_property_to_acces.location
         
+
+class BlockNode(Node):
+    def __init__(self, list_non_create_statemnet: List) -> None:
+        super().__init__()
+        self.list_non_create_statemnet = list_non_create_statemnet
+        
 #! No son necesarios los operadores
 #------------------------------------Operators----------------------------------------------------------------------------------------------------#       
 # class BooleanOperator(Node):
@@ -222,7 +228,7 @@ class AritmeticExpression(Node):
         super().__init__(tokenArit)
         self.expression_1 = expression_1
         self.expression_2 = expression_2
-        print(f"Ari: {expression_1}, {expression_2}")
+        #print(f"Ari: {expression_1}, {expression_2}")
         
 #-------------------------------Aritmetic-Expressions-------------------------------------------------------------------------------------------------#
 class PlusExpressionNode(AritmeticExpression):

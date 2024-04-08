@@ -10,6 +10,7 @@ class TypeCheckerVisitor:
         self.default_functions = default_functions
         self.current_type: Type = None
         self.current_method: Method = None
+        self.current_method: Method = None
         
     @visitor.on('node')
     def visit(self, node, scope):
@@ -477,6 +478,16 @@ class TypeCheckerVisitor:
         except:
             self.errors.append(SemanticError(f'El elemento {node.value} no es un numero'))
             return self.context.get_type('any')
+    
+    @visitor.when(BlockNode)
+    def visit(self, node: BlockNode, scope: Scope):
+        inner_scope = scope.create_child()
+        inner_type = self.context.get_type('any')
+        
+        for expression in node.list_non_create_statemnet:
+            inner_type = self.visit(expression,inner_scope)
+            
+        return inner_type
         
     @visitor.when(InheritanceNode)
     def visit(self, node: InheritanceNode, scope: Scope):
