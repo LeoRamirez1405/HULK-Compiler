@@ -10,7 +10,7 @@ class TypeCollectorVisitor:
         
     @visitor.on('node')
     def visit(self, node):
-        print(f"OnGeneric: {type(node)}")
+        # print(f"OnGeneric: {type(node)}")
         pass
 
     @visitor.when(ProgramNode)

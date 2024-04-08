@@ -211,7 +211,7 @@ def gramm_Hulk_LR1():
     lexer = Lexer([
     (number, f'(((({nonzero_digits})({zero_digits})*)|0)(.({zero_digits})*))|((({nonzero_digits})({zero_digits})*)|0)'),
     (string, f'\"(({all_characters})|(\\\\\"))*\"'),
-    ('[comment]', f'##'),
+    ('[comment]', f'//'),
     ("[LineJump]", "[LineJump]"),
     (Print, 'print'),
     (oPar, "\("),
