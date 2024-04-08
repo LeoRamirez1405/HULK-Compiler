@@ -10,7 +10,7 @@ class TypeCheckerVisitor:
         self.default_functions = default_functions
         self.current_type: Type = None
         self.current_method: Method = None
-        self.current_method: Method = None
+        #self.current_method: Method = None
         
     @visitor.on('node')
     def visit(self, node, scope):
@@ -31,13 +31,20 @@ class TypeCheckerVisitor:
     @visitor.when(DestroyNode)
     def visit(self, node: DestroyNode, scope: Scope):
         
-        if type(node.id) == SelfNode:
-            self.visit(node.id,scope)
-        else:    
-            if not scope.is_defined(node.id.id):
-                self.errors.append(SemanticError(f'La variable {node.id.id} no esta definida en este scope'))
+        type_id = self.visit(node.id,scope)
+        type_expression = self.visit(node.expression,scope)
+        
+        if not type_expression.conforms_to(type_id.name): 
+            self.errors.append(SemanticError(f'El tipo {type_expression.name} no hereda de {type_id.name} {node.location}'))
+            return self.context.get_type('any')
             
-        return self.visit(node.expression, scope)
+        # if type(node.id) == SelfNode:
+        #     self.visit(node.id,scope)
+        # else:    
+        #     if not scope.is_defined(node.id.id):
+        #         self.errors.append(SemanticError(f'La variable {node.id.id} no esta definida en este scope {node.location}'))
+            
+        return type_expression
         
     @visitor.when(KernAssigmentNode)
     def visit(self, node: KernAssigmentNode, scope: Scope):
@@ -239,7 +246,7 @@ class TypeCheckerVisitor:
             # inner_scope.define_variable(att.id.id, typ) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
             
         for method in node.methods:
-            self.current_metod = method
+            self.current_method = method
             self.visit(method, inner_scope)
             
         self.current_method = None
@@ -362,14 +369,14 @@ class TypeCheckerVisitor:
         try: 
             if self.current_type:
                 if self.current_method and node.id.id == "base":
-                    inheritance_methods = self.current_type.inhertance.methods
                     try:
-                        method = list(
-                            filter(
-                                lambda x: x.name == self.current_method.id.id,
-                                inheritance_methods,
-                            )
-                        )[0]
+                        method = self.current_type.inhertance.get_method(self.current_method.id.id)
+                        # method = list(
+                        #     filter(
+                        #         lambda x: x.name == self.current_method.id.id,
+                        #         inheritance_methods,
+                        #     )
+                        # )[0]
                     except:
                         self.errors.append(
                             SemanticError(

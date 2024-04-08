@@ -70,6 +70,7 @@ class TreeInterpreter:
         self.errors = []
         self.currentInstance: InstanceType = None
         self.currentType: Type = None
+        self.currentMethod: Method = None
 
     @visitor.on("node")
     def visit(self, node, scope):
@@ -414,13 +415,33 @@ class TreeInterpreter:
                 
     @visitor.when(FunctionCallNode)
     def visit(self, node: FunctionCallNode, scope: InterpreterScope):
-        try: 
-            method: Method = self.currentType.get_method(node.id.id)
+        # try: 
+        #     method: Method = self.currentType.get_method(node.id.id)
+        # except:
+        #     #Como ya paso por el chequeo semantico solo llega aca cuando current type es None
+        #     method: Method = scope.get_method(node.id.id, len(node.args))
+        #     #[func for func in scope.functions[node.id.id] if len(func.param_names) == len(node.args)][0] 
+           
+        try:
+            if self.currentType:
+                if self.currentMethod and node.id.id == 'base':
+                    inheritance_methods = self.currentType.inhertance.methods
+                    try:
+                        method = list(
+                            filter(
+                                lambda x: x.name == self.currentMethod.name,
+                                inheritance_methods,
+                            )
+                        )[0]
+                    except:
+                        pass
+                else:
+                    method = self.currentType.get_method(node.id.id)
+            else:
+                method: Method = scope.get_method(node.id.id, len(node.args))
         except:
-            #Como ya paso por el chequeo semantico solo llega aca cuando current type es None
-            method: Method = scope.get_method(node.id.id, len(node.args))
-            #[func for func in scope.functions[node.id.id] if len(func.param_names) == len(node.args)][0] 
-            
+            pass      
+                      
         inner_scope = scope.create_child()    
         for i in range(len(node.args)):
             _, value = self.visit(node.args[i], inner_scope)
@@ -464,7 +485,12 @@ class TreeInterpreter:
             type_arg, value = self.visit(arg_node, inner_scope)
             #Ver si aqui type.attributes[i].name es un Identifier o es un string
             inner_scope.define_variable(type.args[i].name, type_arg, value)
-            inner_scope.define_variable(type_parent.args[i].name,type_arg, value)
+            
+            try:
+                inner_scope.define_variable(type_parent.args[i].name,type_arg, value)
+            except:
+                pass
+                
             
             
         #Le pone valor a cada uno d los atributos de la instancia
@@ -484,9 +510,9 @@ class TreeInterpreter:
         type_base, value = self.visit(node.base_object, scope)
         self.currentType=type_base
         self.currentInstance = value
-    
-        method = type_base.get_method(node.object_property_to_acces.id)
         
+        method = type_base.get_method(node.object_property_to_acces.id)
+        self.currentMethod = method
         inner_scope = scope.create_child()    
         for i in range(len(node.args)):
             _, value = self.visit(node.args[i], inner_scope)
@@ -495,6 +521,7 @@ class TreeInterpreter:
         type_result, value_result = self.visit(method.body, inner_scope)
         self.currentType=None
         self.currentInstance = None
+        self.currentMethod = None
         return type_result, value_result
         
     @visitor.when(SelfNode)

@@ -22,4 +22,17 @@ let c = new C();
 a := b;
 //b := a;
 
-print(b is C);
+let var = 3;
+//var2 := 2;
+
+print(var);
+
+print(while(var<=10){
+    var:= var + 1;
+    print(var);
+}* 10);
+
+for(var := 1;var <10 or False;var:= var +1)
+{
+    let c = 10 in print("c = "@ c @", var= "@ var @ " result= " @ c/var @ " resto=" @@ c%var);
+}

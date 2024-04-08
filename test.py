@@ -37,8 +37,9 @@ ast = evaluate_reverse_parse(output,operations,tokensAST)
 checker = SemanticCheckingVisitor()
 print(checker.semantic_checking(ast))
 
-interpreter = TreeInterpreter(checker.context)
-interpreter.visit(ast)
+if len(checker.errors) == 0:
+    interpreter = TreeInterpreter(checker.context)
+    interpreter.visit(ast)
 
 # formatter = TreeWalkInterpreter()
 # tree = formatter.visit(ast)

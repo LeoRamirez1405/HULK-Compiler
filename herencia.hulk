@@ -19,7 +19,6 @@ let b = new B();
 
 let c = new C();
 
-a := b;
-//b := a;
+//a := b;
+b := a;
 
-print(b is C);
