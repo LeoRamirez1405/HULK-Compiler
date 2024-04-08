@@ -9,17 +9,19 @@ class TypeCheckerVisitor:
         self.scope: Scope = scope
         self.default_functions = default_functions
         self.current_type: Type = None
+        self.current_method: Method = None
+        #self.current_method: Method = None
         
     @visitor.on('node')
     def visit(self, node, scope):
-        print(f"OnGeneric: {type(node)}")
+        #print(f"OnGeneric: {type(node)}")
         pass
     
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
-        print("OnProgram (Checker)")
+        #print("OnProgram (Checker)")
         for statment in node.statments:
-            print(f"Statement (Checker): {statment}")
+            #print(f"Statement (Checker): {statment}")
             self.visit(statment, self.scope) 
             
     @visitor.when(PrintStatmentNode)
@@ -29,25 +31,25 @@ class TypeCheckerVisitor:
     @visitor.when(DestroyNode)
     def visit(self, node: DestroyNode, scope: Scope):
         
-        if type(node.id) == SelfNode:
-            self.visit(node.id,scope)
-        else:    
-            if not scope.is_defined(node.id.id):
-                self.errors.append(SemanticError(f'La variable {node.id.id} no esta definida en este scope'))
+        type_id = self.visit(node.id,scope)
+        type_expression = self.visit(node.expression,scope)
+        
+        if not type_expression.conforms_to(type_id.name): 
+            self.errors.append(SemanticError(f'El tipo {type_expression.name} no hereda de {type_id.name} {node.location}'))
+            return self.context.get_type('any')
             
-        return self.visit(node.expression, scope)
+        # if type(node.id) == SelfNode:
+        #     self.visit(node.id,scope)
+        # else:    
+        #     if not scope.is_defined(node.id.id):
+        #         self.errors.append(SemanticError(f'La variable {node.id.id} no esta definida en este scope {node.location}'))
+            
+        return type_expression
         
     @visitor.when(KernAssigmentNode)
     def visit(self, node: KernAssigmentNode, scope: Scope):
-        # if scope.parent == None:
-        #     try:
-        #         var: VariableInfo = self.scope.find_variable(node.id.id)
-        #         var.type = self.visit(node.expression, scope)
-        #     except:
-        #         self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida.'))
-        #     return self.context.get_type('any')
         if scope.is_local(node.id.id):
-            self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida.'))
+            self.errors.append(SemanticError(f'La variable {node.id.id} ya esta definida. location: {node.location}'))
             return scope.find_variable(node.id.id).type
         else:
             type = self.visit(node.expression, scope)
@@ -129,7 +131,13 @@ class TypeCheckerVisitor:
         else:
             final_type = self.visit(node.body, inner_scope)
           
-        return method.return_type if final_type.conforms_to(method.return_type.name) else self.context.get_type('any')
+        if method.return_type.name == 'object' or final_type.conforms_to(method.return_type.name):
+            method.return_type = final_type
+            return method.return_type
+        
+        self.errors.append(SemanticError(f'El tipo de retorno de la funcion y el tipo de retorno del cuerpo de la funcion no es el mismo. location: {node.location}'))
+        # return method.return_type if method.return_type.name == 'object' or final_type.conforms_to(method.return_type.name) else self.context.get_type('any')
+        return self.context.get_type('any')
             
     @visitor.when(IfStructureNode)
     def visit(self, node: IfStructureNode, scope: Scope):
@@ -228,8 +236,8 @@ class TypeCheckerVisitor:
                 self.errors.append(SemanticError(f"El tipo {list(param.items())[0][1].type} del argumento {arg.id} no esta definido"))
             temp_scope.define_variable(arg.id, type_att)
             
-        self.visit(node.inheritance, temp_scope)
-        
+        type_inheritance=self.visit(node.inheritance, temp_scope)
+        self.current_type.parent=type_inheritance
         inner_scope = self.scope.create_child()
         for att in node.attributes:
             typ = self.visit(att.expression, temp_scope)
@@ -238,8 +246,10 @@ class TypeCheckerVisitor:
             # inner_scope.define_variable(att.id.id, typ) #* Aqui en el 2do parametro de la funcion se infiere el tipo de la expresion que se le va a asignar a la variable
             
         for method in node.methods:
+            self.current_method = method
             self.visit(method, inner_scope)
             
+        self.current_method = None
         self.current_type = None
         
         return self.context.get_type('any')
@@ -306,11 +316,11 @@ class TypeCheckerVisitor:
         
     @visitor.when(AritmeticExpression)
     def visit(self, node: AritmeticExpression, scope: Scope):
-        print("OnAritmeticExpressionNode")
+        # print("OnAritmeticExpressionNode")
         type_1: Type = self.visit(node.expression_1, scope)
-        print(f"type 1: {type_1}")
+        # print(f"type 1: {type_1}")
         type_2: Type = self.visit(node.expression_2, scope)
-        print(f"type 2: {type_2}")
+        # print(f"type 2: {type_2}")
         
         if not type_1.conforms_to('number') or not type_2.conforms_to('number'):
             self.errors.append(SemanticError(f'Solo se pueden emplear aritmeticos entre expresiones aritmeticas. On: L: {node.location[0]} C: {node.location[1]}')) #TODO
@@ -358,7 +368,27 @@ class TypeCheckerVisitor:
     def visit(self, node: FunctionCallNode, scope: Scope):
         try: 
             if self.current_type:
-                method = self.current_type.get_method(node.id.id)
+                if self.current_method and node.id.id == "base":
+                    try:
+                        method = self.current_type.inhertance.get_method(self.current_method.id.id)
+                        # method = list(
+                        #     filter(
+                        #         lambda x: x.name == self.current_method.id.id,
+                        #         inheritance_methods,
+                        #     )
+                        # )[0]
+                    except:
+                        self.errors.append(
+                            SemanticError(
+                                f"El tipo {self.current_type.name} no posee ningún ancestro con el método {self.current_method.id.id}. Linea:{node.location[0]} , Columna:{node.location[1]} "
+                            )
+                        )
+                else:
+                    method = self.current_type.get_method(node.id.id)
+                # En caso de ser un metodo se verifica si la cantidad de parametros suministrados es correcta
+
+                
+                #method = self.current_type.get_method(node.id.id)
                 #En caso de ser un metodo se verifica si la cantidad de parametros suministrados es correcta
                 if method :
                     if len(node.args) != len(method.param_names):
@@ -441,68 +471,59 @@ class TypeCheckerVisitor:
     
     @visitor.when(NumberNode)
     def visit(self, node: NumberNode, scope):
-        print("OnNumberNode")
+        # print("OnNumberNode")
         try:
             a: float = float(node.value)
             return self.context.get_type('number')
         except:
             self.errors.append(SemanticError(f'El elemento {node.value} no es un numero'))
             return self.context.get_type('any')
+    
+    @visitor.when(BlockNode)
+    def visit(self, node: BlockNode, scope: Scope):
+        inner_scope = scope.create_child()
+        inner_type = self.context.get_type('any')
+        
+        if type(node.list_non_create_statemnet) == list:
+            for expression in node.list_non_create_statemnet:
+                inner_type = self.visit(expression, inner_scope)
+        else:
+            inner_type = self.visit(node.list_non_create_statemnet, inner_scope)
+            
+        return inner_type
         
     @visitor.when(InheritanceNode)
-    def visit(self, node: InheritanceNode, scope:Scope):
+    def visit(self, node: InheritanceNode, scope: Scope):
         try:
             ret_type = self.context.get_type(node.type.id)
             if len(ret_type.args) != len(node.args):
-                self.errors.append(SemanticError(f'El tipo {node.id} recibe {len(ret_type.args)} parametros para instanciarse'))
-                return self.context.get_type('any')
-            
+                self.errors.append(SemanticError(f"El tipo {node.id} recibe {len(ret_type.args)} parametros para instanciarse"))
+                return self.context.get_type("any")
+
             correct = True
             
-            arg_names = [list(parama.items())[0] for parama in node.args]
-            arg_names = [name[0].id for name in arg_names]
-            for i, arg in enumerate(arg_names):
-                if not scope.is_local(arg):
-                    self.errors.append(SemanticError(f'La variable {arg} no esta definida en el constructor hijo'))
+            arg_types = [parama.type for parama in ret_type.args]
+            arg_names = [parama.name for parama in ret_type.args]
+            for i, arg in enumerate(arg_types):
+                try:
+                    temp_type = self.visit(node.args[i], scope)
+                except:
+                    self.errors.append(SemanticError(f"El tipo del argumento {arg_names[i]} es incorrecto a la hora de heredar de {ret_type.name}. Linea:{node.location[0]}"))
+                    temp_type = self.context.get_type("any")
                     correct = False
-                    type_name = self.context.get_type('any')
-                else:
-                    type_name = scope.find_local_variable(arg).type.name
 
-                    try:
-                        temp_type = self.context.get_type(type_name)
-                    except:
-                        self.errors.append(SemanticError(f'El tipo del argumento {arg} es incorrecto a la hora de heredar de {ret_type.name}'))
-                        temp_type = self.context.get_type('any')
-                        correct = False
-
-                    if not temp_type.conforms_to(ret_type.args[i].type.name):
-                        self.errors.append(SemanticError(f'El tipo del argumento {arg} es incorrecto a la hora de heredar de {ret_type.name}'))
-                        correct = False
-            return ret_type if correct else self.context.get_type('any')
-            #Comprobando los tipos
-            
-            # arg_types = [list(parama.items())[0] for parama in node.args]
-            # arg_types = [name[1].type for name in arg_types]
-            # for i, arg in enumerate(arg_types):
-            #     try:
-            #         temp_type = self.context.get_type(arg)
-            #     except:
-            #         self.errors.append(SemanticError(f'El tipo del argumento {arg} es incorrecto a la hora de heredar de {ret_type.name}'))
-            #         temp_type = self.context.get_type('any')
-            #         correct = False
-                    
-            #     if not temp_type.conforms_to(ret_type.args[i].type.name):
-            #         self.errors.append(SemanticError(f'El tipo del argumento {arg} es incorrecto a la hora de heredar de {ret_type.name}'))
-            #         correct = False
-            # return ret_type if correct else self.context.get_type('any')
+                if not temp_type.conforms_to(ret_type.args[i].type.name):
+                    self.errors.append(SemanticError(f"El tipo del argumento {arg_names[i]} es incorrecto a la hora de heredar de {ret_type.name}"))
+                    correct = False
+            return ret_type if correct else self.context.get_type("any")
         except:
-            self.errors.append(SemanticError(f'El tipo {node.type.id} no esta definido'))
-            return self.context.get_type('any') 
+            self.errors.append(SemanticError(f"El tipo {node.type.id} no esta definido. Linea:{node.location[0]} , Columna:{node.location[1]}"))
+            return self.context.get_type("any")
+
 
     @visitor.when(StringNode)
     def visit(self, node: StringNode, scope):
-        print("OnStringNode")
+        # print("OnStringNode")
         try:
             string = str(node.value)
             return self.context.get_type('string')
@@ -544,11 +565,12 @@ class TypeCheckerVisitor:
         if not self.current_type:
             self.errors.append(SemanticError(f'La palabra self solo se puede usar dentro de clases'))
             return self.context.get_type('any')
-        
         try: 
             return self.current_type.get_attribute(node.id.id).type
         except:
             self.errors.append(SemanticError(f'No existe un atributo {node.id.id} en la clase {self.current_type.name}'))
             return self.context.get_type('any')
         
-    
+    @visitor.when(PINode)
+    def visit(self, node: PINode, scope: Scope):
+        return self.context.get_type('number')

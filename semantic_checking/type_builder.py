@@ -18,16 +18,16 @@ class TypeBuilderVisitor():
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode):
         for statment in node.statments:
-            print(f"Statement (Builder): {statment}")
+            #print(f"Statement (Builder): {statment}")
             self.visit(statment)
 
     @visitor.when(TypeDefinitionNode)
     def visit(self, node: TypeDefinitionNode):
         self.currentType: Type = self.context.get_type(node.id.id) 
         try:
-            inheritance = self.context.get_type(node.inheritance.type.id)
+            inheritance: Type = self.context.get_type(node.inheritance.type.id)
             if inheritance.conforms_to(self.currentType.name):
-                self.errors.append(SemanticError(f'Dependencias circulares. {inheritance.node.name} hereda de {self.currentType.name}'))
+                self.errors.append(SemanticError(f'Dependencias circulares. {node.id.id} hereda de {node.inheritance.type.id}'))
                 inheritance = self.context.get_type('object')
         except:
             self.errors.append(SemanticError(f'El tipo {str(node.inheritance.type.id)} del que se hereda no esta definido'))

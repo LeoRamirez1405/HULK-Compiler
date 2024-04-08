@@ -1,0 +1,24 @@
+type A{
+    self.x = 2;
+    getx() => self.x;
+}
+
+type B inherits A{
+    self.y = 3;
+}
+  
+type C inherits B{
+    self.x = 4;
+    getx() => base() + base();
+}
+
+let b = (new C()).getx() in print(b);
+let a = new A();
+
+let b = new B();
+
+let c = new C();
+
+//a := b;
+b := a;
+

@@ -4,6 +4,33 @@ from semantic_checking.semantic import *
 from semantic_checking.AST import *
 import semantic_checking.visitor as visitor
 
+class AttributeInstance:
+    def __init__(self, name, type, value) -> None:
+        self.name = name
+        self.type = type
+        self.value = value
+    
+class InstanceType:
+    def __init__(self, type, attrs, parent = None) -> None:
+        self.type = type
+        self.attrs : dict[str, object] = attrs
+        self.parent = parent
+        
+    def get_attribute_value(self, name):
+        for k, v in self.attrs.items():
+            if k == name:
+                return v.type, v.value
+        return self.parent.get_attribute_value(name) if self.parent is not None else None
+    
+    def set_attribute_value(self, name, value):
+        try:
+            self.attrs[name] = value
+        except:
+            return self.parent.set_attribute_value(name, value) if self.parent is not None else None
+        
+    def __str__(self):
+        return f'{self.type}({", ".join([f"{k}: {v.value}" for k, v in self.attrs.items()])})'
+    
 class InterpreterScope(Scope):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -21,11 +48,11 @@ class InterpreterScope(Scope):
         return info
     
     def find_variable_value(self, vname, index=None):
-        locals = self.local_variables if index is None else itt.islice(self.local_variables, index)
-        try:
-            return next((x, self.var_values[x.name]) for x in locals if x.name == vname)
-        except StopIteration:
-            return self.parent.find_variable_value(vname, self.index) if not self.parent is None else None, None
+        for x in self.local_variables:
+            if x.name == vname:
+                return x, self.var_values[x.name]
+        
+        return self.parent.find_variable_value(vname, self.index) if not self.parent is None else None
         
     def set_variable_value(self, vname, value, index=0):
         for x in self.local_variables:
@@ -33,25 +60,17 @@ class InterpreterScope(Scope):
                 self.var_values[x.name] = value
                 return
         
-        return self.parent.find_variable_value(vname, self.index) if not self.parent is None else None
-
-class InterpreterMethod(Method):
-    def __init__(self, name, param_names, params_types, return_type, body):
-        super().__init__(name, param_names, params_types, return_type)
-        self.body = body
-        
-class InterpreterAttribute(Attribute):
-    def __init__(self, name, typex, value):
-        super().__init__(name, typex)
-        self.value = value
-        
+        return self.parent.set_variable_value(vname, value, self.index) if not self.parent is None else None
+    
 class TreeInterpreter:
 
     def __init__(self, context):
         self.context: Context = context
         self.scope = InterpreterScope()
         self.errors = []
+        self.currentInstance: InstanceType = None
         self.currentType: Type = None
+        self.currentMethod: Method = None
 
     @visitor.on("node")
     def visit(self, node, scope):
@@ -64,7 +83,7 @@ class TreeInterpreter:
 
     @visitor.when(PrintStatmentNode)
     def visit(self, node: PrintStatmentNode, scope: InterpreterScope):
-        _, value = self.visit(node.expression, scope)
+        _, value = self.visit_body(node.expression, scope)
         print(value)
         return self.context.get_type('string'), value
     
@@ -75,7 +94,7 @@ class TreeInterpreter:
             var, value = scope.find_variable_value(node.id)
             return var.type, value
         except:
-            return self.context.get_type('any'), None
+            raise Exception(f'La variable no esta definida. location: {node.location}')
 
     @visitor.when(NumberNode)
     def visit(self, node: NumberNode, scope: InterpreterScope):
@@ -91,7 +110,7 @@ class TreeInterpreter:
         try:
             return self.context.get_type('bool'), eval(node.value)
         except:
-            return self.context.get_type('any'), None
+            raise Exception(f'El valor no es booleno. location: {node.location}')
     
     @visitor.when(KernAssigmentNode)
     def visit(self, node: KernAssigmentNode, scope: InterpreterScope):
@@ -105,6 +124,10 @@ class TreeInterpreter:
         type, value =  self.visit(node.expression, scope)
         scope.set_variable_value(node.id.id, value)
         
+        if isinstance(node.id, SelfNode):
+            self_current= AttributeInstance(node.id.id.id,type,value)
+            self.currentInstance.set_attribute_value(node.id.id.id, self_current)
+            
         return type, value
     
     @visitor.when(TypeNode)
@@ -113,35 +136,7 @@ class TreeInterpreter:
             type = self.context.types[node.type]
             return type, type
         except:
-            return self.context.get_type('any') , None
-
-    @visitor.when(TypeDefinitionNode)
-    def visit(self, node: TypeDefinitionNode, scope: InterpreterScope):
-        pass
-
-    @visitor.when(FunctionDefinitionNode)
-    def visit(self, node: FunctionDefinitionNode, scope: InterpreterScope):
-        if self.currentType:
-            try:
-                self.scope.node[self.currentType.name].append(node)
-            except:
-                self.scope.node[self.currentType.name] = [node]
-        else:
-            try:
-                self.scope.node[None].append(node)
-            except:
-                self.scope.node[None] = [node]
-
-    @visitor.when(FunctionCallNode)
-    def visit(self, node: FunctionCallNode, scope: InterpreterScope):
-        function = list(
-            filter(
-                lambda x: len(x.parameters) == len(node.args), self.scope.node[node.id]
-            )
-        )[0]
-
-        for statment in function.body:
-            self.visit(statment)
+            raise Exception(f'El tipo {node.type} no existe')
 
     @visitor.when(IfStructureNode)
     def visit(self, node: IfStructureNode, scope: InterpreterScope):
@@ -153,14 +148,17 @@ class TreeInterpreter:
                 _, elif_condition = self.visit(elif_node.condition, scope)
                 if elif_condition:
                     return self.visit_body(elif_node.body, scope)
-                
+        #elif len(node._else) != 0:
         return self.visit_body(node._else.body, scope)
+        
+        #return self.context.get_type('any'), None
             
     def visit_body(self, node, scope):
         result = self.context.get_type('any'), None
         if type(node) == list:
             for statement in node:
-                result = self.visit(statement, scope)
+                aux = self.visit(statement, scope)
+                result = aux if aux[1] != None else result
             return result
         return self.visit(node, scope)
             
@@ -218,7 +216,10 @@ class TreeInterpreter:
     @visitor.when(BoolNotNode)
     def visit(self, node: BoolNotNode, scope: InterpreterScope):
         _, value = self.visit(node.node, scope)
-        return self.context.get_type('bool'), not value
+        try:
+            return self.context.get_type('bool'), not value
+        except:
+            raise Exception(f'El valor debe ser booleano. location {node.location}')
 
     @visitor.when(BoolCompLessNode)
     def visit(self, node: BoolCompLessNode, scope: InterpreterScope):
@@ -260,13 +261,19 @@ class TreeInterpreter:
     def visit(self, node: PlusExpressionNode, scope: InterpreterScope):
         _, left_value = self.visit(node.expression_1, scope)
         _, right_value = self.visit(node.expression_2, scope)
-        return self.context.get_type('number'), left_value + right_value
+        try:
+            return self.context.get_type('number'), left_value + right_value
+        except:
+            raise Exception(f'Solo se puede realizar la operacion entre numeros.')
 
     @visitor.when(SubsExpressionNode)
     def visit(self, node: SubsExpressionNode, scope: InterpreterScope):
         _, left_value = self.visit(node.expression_1, scope)
         _, right_value = self.visit(node.expression_2, scope)
-        return self.context.get_type('number'), left_value - right_value
+        try:
+            return self.context.get_type('number'), left_value - right_value
+        except:
+            raise Exception(f'Solo se puede realizar la operacion entre numeros.')
 
     @visitor.when(DivExpressionNode)
     def visit(self, node: DivExpressionNode, scope: InterpreterScope):
@@ -274,13 +281,19 @@ class TreeInterpreter:
         _, right_value = self.visit(node.expression_2, scope)
         if right_value == 0:
             raise Exception(f'Se esta realizando una division entre 0. {node.location}')
-        return self.context.get_type('number'), left_value / right_value
+        try:
+            return self.context.get_type('number'), left_value / right_value
+        except:
+            raise Exception(f'Solo se puede realizar la operacion entre numeros.')
 
     @visitor.when(MultExpressionNode)
     def visit(self, node: MultExpressionNode, scope: InterpreterScope):
         _, left_value = self.visit(node.expression_1, scope)
         _, right_value = self.visit(node.expression_2, scope)
-        return self.context.get_type('number'), left_value * right_value
+        try:
+            return self.context.get_type('number'), left_value * right_value
+        except:
+            raise Exception(f'Solo se puede realizar la operacion entre numeros.')
 
     @visitor.when(ModExpressionNode)
     def visit(self, node: ModExpressionNode, scope: InterpreterScope):
@@ -288,13 +301,19 @@ class TreeInterpreter:
         _, right_value = self.visit(node.expression_2, scope)
         if right_value == 0:
             raise Exception(f'Se esta realizando una division entre 0. {node.location}')
-        return self.context.get_type('number'), left_value % right_value
+        try:
+            return self.context.get_type('number'), left_value % right_value
+        except:
+            raise Exception(f'Solo se puede realizar la operacion entre numeros.')
 
     @visitor.when(PowExpressionNode)
     def visit(self, node: PowExpressionNode, scope: InterpreterScope):
         _, left_value = self.visit(node.expression_1, scope)
         _, right_value = self.visit(node.expression_2, scope)
-        return self.context.get_type('number'), left_value ** right_value
+        try:
+            return self.context.get_type('number'), left_value ** right_value
+        except:
+            raise Exception(f'Solo se puede realizar la operacion entre numeros.')
 
     @visitor.when(SqrtMathNode)
     def visit(self, node: SqrtMathNode, scope: InterpreterScope):
@@ -304,8 +323,8 @@ class TreeInterpreter:
         return self.context.get_type('number'), math.sqrt(expression_value)
 
     @visitor.when(SinMathNode)
-    def visit(self, node: SinMathNode):
-        _, expression_value = self.visit(node.node)
+    def visit(self, node: SinMathNode, scope: InterpreterScope):
+        _, expression_value = self.visit(node.node,scope)
         return self.context.get_type('number'), math.sin(expression_value)
 
     @visitor.when(CosMathNode)
@@ -324,11 +343,17 @@ class TreeInterpreter:
             raise Exception(f'La tangente no esta definida para 90 grados o multiplos de 180 grados. {node.location}')
         return self.context.get_type('number'), math.tan(expression_value)
 
-
+    @visitor.when(PINode)
+    def visit(self, node: PINode, scope: InterpreterScope):
+        return self.context.get_type('number'), math.pi
+        
     @visitor.when(ExpMathNode)
     def visit(self, node: ExpMathNode, scope: InterpreterScope):
         _, expression_value = self.visit(node.node, scope)
-        return self.context.get_type('number'), math.exp(expression_value)
+        try:
+            return self.context.get_type('number'), math.exp(expression_value)
+        except:
+            raise Exception(f'La operacion solo se aplica a numeros. location: {node.location}')
 
     @visitor.when(RandomFunctionCallNode)
     def visit(self, node: RandomFunctionCallNode, scope: InterpreterScope):
@@ -336,7 +361,7 @@ class TreeInterpreter:
 
     @visitor.when(LogFunctionCallNode)
     def visit(self, node: LogFunctionCallNode, scope: InterpreterScope):
-        _, base_value = self.visit(node.base)
+        _, base_value = self.visit(node.base, scope)
         _, expression_value = self.visit(node.expression, scope)
         if expression_value <= 0:
             raise Exception(f'El logaritmo no esta definido para numeros menores o iguales a 0. {node.location}')
@@ -346,10 +371,193 @@ class TreeInterpreter:
     def visit(self, node: StringConcatNode, scope: InterpreterScope):
         _, left_value = self.visit(node.left, scope)
         _, right_value = self.visit(node.right, scope)
-        return self.context.get_type('string'), str(left_value) + str(right_value)
+        try:
+            return self.context.get_type('string'), str(left_value) + str(right_value)
+        except:
+            raise Exception(f'No es posible concatenar los elementos. location : {node.location}')
 
     @visitor.when(StringConcatWithSpaceNode)
     def visit(self, node: StringConcatWithSpaceNode, scope: InterpreterScope):
         _, left_value = self.visit(node.left, scope)
         _, right_value = self.visit(node.right, scope)
-        return self.context.get_type('string'), str(left_value) + " " + str(right_value)
+        try:
+            return self.context.get_type('string'), str(left_value) + " " + str(right_value)
+        except:
+            raise Exception(f'No es posible concatenar los elementos. location : {node.location}')
+
+#_______Bloque-3________________________________________________________________________________________________________________________________________________________________________
+
+    @visitor.when(LetInExpressionNode)
+    def visit(self, node: LetInExpressionNode, scope: InterpreterScope):
+        inner_scope = scope.create_child()
+        self.visit(node.assigments, inner_scope)
+        return self.visit_body(node.body, inner_scope)
+
+#_______Bloque-4__________________________________________________________________________________________________________________________________________________________________//
+    
+    @visitor.when(FunctionDefinitionNode)
+    def visit(self, node: FunctionDefinitionNode, scope: InterpreterScope):
+        if self.currentType:
+            try:
+                type: Type = self.context.get_type(self.currentType.name)
+                method_1: Method = type.get_method(node.id.id, len(node.parameters))
+                method_1.body = node.body
+            except:
+                pass
+                # self.scope.node[self.currentType.name] = [node]
+        else:
+            method = Method(node.id.id, [list(param.items())[0][0] for param in node.parameters], [self.context.get_type(list(param.items())[0][1].type) for param in node.parameters], node.type_annotation)
+            method.body = node.body
+            try:
+                scope.functions[node.id.id].append(method)
+            except:
+                scope.functions[node.id.id] = [method]
+                
+    @visitor.when(FunctionCallNode)
+    def visit(self, node: FunctionCallNode, scope: InterpreterScope):
+        # try: 
+        #     method: Method = self.currentType.get_method(node.id.id)
+        # except:
+        #     #Como ya paso por el chequeo semantico solo llega aca cuando current type es None
+        #     method: Method = scope.get_method(node.id.id, len(node.args))
+        #     #[func for func in scope.functions[node.id.id] if len(func.param_names) == len(node.args)][0] 
+           
+        try:
+            if self.currentType:
+                if self.currentMethod and node.id.id == 'base':
+                    inheritance_methods = self.currentType.inhertance.methods
+                    try:
+                        method = list(
+                            filter(
+                                lambda x: x.name == self.currentMethod.name,
+                                inheritance_methods,
+                            )
+                        )[0]
+                    except:
+                        pass
+                else:
+                    method = self.currentType.get_method(node.id.id)
+            else:
+                method: Method = scope.get_method(node.id.id, len(node.args))
+        except:
+            pass      
+                      
+        inner_scope = scope.create_child()    
+        for i in range(len(node.args)):
+            _, value = self.visit(node.args[i], inner_scope)
+            inner_scope.define_variable(method.param_names[i].id, method.param_types[i], value)
+        return self.visit_body(method.body, inner_scope)
+            
+    @visitor.when(TypeDefinitionNode)
+    def visit(self, node: TypeDefinitionNode, scope: InterpreterScope):
+        self.currentType = self.context.get_type(node.id.id)
+        parent_type=self.currentType.inhertance
+        for attr in node.attributes:
+            self.currentType.set_attribute_expression(attr.id.id, attr.expression)
+        if parent_type.name != 'object':
+            for attr in parent_type.attrs_expression.items():
+                if not attr[0] in list(map(lambda x : x.id.id,node.attributes)):
+                # if not attr[0] in list(map(lambda x : x.name,node.attributes)):
+                    self.currentType.set_attribute_expression(attr[0], attr[1])
+            
+            
+        for method in node.methods:
+            meth = self.currentType.get_method(method.id.id)#!agregar los metodos del padre por shsora
+            meth.body = method.body
+        if parent_type.name != 'object':
+            for method in parent_type.methods:
+                if not method.name in list(map(lambda x : x.id.id,node.methods)):
+                    current_method = Method(method.name, method.param_names,method.param_types,method.return_type)
+                    current_method.body=method.body
+                    self.currentType.methods.append(current_method)
+        
+        self.currentType = None
+        
+    @visitor.when(KernInstanceCreationNode)
+    def visit(self, node: KernInstanceCreationNode, scope: InterpreterScope):
+        type: Type = self.context.get_type(node.type.id)
+        type_parent:Type=type.inhertance
+        instance = {}
+        inner_scope = scope.create_child()
+        
+        #Construir los argumentos basando el los argumentos que tienen el nodo basandose en los valores de los argumentos
+        for i, arg_node in enumerate(node.args):
+            type_arg, value = self.visit(arg_node, inner_scope)
+            #Ver si aqui type.attributes[i].name es un Identifier o es un string
+            inner_scope.define_variable(type.args[i].name, type_arg, value)
+            
+            try:
+                inner_scope.define_variable(type_parent.args[i].name,type_arg, value)
+            except:
+                pass
+                
+            
+            
+        #Le pone valor a cada uno d los atributos de la instancia
+        for attr_name, expression in type.attrs_expression.items():
+            type_attr, value = self.visit(expression, inner_scope)
+            instance[attr_name] = AttributeInstance(attr_name, type_attr, value)
+            
+            
+        return type, InstanceType(type.name, instance)
+    
+    @visitor.when(InstanceType)
+    def visit(self, node: InstanceType, scope: IndentationError):
+        return node.type, node.attrs
+    
+    @visitor.when(MemberAccessNode)
+    def visit(self, node: MemberAccessNode, scope: InterpreterScope):
+        type_base, value = self.visit(node.base_object, scope)
+        self.currentType=type_base
+        self.currentInstance = value
+        
+        method = type_base.get_method(node.object_property_to_acces.id)
+        self.currentMethod = method
+        inner_scope = scope.create_child()    
+        for i in range(len(node.args)):
+            _, value = self.visit(node.args[i], inner_scope)
+            inner_scope.define_variable(method.param_names[i], method.param_types[i] , value)
+        
+        type_result, value_result = self.visit(method.body, inner_scope)
+        self.currentType=None
+        self.currentInstance = None
+        self.currentMethod = None
+        return type_result, value_result
+        
+    @visitor.when(SelfNode)
+    def visit(self, node: SelfNode, scope: InterpreterScope):
+        return self.currentInstance.get_attribute_value(node.id.id)
+    
+    @visitor.when(InheritanceNode)
+    def visit(self, node: InheritanceNode, scope):
+        pass
+        
+    @visitor.when(BlockNode)
+    def visit(self, node: BlockNode, scope: InterpreterScope):
+        inner_scope = scope.create_child()
+        result = self.context.get_type('any'),None
+        for expression in node.list_non_create_statemnet:
+            result = self.visit(expression, inner_scope)
+        
+        return result
+
+    
+    @visitor.when(BoolAndNode)
+    def visit(self, node: BoolAndNode, scope: InterpreterScope):
+        _, left = self.visit(node.left, scope)
+        _, right = self.visit(node.right, scope)
+        try:
+            return self.context.get_type('bool'), left and right
+        except:
+            raise Exception(f'Las operaciones logica se realizan solo entre elementos booleanos.')
+        
+    @visitor.when(BoolOrNode)
+    def visit(self, node: BoolOrNode, scope: InterpreterScope):
+        _, left = self.visit(node.left, scope)
+        _, right = self.visit(node.right, scope)
+        try:
+            return self.context.get_type('bool'), left or right
+        except:
+            raise Exception(f'Las operaciones logica se realizan solo entre elementos booleanos.')
+        
+        

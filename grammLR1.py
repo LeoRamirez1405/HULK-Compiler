@@ -20,53 +20,59 @@ def gramm_Hulk_LR1():
     sqrt, sin, cos, tan, exp, log, rand = G.Terminals('sqrt sin cos tan exp log rand')
     collection, destroy_collection, selfExpr = G.NonTerminals('collection destroy_collection selfExpr')
     self_access = G.NonTerminal('self_access')
+    list_non_create_statement = G.NonTerminal('list_non_create_statement')
     
     Program %= statement_list, lambda h, s: ProgramNode(s[1])
     statement_list %= statement + statement_list, lambda h, s: [s[1]] + s[2] 
-    statement_list %= oBrace + statement_list + cBrace + statement_list , lambda h, s: s[2] + s[4]
+    #statement_list %= oBrace + list_non_create_statement + cBrace + statement_list , lambda h, s: s[2] + s[4]
     statement_list %= G.Epsilon, lambda h, s: []
     
     statement %= non_create_statement, lambda h, s: s[1] 
     statement %= create_statement, lambda h, s: s[1]
+    # statement %= oBrace + list_non_create_statement + cBrace, lambda h, s: s[2]
+    
+    list_non_create_statement %= non_create_statement + list_non_create_statement,lambda h,s: [s[1]]+s[2]
+    list_non_create_statement %= G.Epsilon,lambda h,s: []
     
     non_create_statement %= control_structure, lambda h, s: s[1]
     non_create_statement %= expr_statement + Semi, lambda h, s: s[1]
-    #non_create_statement %= expr_statementWithoutSemi, lambda h, s: s[1]
+    non_create_statement %= assignment + Semi, lambda h, s: s[1] 
     
-    create_statement %= assignment + Semi, lambda h, s: s[1] 
+    non_create_statement %= destroy_collection + Semi, lambda h, s: s[1]
+    non_create_statement %= oBrace + list_non_create_statement + cBrace, lambda h, s: BlockNode(s[2])
+    
     create_statement %= type_definition, lambda h, s: s[1]
     create_statement %= function_definition, lambda h, s: s[1]
-    create_statement %= destroy_collection + Semi, lambda h, s: s[1]
     
     #TODO aqui hay que ver como se maneja la cosa de las listas
     #factor %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3])
     expr_statement %= assignment + In + expr_statement, lambda h, s: LetInExpressionNode(s[1], s[3], s[2]) #Ya
     expr_statement %= expression, lambda h, s: s[1]
     
-    
+    #print_statement %= Print + oPar + non_create_statement + cPar, lambda h, s: PrintStatmentNode(s[3], s[1]) #Ya
     print_statement %= Print + oPar + expr_statement + cPar, lambda h, s: PrintStatmentNode(s[3], s[1]) #Ya
     
     control_structure %= if_structure , lambda h, s: s[1]
     control_structure %= while_structure , lambda h, s: s[1]
     control_structure %= for_structure , lambda h, s: s[1]
     
-    if_structure %= If + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif + contElse , lambda h, s: IfStructureNode(s[3], s[6], s[8], s[9], s[1]) #Ya
+    if_structure %= If + oPar + expression + cPar + oBrace + list_non_create_statement + cBrace + contElif + contElse , lambda h, s: IfStructureNode(s[3], s[6], s[8], s[9], s[1]) #Ya
 
     #TODO Ponerle que sea un coleccion
-    contElif %= Elif + oPar + expression + cPar + oBrace + statement_list + cBrace + contElif , lambda h, s: [ElifStructureNode(s[1], s[3],s[6])] + s[8] #Ya
+    contElif %= Elif + oPar + expression + cPar + oBrace + list_non_create_statement + cBrace + contElif , lambda h, s: [ElifStructureNode(s[1], s[3],s[6])] + s[8] #Ya
     contElif %= G.Epsilon , lambda h, s: []
 
     contElse %= Else + oBrace + statement_list + cBrace , lambda h, s: ElseStructureNode(s[3], s[1]) #Ya
     contElse %= G.Epsilon , lambda h, s:  ElseStructureNode([]) #Ya
 
-    while_structure %= While + oPar + expression + cPar + oBrace + statement_list + cBrace , lambda h, s:  WhileStructureNode(s[3], s[6], s[1]) #Ya
+    while_structure %= While + oPar + expression + cPar + oBrace + list_non_create_statement + cBrace , lambda h, s:  WhileStructureNode(s[3], s[6], s[1]) #Ya
     for_assignment = G.NonTerminal('for_assignment')
     for_assignment %= G.Epsilon, lambda h, s: CollectionNode([])
     for_assignment %= assignment, lambda h, s: s[1]
 
     for_assignment %= destroy_collection, lambda h, s: s[1]
     
-    for_structure %= For + oPar + for_assignment + Semi + expression + Semi + destroy_collection + cPar + oBrace + statement_list + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10], s[1]) #Ya
+    for_structure %= For + oPar + for_assignment + Semi + expression + Semi + destroy_collection + cPar + oBrace + list_non_create_statement + cBrace , lambda h, s:  ForStructureNode(s[3], s[5], s[7], s[10], s[1]) #Ya
     
     #TODO Cambie la atributacion y le puse que creara un nodo collection para saber luego en los checkeos que hay que iterar en ese tipo de nodos
     # assignment %= Let + multi_assignment, lambda h, s: s[2]
@@ -85,7 +91,7 @@ def gramm_Hulk_LR1():
     destructive_assignment %= self_access + Destroy + expression, lambda h, s: [DestroyNode(s[1] , s[3], s[1])] #Ya
     destructive_assignment %= identifier + Destroy + expression, lambda h, s: [DestroyNode(IdentifierNode(s[1]) , s[3], s[1])] #Ya
 
-    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace, lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4],s[8]) #Ya
+    function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + oBrace + list_non_create_statement + cBrace, lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4],s[8]) #Ya
     #TODO aqui puse el statment entre corchetes en la creacion del nodo porque de lo contrario no lo puedo iterar
     function_definition %= Function + identifier + oPar + parameters + cPar + type_annotation + Arrow + statement,lambda h, s: FunctionDefinitionNode(IdentifierNode(s[2]),s[6],s[4], s[8] )
     
@@ -143,12 +149,12 @@ def gramm_Hulk_LR1():
     factor %= string, lambda h, s:  StringNode(s[1]) #Ya
     factor %= _False, lambda h, s:  BooleanNode(s[1]) #Ya
     factor %= _True, lambda h, s:  BooleanNode(s[1]) #Ya
-    factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(IdentifierNode(s[3], s[1])) #Ya
+    factor %= identifier + oPar + arguments + cPar, lambda h, s: FunctionCallNode(s[1],s[3]) #Ya
     factor %= identifier, lambda h, s:  IdentifierNode(s[1]) #Ya
     factor %= control_structure, lambda h, s: s[1]
     factor %= oPar + assignment + cPar, lambda h, s: s[2] 
     factor %= oPar+ destroy_collection + cPar, lambda h, s: s[2]
-    factor %=  oBrace + statement_list + cBrace, lambda h, s: CollectionNode(s[2])
+    factor %=  oBrace + list_non_create_statement + cBrace, lambda h, s: BlockNode(s[2])
     factor %= print_statement, lambda h, s: s[1]
     
     #TODO Dear future Leo: assignment In expr_statement NO ES UN FACTOR (acuerdate del ejemplo q lo parte, el del punto y coma necesario al final)
@@ -159,7 +165,7 @@ def gramm_Hulk_LR1():
     factor %= kern_instance_creation, lambda h,s: s[1]  
     
     member_access %= factor + Dot + identifier + oPar + arguments + cPar , lambda h, s: MemberAccessNode(s[1], IdentifierNode(s[3]), s[5]) #Ya
-    self_access %= _self + Dot + identifier , lambda h, s: SelfNode(IdentifierNode(s[3])) #Ya #Todo member access Los parametros son privados de la clase #! NAOMI ARREGLA ESTO EN EL CHECKEO SEMANTICO ❤️
+    self_access %= _self + Dot + identifier , lambda h, s: SelfNode(IdentifierNode(s[3]), s[1]) #Ya #Todo member access Los parametros son privados de la clase #! NAOMI ARREGLA ESTO EN EL CHECKEO SEMANTICO ❤️
     kern_instance_creation %= New + identifier + oPar + arguments + cPar, lambda h, s: KernInstanceCreationNode(IdentifierNode(s[2]),s[4]) #Ya
     #kern_instance_creation %= New + identifier, lambda h, s: KernInstanceCreationNode(IdentifierNode(s[2]),[])
     
@@ -187,13 +193,13 @@ def gramm_Hulk_LR1():
     #attribute_definition %= kern_assignment + Semi + attribute_definition, lambda h, s: [s[1]] + s[3]
     attribute_definition %= G.Epsilon, lambda h, s: []
 
-    method_definition %= identifier + oPar + parameters + cPar + type_annotation + oBrace + statement_list + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],s[7])] + s[9]
+    method_definition %= identifier + oPar + parameters + cPar + type_annotation + oBrace + list_non_create_statement + cBrace + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3],s[7])] + s[9]
     #TODO aqui puse el statment entre corchetes en la creacion del nodo porque de lo contrario no lo puedo iterar
     method_definition %= identifier + oPar + parameters + cPar + type_annotation + Arrow + statement + method_definition, lambda h, s: [FunctionDefinitionNode(IdentifierNode(s[1]), s[5], s[3], s[7])] + s[8]
     method_definition %= G.Epsilon , lambda h, s: []
 
     inheritance %= Inherits + identifier, lambda h, s: InheritanceNode(IdentifierNode(s[2]),[])
-    inheritance %= Inherits + identifier + oPar + parameters + cPar, lambda h, s: InheritanceNode(IdentifierNode(s[2]),s[4])
+    inheritance %= Inherits + identifier + oPar + arguments + cPar, lambda h, s: InheritanceNode(IdentifierNode(s[2]),s[4])
     inheritance %= G.Epsilon, lambda h, s: InheritanceNode(IdentifierNode('object'),[])
     
     nonzero_digits = '|'.join(str(n) for n in range(1,10))
@@ -205,6 +211,7 @@ def gramm_Hulk_LR1():
     lexer = Lexer([
     (number, f'(((({nonzero_digits})({zero_digits})*)|0)(.({zero_digits})*))|((({nonzero_digits})({zero_digits})*)|0)'),
     (string, f'\"(({all_characters})|(\\\\\"))*\"'),
+    ('[comment]', f'//'),
     ("[LineJump]", "[LineJump]"),
     (Print, 'print'),
     (oPar, "\("),

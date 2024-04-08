@@ -1,4 +1,5 @@
 import json
+from lib2to3.pygram import Symbols
 
 class Symbol(object):
 
@@ -34,6 +35,10 @@ class Symbol(object):
 
     def __len__(self):
         return 1
+    
+    # def __eq__(self, other):
+    #     print("Comparing...")
+    #     return self.Name == other.Name and self.Grammar == other.Grammar
 
 class NonTerminal(Symbol):
 
@@ -110,6 +115,8 @@ class Terminal(Symbol):
     @property
     def IsEpsilon(self):
         return False
+    
+        
 
 class EOF(Terminal):
 

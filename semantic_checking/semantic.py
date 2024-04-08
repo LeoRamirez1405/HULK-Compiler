@@ -41,6 +41,7 @@ class Type:
         self.inhertance: Type = None
         self.args: List[Argument] = []
         self.attributes: List[Attribute] = []
+        self.attrs_expression = {}
         self.methods: List[Method] = []
         self.parent = None
 
@@ -95,10 +96,10 @@ class Type:
         try:
             return next(method for method in self.methods if method.name == name)
         except StopIteration:
-            if self.parent is None:
+            if self.inhertance is None:
                 raise SemanticError(f'Method "{name}" is not defined in {self.name}.')
             try:
-                return self.parent.get_method(name)
+                return self.inhertance.get_method(name)
             except SemanticError:
                 raise SemanticError(f'Method "{name}" is not defined in {self.name}.')
 
@@ -116,6 +117,19 @@ class Type:
             plain[attr.name] = (attr, self)
         return plain.values() if clean else plain
 
+    def set_attribute_expression(self, name:str, expression):
+        try:
+            # attr = self.get_attribute(name)
+            self.attrs_expression[name] = expression
+        except SemanticError:
+            pass
+        #     attribute = Attribute(name, typex)
+        #     self.attributes.append(attribute)
+        #     self.attr_expression[name] = expression
+        #     return attribute
+        # else:
+        #     raise SemanticError(f'Attribute "{name}" is already defined in {self.name}.')
+    
     def all_methods(self, clean=True):
         plain = OrderedDict() if self.parent is None else self.parent.all_methods(False)
         for method in self.methods:
@@ -150,6 +164,8 @@ class Method:
         self.param_names = param_names
         self.param_types = params_types
         self.return_type: Type = return_type
+        self.body = None
+        #self.params_values = None
 
     def __str__(self):
         params = ', '.join(f'{n}:{t.name}' for n,t in zip(self.param_names, self.param_types))
@@ -219,7 +235,8 @@ class Scope:
             methods = [method for method in self.functions[vname] if len(method.param_names) == params_num]
             return methods[0]
         except:
-            raise SemanticError(f'La funcion {vname} no esta definida')
+            return self.parent.get_method(vname, params_num) if not self.parent is None else None
+            # raise SemanticError(f'La funcion {vname} no esta definida')
     
 class Context:
     def __init__(self):
