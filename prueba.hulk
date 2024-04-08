@@ -1,68 +1,16 @@
-
-for(let a = 0; a < 3; a := a + 1){
-    if(a is number and True){
-        print("value:"@@a);
-    }
-    else{
-        print("Este es el else del for");
-    }
+type A{
+    self.x = 2;
+    getx() => self.x;
 }
 
-print(
-    let a = 3 
-        in 
-            while(a > 0){  
-                a := a - 1; 
-                print(a);
-                if(a == 0){
-                    "Ya termino";
-                    }
-                });
-while(False){
-    print("No debe entrar a aqui");
+type B inherits A{
+    self.y = 3;
 }
-print(1.4 + 2);
-
-let m = 7;
-
-function test(x: number){
-    x + 7;
-}
-function fib(n:number):number => if (n == 0 or n == 1){ 1;} else{ fib(n-1) + fib(n-2);};
-function fact(x:number) => let f = 1, range = new Range(1,x+1) in while(range.next()) {f := f * range.current();};
-function gcd(a:number, b:number) => while (a > 0){
-        let m = a % b in {
-            b := a;
-            a := m;
-        };}
-
-
-type Range(min:number, max:number) {
-    self.min = min;
-    self.max = max;
-    self.current = min - 1;
-
-    next(): bool => (self.current := self.current + 1) < self.max;
-    current(): number => self.current;
-    test_self(x: number): number => self.min + x;
+  
+type C inherits B{
+    self.x = 4;
+    getx() => base();
 }
 
-type Point(x:number,y:number) {
-    self.x = x;
-    self.y = y;
-
-    getX():number => self.x;
-    getY():number => self.y;
-}
-
-let ran = new Range(5, 9);
-print(ran);
-print(ran.test_self(8));
-
-print({
-    let a = 8;
-}
-*
-{
-    let a = 4;
-});
+let a = new C();
+let b = (new C()).getx() in print(b);

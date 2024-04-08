@@ -229,8 +229,8 @@ class TypeCheckerVisitor:
                 self.errors.append(SemanticError(f"El tipo {list(param.items())[0][1].type} del argumento {arg.id} no esta definido"))
             temp_scope.define_variable(arg.id, type_att)
             
-        self.visit(node.inheritance, temp_scope)
-        
+        type_inheritance=self.visit(node.inheritance, temp_scope)
+        self.current_type.parent=type_inheritance
         inner_scope = self.scope.create_child()
         for att in node.attributes:
             typ = self.visit(att.expression, temp_scope)
@@ -558,7 +558,6 @@ class TypeCheckerVisitor:
         if not self.current_type:
             self.errors.append(SemanticError(f'La palabra self solo se puede usar dentro de clases'))
             return self.context.get_type('any')
-        
         try: 
             return self.current_type.get_attribute(node.id.id).type
         except:
