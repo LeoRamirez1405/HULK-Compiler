@@ -59,13 +59,6 @@ class IdentifierNode(Node):
         super().__init__(token)
         # self.id = tokenID.lex
         # print(f"Identifier: {id}")
-
-           
-class SelfNode(Node):
-    def __init__(self, identifier, token) -> None:
-        super().__init__(token)
-        self.identifier = identifier             
-        self.id : str = id
         
 class SelfNode(Node):
     def __init__(self, id : IdentifierNode, token) -> None:

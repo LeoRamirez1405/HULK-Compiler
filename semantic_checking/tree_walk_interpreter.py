@@ -473,4 +473,32 @@ class TreeInterpreter:
     @visitor.when(SelfNode)
     def visit(self, node: SelfNode, scope: InterpreterScope):
         return self.current_instance.get_attribute(node.id.id)
+    
+    @visitor.when(InheritanceNode)
+    def visit(self, node: InheritanceNode, scope):
+        pass
+        
+    @visitor.when(BlockNode)
+    def visit(self, node: BlockNode, scope: InterpreterScope):
+        inner_scope = scope.create_child()
+        return self.visit_body(node, inner_scope)
+    
+    @visitor.when(BoolAndNode)
+    def visit(self, node: BoolAndNode, scope: InterpreterScope):
+        _, left = self.visit(node.left, scope)
+        _, right = self.visit(node.right, scope)
+        try:
+            return self.context.create_type('bool'), left and right
+        except:
+            raise Exception(f'Las operaciones logica se realizan solo entre elementos booleanos.')
+        
+    @visitor.when(BoolOrNode)
+    def visit(self, node: BoolOrNode, scope: InterpreterScope):
+        _, left = self.visit(node.left, scope)
+        _, right = self.visit(node.right, scope)
+        try:
+            return self.context.create_type('bool'), left or right
+        except:
+            raise Exception(f'Las operaciones logica se realizan solo entre elementos booleanos.')
+        
         

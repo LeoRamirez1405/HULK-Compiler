@@ -31,15 +31,15 @@ def gramm_Hulk_LR1():
     statement %= create_statement, lambda h, s: s[1]
     # statement %= oBrace + list_non_create_statement + cBrace, lambda h, s: s[2]
     
-    list_non_create_statement %= non_create_statement + list_non_create_statement,lambda h,s:[s[1]]+s[2]
-    list_non_create_statement %= G.Epsilon,lambda h,s:[]
+    list_non_create_statement %= non_create_statement + list_non_create_statement,lambda h,s: [s[1]]+s[2]
+    list_non_create_statement %= G.Epsilon,lambda h,s: []
     
     non_create_statement %= control_structure, lambda h, s: s[1]
     non_create_statement %= expr_statement + Semi, lambda h, s: s[1]
     non_create_statement %= assignment + Semi, lambda h, s: s[1] 
     
     non_create_statement %= destroy_collection + Semi, lambda h, s: s[1]
-    non_create_statement %= oBrace + list_non_create_statement + cBrace, lambda h, s: s[2]
+    non_create_statement %= oBrace + list_non_create_statement + cBrace, lambda h, s: BlockNode(s[2])
     
     create_statement %= type_definition, lambda h, s: s[1]
     create_statement %= function_definition, lambda h, s: s[1]

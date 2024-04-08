@@ -186,3 +186,13 @@ function createPerson(name: string, last_name: string){
 }
 
 print(createPerson("Leo", "Brian").name());
+
+print({
+    let a = 7;
+    a;
+}
+*
+{
+    let a = 9;
+    a;
+});
