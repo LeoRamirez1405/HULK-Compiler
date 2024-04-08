@@ -27,7 +27,7 @@ tokens = lexer(text)
 tokentypes = [token.token_type for token in tokens]
 #print(tokentypes)
 
-parser = LR1Parser(gramatica, rebuild=False)
+parser = LR1Parser(gramatica, rebuild=True)
 
 output,operations = parser(tokens)
 tokensAST = [token for token in tokens if token.token_type != 'space']

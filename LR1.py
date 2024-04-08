@@ -51,13 +51,13 @@ class ShiftReduceParser:
                 # action, tag = self.action[state, lookahead]
                 # Shift case
                 if action == ShiftReduceParser.SHIFT:
-                    # print(f'Shift: Tag: {tag} State: {state} Lookahead: {lookahead}')
+                    print(f'Shift: Tag: {tag} State: {state} Lookahead: {lookahead}')
                     stack.append(tag)
                     operations.append(ShiftReduceParser.SHIFT)
                     cursor += 1
                 # Reduce case
                 elif action == ShiftReduceParser.REDUCE:
-                    # print(f'Reduce: Tag: {tag} State: {state} Lookahead: {lookahead}')
+                    print(f'Reduce: Tag: {tag} State: {state} Lookahead: {lookahead}')
                     for _ in range(len(tag.Right)): stack.pop()
                     stack.append(self.goto[stack[-1], tag.Left])
                     operations.append(ShiftReduceParser.REDUCE)

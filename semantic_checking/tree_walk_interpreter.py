@@ -283,8 +283,8 @@ class TreeInterpreter:
         return self.context.get_type('number'), math.sqrt(expression_value)
 
     @visitor.when(SinMathNode)
-    def visit(self, node: SinMathNode):
-        _, expression_value = self.visit(node.node)
+    def visit(self, node: SinMathNode, scope: InterpreterScope):
+        _, expression_value = self.visit(node.node,scope)
         return self.context.get_type('number'), math.sin(expression_value)
 
     @visitor.when(CosMathNode)
@@ -303,7 +303,10 @@ class TreeInterpreter:
             raise Exception(f'La tangente no esta definida para 90 grados o multiplos de 180 grados. {node.location}')
         return self.context.get_type('number'), math.tan(expression_value)
 
-
+    @visitor.when(PINode)
+    def visit(self, node: PINode, scope: InterpreterScope):
+        return self.context.get_type('number'), math.pi
+        
     @visitor.when(ExpMathNode)
     def visit(self, node: ExpMathNode, scope: InterpreterScope):
         _, expression_value = self.visit(node.node, scope)
@@ -315,7 +318,7 @@ class TreeInterpreter:
 
     @visitor.when(LogFunctionCallNode)
     def visit(self, node: LogFunctionCallNode, scope: InterpreterScope):
-        _, base_value = self.visit(node.base)
+        _, base_value = self.visit(node.base,scope)
         _, expression_value = self.visit(node.expression, scope)
         if expression_value <= 0:
             raise Exception(f'El logaritmo no esta definido para numeros menores o iguales a 0. {node.location}')
